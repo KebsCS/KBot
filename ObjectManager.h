@@ -1,18 +1,16 @@
 #pragma once
 
+#ifndef _OBJECTMANAGER_H
+#define _OBJECTMANAGER_H
+
 #include "KInterface.h"
 #include "offsets.h"
 #include "Definitions.h"
 
-static KInterface Driver(R"(\\.\kbotl)");
 
+static KInterface Memory(R"(\\.\kbotl)");
 
-
-
-//class CObject;
-class Obj_AI_Base;
-
-
+static DWORD ClientAddress = Memory.GetClientModule();
 
 
 
@@ -21,127 +19,114 @@ class CObject
 private:
     
     DWORD base;
-    DWORD ProcessId = Driver.GetProcessId();
+    // 
 public:
-
-   
-
-    int GetIndex()
-    {
-        return Driver.ReadVirtualMemory<int>(ProcessId, base + 0x0020, sizeof(int));
-    }
     int GetTeam()
     {
-        return Driver.ReadVirtualMemory<int>(ProcessId, base + 0x4C, sizeof(int));
+        return Memory.Read<int>(base + 0x4C);
     }
     bool IsVisible()
     {
-        return Driver.ReadVirtualMemory<bool>(ProcessId, base + 0x0270, sizeof(bool));
+        return Memory.Read<bool>(base + 0x0270, sizeof(bool));
     }
     std::string GetName()
     {
-        return Driver.ReadStringMemory(ProcessId, base + 0x006C, 16);
+        return Memory.ReadString(base + 0x006C);
     }
 	float GetHealth()
 	{
-		return Driver.ReadVirtualMemory<float>(ProcessId,base + 0xDC4   , sizeof(float));
+		return Memory.Read<float>(base + mHP, sizeof(float));
 	}
     float GetMaxHealth()
     {
-        return Driver.ReadVirtualMemory<float>(ProcessId, base + 0xDD4, sizeof(float));
+        return Memory.Read<float>(base + mMaxHP, sizeof(float));
     }
     float GetMana()
     {
-        return Driver.ReadVirtualMemory<float>(ProcessId, base + 0x298, sizeof(float));
+        return Memory.Read<float>(base + 0x298, sizeof(float));
     }
     float GetMaxMana()
     {
-        return Driver.ReadVirtualMemory<float>(ProcessId, base+ 0x2A8, sizeof(float));
+        return Memory.Read<float>(base+ 0x2A8, sizeof(float));
     }
     float GetArmor()
     {
-        return Driver.ReadVirtualMemory<float>(ProcessId, base + 0x12B0, sizeof(float));
+        return Memory.Read<float>(base + 0x12B0, sizeof(float));
     }
     float GetMR()
     {
-        return Driver.ReadVirtualMemory<float>(ProcessId, base + 0x12B8, sizeof(float));
+        return Memory.Read<float>(base + 0x12B8, sizeof(float));
     }
     float GetMS()
     {
-        return Driver.ReadVirtualMemory<float>(ProcessId, base + 0x12C8, sizeof(float));
+        return Memory.Read<float>(base + 0x12C8, sizeof(float));
     }
     float GetBaseAD()
     {
-        return Driver.ReadVirtualMemory<float>(ProcessId, base + 0x1288, sizeof(float));
+        return Memory.Read<float>(base + 0x1288, sizeof(float));
     }
     float GetBonusAD()
     {
-        return Driver.ReadVirtualMemory<float>(ProcessId, base + 0x1208, sizeof(float));
+        return Memory.Read<float>(base + 0x1208, sizeof(float));
     }
     float GetAP()
     {
-        return Driver.ReadVirtualMemory<float>(ProcessId, base + 0x1218, sizeof(float));
+        return Memory.Read<float>(base + 0x1218, sizeof(float));
     }
     float GetAARange()
     {
-        return Driver.ReadVirtualMemory<float>(ProcessId, base + oObjAttackRange, sizeof(float));
+        return Memory.Read<float>(base + oObjAttackRange, sizeof(float));
     }
     Vector3 GetPosition()
     {
-        return Vector3(Driver.ReadVirtualMemory<float>(ProcessId, base + 0x220, sizeof(float)),
-            Driver.ReadVirtualMemory<float>(ProcessId, base + 0x220 + 0x4, sizeof(float)),
-            Driver.ReadVirtualMemory<float>(ProcessId, base + 0x220 + 0x8, sizeof(float)));
+        return Vector3(Memory.Read<float>(base + 0x220, sizeof(float)),
+            Memory.Read<float>(base + 0x220 + 0x4, sizeof(float)),
+            Memory.Read<float>(base + 0x220 + 0x8, sizeof(float)));
     }
-    DWORD GetSpellbook()
+    DWORD GetSpellByID(int id)
     {
-        return Driver.ReadVirtualMemory<DWORD>(ProcessId, base + 0x2720, sizeof(DWORD));
+        return Memory.Read<DWORD>(base + (0x2720 + 0x478) + (0x4 * id), sizeof(DWORD));
     }
-    char* ChampName()
+    std::string GetChampName()
     {
-        //return Driver.ReadStringMemory(ProcessId, base + 0x2F84, 32);  //0x3340
-        char NAME[32];
-        for (int i = 0; i < 32; i++)
-        {
-            auto c = Driver.ReadVirtualMemory<char>(ProcessId, base + 0x2F84 + (i) * sizeof(char), sizeof(char)); 
-            if (c == '\0')
-                NAME[i] = ' '; NAME[i] = c;
-        }
-
-        return NAME;
-
+        return Memory.ReadString(base + 0x2F84); //0x3340
     }
     std::string SummonerSpell1()
     {
-        return Driver.ReadStringMemory(ProcessId, base + 0x3B58, 32);
+        return Memory.ReadString(base + 0x3B50);
     }
     std::string SummonerSpell2()
     {
-        return Driver.ReadStringMemory(ProcessId, base + 0x3B64, 16);
+        return Memory.ReadString(base + 0x3B5C);
     }
     std::string KeystoneName()
     {
-        return Driver.ReadStringMemory(ProcessId, base + 0x3B78, 16);
-    }
-    int GetLevel() // 1 lower by actual level
-    {
-        return (Driver.ReadVirtualMemory<int>(ProcessId, base + 0x36BC, sizeof(int)));
-    }
-    bool IsHero()
-    {
-        return Driver.ReadVirtualMemory<bool>(ProcessId, base + oIsHero, sizeof(bool));
+        return Memory.ReadString(base + 0x3B7C);
     }
 
+    int GetLevel() // 1 lower than an actual level
+    {
+        return Memory.Read<int>(base + 0x36BC, sizeof(int));
+    }
     bool IsAlive()
     {
-        return Driver.ReadVirtualMemory<bool>(ProcessId, base + oIsAlive, sizeof(bool));
+        return Memory.Read<bool>(base + oIsAlive, sizeof(bool));
     }
-
-
+    float GetGold()
+    {
+        return Memory.Read<float>(base + mGoldTotal, sizeof(float));
+    }
 	CObject(DWORD base)
 	{
 		this->base = base;
 	}
+    DWORD Address()
+    {
+        return base;
+    }
 
 
 };
 
+
+#endif // _OBJECTMANAGER_H

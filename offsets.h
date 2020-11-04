@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef _OFFSETS_H
+#define _OFFSETS_H
+
 /*
 Offset dumper by @Ph4nton
 Wed Oct 28 20:45:23 2020
@@ -34,8 +37,54 @@ Wed Oct 28 20:45:23 2020
 #define oD3DRenderer 0x35439B8	//A1 ? ? ? ? 89 54 24 18
 #define oZoomClass 0x350FF54	//A3 ? ? ? ? 83 FA 10 72 32
 #define oNetClient 0x351F884	//8B 0D ? ? ? ? 85 C9 74 07 8B 01 6A 01 FF 50 08 8B
-#define oUnderMouseObject 0x0	//8B 0D ? ? ? ? 89 0D ? ? ? ? 3B 44 24 30
+#define oUnderMouseObject 0x1C1B0F0 	//8B 0D ? ? ? ? 89 0D ? ? ? ? 3B 44 24 30
 #define oGameInfo 0x35118B0	//A1 ? ? ? ? 83 78 08 02 0F 94 C0
 #define oViewMatrix 0x68	//8D 4A ? 51 81 C2 ? ? ? ? 52
 #define oProjection 0xA8	//8D 4A ? 51 81 C2 ? ? ? ? 52
 #define oObjAttackRange 0x12D0	//D8 81 ? ? ? ? 8B 81 ? ? ? ?
+
+
+
+
+#define oHeroList 0x1C79A48 //				A1 ? ? ? ? 53 55 56 8B 68 04 8B 40 08 57 33 FF
+#define oMinionList 0x28C8100//				A1 ? ? ? ? 8B 50 04 8D 48 04 89 44 24 1C				
+#define oTurretList 0x350F720//				8B 0D ? ? ? ? E8 ? ? ? ? 85 C0 74 13 8B 10
+#define oInhibitorList 0x35191C0//			8B 15 ? ? ? ? 8B 7A 04 8B 42 08 8D 0C 87 3B F9 73 31 66 90
+#define oStructureList 0x1C794DC // 
+#define oShopList 0x28C92E8
+#define oTurretList2 0x350F71C
+#define oObjectList 0x28C80E0
+#define oObjectList2 0x28C8108
+
+//28C9344
+
+
+#define oIsTargetable 0x1D4070 
+
+
+#define mHP 0xDC4
+#define mMaxHP 0xDD4
+#define mHPMaxPenalty 0xDE4
+#define mAllShield 0xE04
+#define mPhysicalShield 0xE14
+#define mMagicalShield 0xE24
+#define mChampSpecificHealth 0xE34
+#define mStopShieldFade 0xE54
+#define mGoldTotal 0x1B38
+
+
+#define oObjBuffMgr 0x2174
+#define oObjSpellBook 0x2720
+#define oObjChampionName 0x314C
+#define oObjLevel 0x36BC
+#define oObjSourceIndex 0x290
+
+#define oMissileSpellInfo 0x230
+#define oMissileTargetIndex 0x2E8
+#define oMissileStartPos 0x2A8
+#define oMissileEndPos 0x2B4
+
+
+
+
+#endif //_OFFSETS_H

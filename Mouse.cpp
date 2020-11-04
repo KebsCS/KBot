@@ -1,5 +1,6 @@
 #include "Mouse.h"
 
+#pragma warning (disable: 4244)
 
 bool Mouse::MouseMoveArea(int x1, int y1, int x2, int y2)
 {

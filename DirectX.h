@@ -29,6 +29,8 @@
 #include "ObjectManager.h"
 #include "ByteFiles.h"
 
+#include "Initialize.h"
+
 extern LPDIRECT3D9              g_pD3D;
 extern LPDIRECT3DDEVICE9        g_pd3dDevice;
 extern D3DPRESENT_PARAMETERS    g_d3dpp;
@@ -40,11 +42,10 @@ extern bool MenuOpen;
 extern bool ExitBot;
 
 
+
 class Direct3D9Render
 {
 private:
-
-
 
     DirectX::XMMATRIX ReadMatrix(DWORD address);
     DirectX::XMMATRIX GetViewMatrix();
@@ -52,19 +53,21 @@ private:
     DirectX::XMMATRIX GetViewProjectionMatrix();
 
     bool bConsoleLog = true;
+    Initialize init;
+   
 public:
-
 
 
 	ID3DXFont* fontArial;
 	ID3DXFont* fontTahoma;
+    ID3DXFont* fontTahomaSmall;
 
 	Direct3D9Render()
 	{
 	}
 	
-	~Direct3D9Render();
-	int DirectXInit(HWND hWnd); // initializes directx 
+    ~Direct3D9Render() = default;
+	bool DirectXInit(HWND hWnd); // initializes directx 
 	int Render(); // main loop
 	void InitializeFonts(); // initializes fonts
 	void Shutdown();
@@ -72,10 +75,9 @@ public:
 	void ResetDevice();
 	void MenuInit();
 	ImVec2 WorldToScreen(Vector3 pos);
+    
 
 
-	
-    void DrawAARange(Vector3 pos, float range, float points, float thickness, RGBA color);
 };
 
 class image {
@@ -105,6 +107,7 @@ struct ConsoleLog
     bool                  ScrollToBottom;
     bool                  StopPrinting;
     bool                  IgnoreStopPrint;
+    Initialize init;
 
     ConsoleLog()
     {
@@ -119,6 +122,7 @@ struct ConsoleLog
         Commands.push_back("PAUSE");
         Commands.push_back("RESUME");
         Commands.push_back("EXIT");
+        Commands.push_back("REINIT");
         AutoScroll = true;
         ScrollToBottom = false;
         StopPrinting = false;
@@ -257,6 +261,7 @@ struct ConsoleLog
             bool has_color = false;
             if (strstr(item, "[error]")) { color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); has_color = true; }
             else if (strncmp(item, "# ", 2) == 0) { color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); has_color = true; }
+            else if (strncmp(item, "[startup]", 2) == 0) { color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); has_color = true; }
             if (has_color)
                 ImGui::PushStyleColor(ImGuiCol_Text, color);
             ImGui::TextUnformatted(item);
@@ -350,6 +355,11 @@ struct ConsoleLog
         else if (Stricmp(command_line, "EXIT") == 0)
         {
             ExitBot = true;
+        }
+        else if (Stricmp(command_line, "REINIT") == 0)
+        {
+            AddLog("Reinitializing objects");
+            init.AddObjects();
         }
         else
         {

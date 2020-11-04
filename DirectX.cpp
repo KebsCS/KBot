@@ -3,6 +3,8 @@
 bool MenuOpen = false;
 
 #include "Draw.h"
+#include "Visuals.h"
+#include "Initialize.h"
 
 LPDIRECT3D9              g_pD3D = NULL;
 LPDIRECT3DDEVICE9        g_pd3dDevice = NULL;
@@ -14,42 +16,38 @@ RECT rc;
 ID3DXFont* pFont;
 
 ConsoleLog clog;
-Draw *draw;
-
-Direct3D9Render::~Direct3D9Render()
-{
-
-}
-
+Draw* draw;
+Visuals vis;
 
 
 DirectX::XMMATRIX Direct3D9Render::ReadMatrix(DWORD address)
 {
 
-	DWORD ProcessId = Driver.GetProcessId();
-	////LOG("ad", address);
 	DirectX::XMMATRIX tmp;
+	for (int i = 0; i < 16; i++) //todo 1 read instaed of 16 (performance)
+	{
+		tmp.r->m128_f32[i] = Memory.Read<float>((address + sizeof(float) * i), sizeof(float));
 
-	tmp.r->m128_f32[0] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 0), sizeof(float));
-	tmp.r->m128_f32[1] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 1), sizeof(float));
-	tmp.r->m128_f32[2] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 2), sizeof(float));
-	tmp.r->m128_f32[3] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 3), sizeof(float));
-	
+	}
+	//tmp.r->m128_f32[0] = Memory.Read<float>((address + sizeof(float) * 0), sizeof(float));
+	//tmp.r->m128_f32[1] = Memory.Read<float>((address + sizeof(float) * 1), sizeof(float));
+	//tmp.r->m128_f32[2] = Memory.Read<float>((address + sizeof(float) * 2), sizeof(float));
+	//tmp.r->m128_f32[3] = Memory.Read<float>((address + sizeof(float) * 3), sizeof(float));
+	//
+	//tmp.r->m128_f32[4] = Memory.Read<float>((address + sizeof(float) * 4), sizeof(float));
+	//tmp.r->m128_f32[5] = Memory.Read<float>((address + sizeof(float) * 5), sizeof(float));
+	//tmp.r->m128_f32[6] = Memory.Read<float>((address + sizeof(float) * 6), sizeof(float));
+	//tmp.r->m128_f32[7] = Memory.Read<float>((address + sizeof(float) * 7), sizeof(float));
 
-	tmp.r->m128_f32[4] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 4), sizeof(float));
-	tmp.r->m128_f32[5] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 5), sizeof(float));
-	tmp.r->m128_f32[6] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 6), sizeof(float));
-	tmp.r->m128_f32[7] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 7), sizeof(float));
+	//tmp.r->m128_f32[8] = Memory.Read<float>((address + sizeof(float) * 8), sizeof(float));
+	//tmp.r->m128_f32[9] = Memory.Read<float>((address + sizeof(float) * 9), sizeof(float));
+	//tmp.r->m128_f32[10] = Memory.Read<float>((address + sizeof(float) * 10), sizeof(float));
+	//tmp.r->m128_f32[11] = Memory.Read<float>((address + sizeof(float) * 11), sizeof(float));
 
-	tmp.r->m128_f32[8] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 8), sizeof(float));
-	tmp.r->m128_f32[9] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 9), sizeof(float));
-	tmp.r->m128_f32[10] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 10), sizeof(float));
-	tmp.r->m128_f32[11] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 11), sizeof(float));
-
-	tmp.r->m128_f32[12] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 12), sizeof(float));
-	tmp.r->m128_f32[13] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 13), sizeof(float));
-	tmp.r->m128_f32[14] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 14), sizeof(float));
-	tmp.r->m128_f32[15] = Driver.ReadVirtualMemory<float>(ProcessId, (address + sizeof(float) * 15), sizeof(float));
+	//tmp.r->m128_f32[12] = Memory.Read<float>((address + sizeof(float) * 12), sizeof(float));
+	//tmp.r->m128_f32[13] = Memory.Read<float>((address + sizeof(float) * 13), sizeof(float));
+	//tmp.r->m128_f32[14] = Memory.Read<float>((address + sizeof(float) * 14), sizeof(float));
+	//tmp.r->m128_f32[15] = Memory.Read<float>((address + sizeof(float) * 15), sizeof(float));
 
 	
 	//clog.AddLog("[matrix] %f, %f, %f ,%f", tmp.r->m128_f32[0], tmp.r->m128_f32[1], tmp.r->m128_f32[2], tmp.r->m128_f32[3]);
@@ -62,43 +60,34 @@ DirectX::XMMATRIX Direct3D9Render::ReadMatrix(DWORD address)
 }
 DirectX::XMMATRIX Direct3D9Render::GetViewMatrix()
 {
-	DWORD ClientAddress = Driver.GetClientModule();
-	DWORD ProcessId = Driver.GetProcessId();
-	//DWORD Renderer = Driver.ReadVirtualMemory<DWORD>(ProcessId, ClientAddress + oRenderer, sizeof(DWORD));
-	return ReadMatrix(ClientAddress + 0x353DF38);
+	//in IDA
+	//B9 ? ? ? ? E8 ? ? ? ? B9 ? ? ? ? E9 ? ? ? ? CC CC CC CC CC CC CC CC 
+
+	//DWORD Renderer = Memory.Read<DWORD>(ClientAddress + oRenderer, sizeof(DWORD));
+	return ReadMatrix(ClientAddress + 0x353DF38); // 10.21 0x3529CC8
 }
 DirectX::XMMATRIX Direct3D9Render::GetProjectionMatrix()
 {
-	DWORD ClientAddress = Driver.GetClientModule();
-	DWORD ProcessId = Driver.GetProcessId();
-	//DWORD Renderer = Driver.ReadVirtualMemory<DWORD>(ProcessId, ClientAddress + oRenderer, sizeof(DWORD));
+
+	//DWORD Renderer = Memory.Read<DWORD>(ClientAddress + oRenderer, sizeof(DWORD));
 	return ReadMatrix(ClientAddress + 0x353DF38 +0x40);
 }
 
 DirectX::XMMATRIX Direct3D9Render::GetViewProjectionMatrix()
 {
-	//clog.AddLog("viewmatrix");
-	DirectX::XMMATRIX view = GetViewMatrix();
-	//clog.AddLog("projectionmatrix");
-	DirectX::XMMATRIX proj = GetProjectionMatrix();
-	DirectX::XMMATRIX tmp = DirectX::XMMatrixMultiply(view,proj);
-	//clog.AddLog("multiplied");
-	//clog.AddLog("[matrix] %f, %f, %f ,%f", tmp.r->m128_f32[0], tmp.r->m128_f32[1], tmp.r->m128_f32[2], tmp.r->m128_f32[3]);
-	//clog.AddLog("[matrix] %f, %f, %f ,%f", tmp.r->m128_f32[4], tmp.r->m128_f32[5], tmp.r->m128_f32[6], tmp.r->m128_f32[7]);
-	//clog.AddLog("[matrix] %f, %f, %f ,%f", tmp.r->m128_f32[8], tmp.r->m128_f32[9], tmp.r->m128_f32[10], tmp.r->m128_f32[11]);
-	//clog.AddLog("[matrix] %f, %f, %f ,%f", tmp.r->m128_f32[12], tmp.r->m128_f32[13], tmp.r->m128_f32[14], tmp.r->m128_f32[15]);
-	return tmp;
+
+	return DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
 }
 
 
-int Direct3D9Render::DirectXInit(HWND hWnd)
+bool Direct3D9Render::DirectXInit(HWND hWnd)
 {
 
 	if ((g_pD3D = Direct3DCreate9(D3D_SDK_VERSION)) == NULL)
 	{
 		clog.AddLog("[error] Direct3DCreate9Ex failed");
 
-		exit(1);
+		return false;
 	}
 
 
@@ -120,11 +109,15 @@ int Direct3D9Render::DirectXInit(HWND hWnd)
 	{
 		clog.AddLog("[error] CreateDeviceEx failed");
 
-		exit(1);
+		return false;
 	}
 
 	if (FAILED(D3DXCreateLine(g_pd3dDevice, &g_Line)))
-		return E_FAIL;
+	{
+		clog.AddLog("[error] D3DXCreateLine failed");
+		return false;
+	}
+
 
 	g_Line->SetWidth(1.0f);
 	g_Line->SetPattern(0xFFFFFFFF);
@@ -133,48 +126,40 @@ int Direct3D9Render::DirectXInit(HWND hWnd)
 	InitializeFonts();
 	
 	Renderimgui(hWnd);
+
+	float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+
+	while (GameTime < 1) // pause if not in game
+	{
+		Sleep(1);
+	}
+	Sleep(2000);
+
+	init.AddObjects();
 	
-
-	return 0;
+	return true;
 }
-
-
-//void LoadTextureFromMemory(LPDIRECT3DDEVICE9 xD, LPDIRECT3DTEXTURE9 xd2)
-//{
-//
-//	LPDIRECT3DTEXTURE9 pTexture;
-//	HRESULT hr = D3DXCreateTextureFromFileInMemory(xD, &Smite, sizeof(Smite), &pTexture); //Create image from array
-//	LPD3DXSPRITE spTexture;
-//	D3DXCreateSprite(xD, &spTexture); //sprite
-//	spTexture->Begin(D3DXSPRITE_ALPHABLEND);
-//
-//	int menuX = 10; // dont need, just changing the position
-//
-//
-//	spTexture->Draw(xd2, NULL, NULL, &D3DXVECTOR3(100, 100, 0.0f), 0xFFFFFFFF);
-//
-//	spTexture->End();
-//}
-
-
-
-Mouse mouse;
-
 
 
 int Direct3D9Render::Render()
 {
 
 	static bool AARange = false;
+	static bool AARangeLocal = true;
+	static bool AARangeTurrets = true;
 	static int AARangeSlider[2] = { 10,10 };
-	static ImVec4 AARangeColor = ImVec4(114.0f / 255.0f, 144.0f / 255.0f, 154.0f / 255.0f, 200.0f / 255.0f);
+	static ImVec4 AARangeColor = ImVec4(255.0f / 255.0f, 85.0f / 255.0f, 50.0f / 255.0f, 255.0f / 255.0f);
+	static ImVec4 AARangeLocalColor = ImVec4(83.0f / 255.0f, 85.0f / 255.0f, 251.0f / 255.0f, 255.0f / 255.0f);
+
+	static bool TracerLines = false;
+	static int TracerLinesThickness = 10;
+
+	static bool Cooldowns = false;
+
 	// Start the Dear ImGui frame
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-
-
-	
 
 
 	if (MenuOpen)
@@ -194,9 +179,25 @@ int Direct3D9Render::Render()
 		
 		ImGui::Checkbox("AA Range", &AARange);
 		ImGui::SameLine();
-		ImGui::ColorEdit4("LocalAARangeColor##3", (float*)&AARangeColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
+		ImGui::ColorEdit4("AARangeColor##3", (float*)&AARangeColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
 		ImGui::SameLine();
-		ImGui::SliderInt2("", AARangeSlider, 10, 100,"%d");
+		ImGui::Checkbox("Local Player", &AARangeLocal);
+		ImGui::SameLine();
+		ImGui::ColorEdit4("AARangeLocalColor##3", (float*)&AARangeLocalColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
+		ImGui::SameLine();
+		ImGui::Checkbox("Turrets", &AARangeTurrets);
+
+	
+		ImGui::SliderInt2("", AARangeSlider, 10, 60,"%d");
+		ImGui::Separator();
+
+		ImGui::Checkbox("Tracers\t", &TracerLines);
+		ImGui::SameLine();
+		ImGui::SliderInt("", &TracerLinesThickness, 10, 60, "Thickness: %d ");
+		ImGui::Separator();
+
+		ImGui::Checkbox("Cooldowns", &Cooldowns);
+
 		ImGui::Separator();
 
 		ImGui::Columns(2, 0, false);
@@ -223,7 +224,6 @@ int Direct3D9Render::Render()
 		clog.Draw("Console Log", &bConsoleLog);
 	}
 
-	
 
 
 	// Rendering
@@ -234,25 +234,41 @@ int Direct3D9Render::Render()
 	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
 	if (g_pd3dDevice->BeginScene() >= 0)
 	{
-		POINT mpos = mouse.GetPos();
-
-
-		//DrawImage("Flash.png", mpos.x, mpos.y);
-		//DrawImage("Barrier.png", 100, 100,"Barrier",0,32,32);
-		//
-		//DrawImage("Flash.png", 300, 300,"flas",1);
 		ImGui::Render();
 		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
-		//Line(10, 10, 500, 500, RGBA(255, 0, 0), 3);
+		//turret loop
+		if (AARangeTurrets)
+		{
+			for (auto obj : init.turretlist)
+			{
+				if(AARangeTurrets)
+					vis.DrawAARanges(obj, AARangeSlider[0], AARangeSlider[1] / 10.f, RGBA(AARangeColor.x * 255, AARangeColor.y * 255, AARangeColor.z * 255, AARangeColor.w * 255),
+						AARangeLocal, RGBA(AARangeLocalColor.x * 255, AARangeLocalColor.y * 255, AARangeLocalColor.z * 255, AARangeLocalColor.w * 255));
+			}
+		}
 
-		//drawings 
+		//hero loop
+		if (Cooldowns || AARange || TracerLines)
+		{
+			for (auto obj : init.herolist)
+			{
+				if (Cooldowns)
+					vis.CooldownTimers(obj, 1);
 
-		//Rect(0, 0, 50, 50, RGBA(255, 100, 100));
+				if (AARange)
+					vis.DrawAARanges(obj, AARangeSlider[0], AARangeSlider[1] / 10.f, RGBA(AARangeColor.x * 255, AARangeColor.y * 255, AARangeColor.z * 255, AARangeColor.w * 255),
+						AARangeLocal, RGBA(AARangeLocalColor.x * 255, AARangeLocalColor.y * 255, AARangeLocalColor.z * 255, AARangeLocalColor.w * 255));
 
-		/*if (AARange)
-			DrawAARange(AARangeSlider[0],AARangeSlider[1]/10, RGBA(AARangeColor.x*255, AARangeColor.y*255, AARangeColor.z*255, AARangeColor.w*255));
-	*/
+				if (TracerLines)
+					vis.DrawTracers(obj, TracerLinesThickness / 10.f);
+
+				vis.AutoSmite(obj);
+
+			}
+		}
+
+
 
 		g_pd3dDevice->EndScene();
 	}
@@ -264,8 +280,6 @@ int Direct3D9Render::Render()
 
 	return 0;
 }
-
-
 
 
 
@@ -282,33 +296,13 @@ void Direct3D9Render::Shutdown()
 }
 
 
-
 void Direct3D9Render::InitializeFonts()
 {
 
 	D3DXCreateFontA(g_pd3dDevice, 14, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial", &fontArial);
-	D3DXCreateFontA(g_pd3dDevice, 16, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Tahoma", &fontTahoma);
+	D3DXCreateFontA(g_pd3dDevice, 16, 0, FW_BOLD, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Tahoma", &fontTahoma);
+	D3DXCreateFontA(g_pd3dDevice, 12, 0, FW_BOLD, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Tahoma", &fontTahomaSmall);
 }
-
-
-
-
-void Direct3D9Render::DrawAARange(Vector3 pos, float range, float points, float thickness, RGBA color)
-{
-	DWORD ClientAddress = Driver.GetClientModule();
-	DWORD ProcessId = Driver.GetProcessId();
-	CObject Local(Driver.ReadVirtualMemory<DWORD>(ProcessId, ClientAddress + oLocalPlayer, sizeof(DWORD)));
-	Vector3 GetPos = Local.GetPosition();
-	//clog.AddLog("PlayerPos: %f, %f, %f", GetPos.X, GetPos.Y, GetPos.Z);
-	ImVec2 PlayerPosition = WorldToScreen(GetPos);
-	//clog.AddLog("W2S %f, %f", PlayerPosition.x, PlayerPosition.y);
-
-	draw->DrawCircleRange(GetPos, points, Local.GetAARange(), color, thickness);
-}
-
-
-
-
 
 
 void Direct3D9Render::Renderimgui(HWND hWnd)
@@ -318,14 +312,12 @@ void Direct3D9Render::Renderimgui(HWND hWnd)
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	
-
 	// Setup Dear ImGui style
 	MenuInit();
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(hWnd);
 
-		
 }
 
 void Direct3D9Render::ResetDevice()
@@ -342,8 +334,7 @@ void Direct3D9Render::ResetDevice()
 
 ImVec2 Direct3D9Render::WorldToScreen(Vector3 pos)
 {
-	//DirectX::XMMATRIX matrix = GetViewProjectionMatrix();
-	DirectX::XMMATRIX matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+	DirectX::XMMATRIX matrix = GetViewProjectionMatrix();
 	
 	ImVec2 returnVec = ImVec2(0,0);
 
@@ -366,8 +357,8 @@ ImVec2 Direct3D9Render::WorldToScreen(Vector3 pos)
 	M.Y = clipCoords.Y / clipCoords.W;
 	M.Z = clipCoords.Z / clipCoords.W;
 
-	returnVec.x = (1920 / 2.0f * M.X) + (M.X + 1920 / 2.0f);
-	returnVec.y = -(1080 / 2.0f * M.Y) + (M.Y + 1080 / 2.0f);
+	returnVec.x = (SCREENWIDTH / 2.0f * M.X) + (M.X + SCREENWIDTH / 2.0f);
+	returnVec.y = -(SCREENHEIGHT / 2.0f * M.Y) + (M.Y + SCREENHEIGHT / 2.0f);
 
 	return returnVec;
 }

@@ -78,12 +78,22 @@ void Draw::DrawImage(std::string _filename, int x, int y, std::string text, int 
 }
 
 
-void Draw::DrawString(std::string text, int x, int y, RGBA rgb, ID3DXFont* font)
+void Draw::String(std::string text, int x, int y, RGBA rgb, ID3DXFont* font)
 {
-	RECT FontPos;
-	FontPos.left = x;
-	FontPos.top = y;
+	RECT FontPos{ x, y, x + 500, y + 100 };
+	x -= 16 / 2; // center text
 	font->DrawTextA(0, text.c_str(), text.size(), &FontPos, DT_NOCLIP, D3DCOLOR_ARGB(rgb.A, rgb.R, rgb.G, rgb.B));
+}
+
+void Draw::StringOutlined(std::string text, int x, int y, RGBA rgb, ID3DXFont* pFont)
+{
+
+	this->String(text, x - 1, y, RGBA(1, 0, 0), pFont);
+	this->String(text, x, y - 1, RGBA(1, 0, 0), pFont);
+	this->String(text, x + 1, y, RGBA(1, 0, 0), pFont);
+	this->String(text, x, y + 1, RGBA(1, 0, 0), pFont);
+	this->String(text, x, y, rgb, pFont);
+
 }
 
 void Draw::Rect(int x, int y, int l, int h, RGBA rgb)
@@ -106,7 +116,8 @@ void Draw::Line(int x, int y, int x2, int y2, RGBA rgb, float thickness)
 
 static const int CIRCLE_RESOLUTION = 64;
 
-struct VERTEX_2D_DIF { // transformed colorized
+struct VERTEX_2D_DIF 
+{ 
 	float x, y, z, rhw;
 	D3DCOLOR color;
 	static const DWORD FVF = D3DFVF_XYZRHW | D3DFVF_DIFFUSE;
@@ -158,25 +169,23 @@ void Draw::BorderBox(int x, int y, int l, int h, int thickness, RGBA color)
 	this->Rect(x, y + h, l + thickness, thickness, color);
 }
 
+
 void Draw::DrawCircleRange(Vector3 vPos, float flPoints, float flRadius, RGBA color, float flThickness)
 {
-	float flPoint = D3DX_PI * 2.0f / flPoints;
-	Direct3D9Render Direct3D;
+	float flPoint = M_PI_F * 2.0f / flPoints;
+	
 
 	flRadius = flRadius + 100;
 	bool first = true;
 	ImVec2 First, Last;
-	for (float flAngle = flPoint; flAngle < (D3DX_PI * 2.0f); flAngle += flPoint)
+	for (float flAngle = flPoint; flAngle < (M_PI_F * 2.0f); flAngle += flPoint)
 	{
 		Vector3 vStart(flRadius * cosf(flAngle) + vPos.X, flRadius * sinf(flAngle) + vPos.Z, vPos.Y);
 		Vector3 vEnd(flRadius * cosf(flAngle + flPoint) + vPos.X, flRadius * sinf(flAngle + flPoint) + vPos.Z, vPos.Y);
 
-
 		float z_temp = vStart.Z;
 		vStart.Z = vStart.Y;
 		vStart.Y = z_temp;
-
-		
 
 		z_temp = vEnd.Z;
 		vEnd.Z = vEnd.Y;
@@ -186,9 +195,6 @@ void Draw::DrawCircleRange(Vector3 vPos, float flPoints, float flRadius, RGBA co
 		vStartScreen = Direct3D.WorldToScreen(vStart);
 		vEndScreen = Direct3D.WorldToScreen(vEnd);
 
-
-
-
 		if (vStartScreen.x == 0 && vStartScreen.y == 0) break;
 		if (vEndScreen.x == 0 && vEndScreen.y == 0) break;
 
@@ -197,6 +203,9 @@ void Draw::DrawCircleRange(Vector3 vPos, float flPoints, float flRadius, RGBA co
 			First = vStartScreen;
 			first = false;
 		}
+
+		if (!((vStartScreen.x <= SCREENWIDTH * 1.2) && (vStartScreen.x >= SCREENWIDTH / 2 * (-1)) && (vStartScreen.y <= SCREENHEIGHT * 1.5) && (vStartScreen.y >= SCREENHEIGHT / 2 * (-1))))
+			return;
 
 		Line(vStartScreen.x, vStartScreen.y, vEndScreen.x, vEndScreen.y, color, flThickness);
 		Last = vEndScreen;

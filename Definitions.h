@@ -33,7 +33,6 @@
 
 
 
-
 #define HUMANIZER
 
 #ifdef HUMANIZER
@@ -152,6 +151,12 @@ struct Vector3
 	inline void Zero()
 	{
 		X = Y = Z = 0;
+	}
+
+	inline bool operator == (const Vector3& A) const
+	{
+		if (X == A.X && Y == A.Y && Z == A.Z)
+			return true;
 	}
 
 	inline Vector3 operator + (const Vector3& A) const

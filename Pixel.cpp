@@ -1,5 +1,6 @@
 #include "Pixel.h"
 
+#pragma warning (disable: 4244)
 
 //Constructor, set up for handling pixel operations
 PixelHandler::PixelHandler()
@@ -474,7 +475,7 @@ unsigned int PixelHandler::RGBtoHEX(int r, int g, int b, int a)
 bool PixelHandler::SearchforImage(LPCWSTR path, int x1, int y1, int x2, int y2)
 {
 
-
+	return false;
 }
 //
 //

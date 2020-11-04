@@ -81,8 +81,7 @@ public:
 	unsigned int RGBtoHEX(int r, int g, int b, int a);
 
 
-	//TODO
-	//searches given area for image returns true if found, coords of top left corner as parameters
+	//todo
 	bool SearchforImage(LPCWSTR path, int x1, int y1, int x2, int y2);
 
 	//searches given area for image returns true if found, coords of top left corner as parameters

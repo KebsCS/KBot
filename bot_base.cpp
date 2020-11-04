@@ -3,7 +3,7 @@
 #include "KInterface.h"
 #include "offsets.h"
 #include "ObjectManager.h"
-#include "SpellInfo.h"
+
 
 LPCWSTR overlayClassName = L"ovrl"; // overlay window name
 
@@ -14,7 +14,6 @@ HWND tWnd;
 MSG Msg;
 
 Direct3D9Render Direct3D9;
-DWORD ProcessId;
 
 extern ConsoleLog clog;
 bool ExitBot = false;
@@ -23,7 +22,6 @@ const MARGINS Margin = { 0, 0, SCREENWIDTH, SCREENHEIGHT };
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
 
 
 
@@ -78,12 +76,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     {
        // clog.AddLog("[error] Window Registration Failed");
         MessageBox(0, L" Window Registration Failed", 0, 0);
+        ::UnregisterClass(wc.lpszClassName, wc.hInstance);
         return 0;
     }
 
-    tWnd = FindWindow(0, L"League of Legends (TM) Client");
 
-    if (tWnd)
+    if (FindWindow(0, L"League of Legends (TM) Client"))
     {
        // clog.AddLog("Window Found");
 
@@ -99,40 +97,42 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     {
        // clog.AddLog("[error] Window Creation Failed");
         MessageBox(0, L" Window Creation Failed", 0, 0);
+        ::UnregisterClass(wc.lpszClassName, wc.hInstance);
         return 0;
     }
 
-    
 
    
+    Sleep(1000);
+
+    // Initialize Direct3D
+    //Direct3D9.DirectXInit(hWnd);
+    if (!Direct3D9.DirectXInit(hWnd))
+    {
+        Direct3D9.Shutdown();
+        ::UnregisterClass(wc.lpszClassName, wc.hInstance);
+        return 0;
+    }
 
     ::ShowWindow(hWnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hWnd);
 
-    Sleep(1000);
-
-    Direct3D9.DirectXInit(hWnd);// Initialize Direct3D
-
-    ProcessId = Driver.GetProcessId();
-    DWORD ClientAddress = Driver.GetClientModule();
-    clog.AddLog("ProcessId: %d", ProcessId);
+    
+    clog.AddLog("ProcessId: %d", Memory.ProcessID);
     clog.AddLog("ClientAddress: %x", ClientAddress);
 
-    DWORD LocalPlayer = Driver.ReadVirtualMemory<DWORD>(ProcessId, ClientAddress + oLocalPlayer, sizeof(DWORD));
-    CObject Local(Driver.ReadVirtualMemory<DWORD>(ProcessId, ClientAddress + oLocalPlayer, sizeof(DWORD)));
-    float GameTime = Driver.ReadVirtualMemory<float>(ProcessId, ClientAddress + oGameTime, sizeof(float));
+    DWORD LocalPlayer = Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD));
+    CObject Local(LocalPlayer);
+    float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
-    DWORD Obj = Driver.ReadVirtualMemory<DWORD>(ProcessId, ClientAddress + oObjManager, sizeof(DWORD));
-    
-   
+ 
 
     if (GameTime > 0) // if in game
     {
-
+        
 
         clog.AddLog("LocalPlayer: %x", LocalPlayer);
-        clog.AddLog("Name: %s", Local.GetName());
-        clog.AddLog("Index: %d", Local.GetIndex());
+        clog.AddLog("Name: %s", Local.GetName().c_str());
         clog.AddLog("IsVisible: %d", Local.IsVisible());
         clog.AddLog("GetTeam: %d", Local.GetTeam());
         clog.AddLog("HP: %f", Local.GetHealth());
@@ -146,15 +146,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         clog.AddLog("BonusAD: %f", Local.GetBonusAD());
         clog.AddLog("AP: %f", Local.GetAP());
         clog.AddLog("AARange: %f", Local.GetAARange());
-        clog.AddLog("ChampName: %s", Local.ChampName());
-        clog.AddLog("SummonerSpell1: %s", Local.SummonerSpell1());
-        clog.AddLog("SummonerSpell2: %s", Local.SummonerSpell2());
-        clog.AddLog("KeystoneName: %s", Local.KeystoneName());
+        clog.AddLog("ChampName: %s", Local.GetChampName().c_str());
+        clog.AddLog("SummonerSpell1: %s", Local.SummonerSpell1().c_str());
+        clog.AddLog("SummonerSpell2: %s", Local.SummonerSpell2().c_str());
+        clog.AddLog("KeystoneName: %s", Local.KeystoneName().c_str());
         clog.AddLog("GetLevel: %i", Local.GetLevel());
 
 
     }
-      
+    DWORD Obj = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
+
+    DWORD ObjectArray = Memory.Read<DWORD>(Obj + 0x20, sizeof(DWORD));
+
     //message Loop
     ZeroMemory(&Msg, sizeof(Msg));
     while (Msg.message != WM_QUIT)
@@ -179,7 +182,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 if (winlong != (WS_EX_LAYERED | WS_EX_TOPMOST))
                     SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST);
                 SetForegroundWindow(hWnd);
-                clog.AddLog("Menu Opened");
+                //clog.AddLog("Menu Opened");
 
 
             }
@@ -188,48 +191,42 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 MenuOpen = !MenuOpen;
                 if (winlong != (WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT))
                     SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT);
-                clog.AddLog("Menu Closed");
+                //clog.AddLog("Menu Closed");
 
             }
-            while (GetAsyncKeyState(VK_INSERT) & 0x8000) {}
+            while (GetAsyncKeyState(VK_INSERT) & 0x8000) { Sleep(1); }
         }
         if (GetAsyncKeyState(VK_F11) & 0x8000) //exit button
         {
             break;
         }
-        GameTime = Driver.ReadVirtualMemory<float>(ProcessId, ClientAddress + oGameTime, sizeof(float));
+        //GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
 
-
-
-        DWORD ObjectArray = Driver.ReadVirtualMemory<DWORD>(ProcessId, Obj + 0x20, sizeof(DWORD));
-
-        for (int i = 0; i < 500; i++)
+  /*      DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oHeroList);
+        DWORD MinionArray = Memory.Read<DWORD>(MinionList + 0x04);
+        int MinionLength = Memory.Read<int>(MinionList + 0x08);
+        for (int i = 0; i < MinionLength * 4; i += 4)
         {
-            CObject obj(Driver.ReadVirtualMemory<DWORD>(ProcessId, ObjectArray + (0x4 * i), sizeof(DWORD)));
 
+            CObject minion(Memory.Read<DWORD>(MinionArray + i));
+            clog.AddLog("%s , %x , %i", minion.GetName().c_str(), minion.Address(), Memory.Read<bool>(minion.Address()+ oIsHero));
 
-           //100 - blue team, 200 - red team, 300 - neutral
-            if (obj.GetTeam() == 100 || obj.GetTeam() == 200 || obj.GetTeam() == 300)
-            {
-                if (obj.IsHero() && obj.IsVisible() && obj.IsAlive() !=0 && obj.GetHealth()>0.f && obj.GetMS() >1.f && obj.GetBaseAD() > 1.f && obj.GetAARange()>1.f && obj.GetArmor()>1.f && obj.GetMaxHealth() >1.f && obj.GetName() != "" && obj.GetName() != " " &&obj.GetMR()>1.f )
-                {
+        
+        }*/
 
+    //DWORD Obj = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
 
-                    // if (obj.IsHero() && obj.IsAlive() && )
-                   //  {
+    //DWORD ObjectArray = Memory.Read<DWORD>(Obj + 0x20, sizeof(DWORD));
+    //for (int i = 0; i < 1000; i++) 
+    //{
+    //    CObject obj(Memory.Read<DWORD>(ObjectArray + (0x4 * i), sizeof(DWORD)));
+    //    int aa = Memory.Read<int>(obj.Address() + 0x1ADAB0,4);
+    //    //if(aa==1)
+    //    clog.AddLog("%s , %x , %i", obj.GetName().c_str(), obj.Address(),aa);
+    //}
 
-                         //clog.AddLog("%s : %f, %f, %f ", obj.GetName(), obj.GetPosition().X, obj.GetPosition().Y, obj.GetPosition().Z);
-                    Vector3 Position = obj.GetPosition();
-                    ImVec2 RealPos = Direct3D9.WorldToScreen(Position);
-
-                    clog.AddLog("%s : %f, %f, %f", obj.GetName(), RealPos.x, RealPos.y, obj.GetBaseAD() );
-                    //  }
-                }
-            }
-        }
-
-    
+        //clog.AddLog("%x", Local.GetSpellByID(0));
 
         Sleep(1);
     }
