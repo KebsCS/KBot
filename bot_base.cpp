@@ -6,22 +6,19 @@
 
 LPCWSTR overlayClassName = L"ovrl"; // overlay window name
 
-Utils util;
-
 HWND hWnd;
 HWND tWnd;
 MSG Msg;
 
 Direct3D9Render Direct3D9;
 
-extern ConsoleLog clog;
-bool ExitBot = false;
+ConsoleLog clog;
+
 
 const MARGINS Margin = { 0, 0, SCREENWIDTH, SCREENHEIGHT };
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
 
 
 // Step 4: the Window Procedure
@@ -173,15 +170,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
         Direct3D9.Render();
 
-        if (ExitBot)
+        if (M.ExitBot)
             break;
 
         if (GetAsyncKeyState(VK_INSERT) & 0x8000) //open menu
         {
             long winlong = GetWindowLong(hWnd, GWL_EXSTYLE);
-            if (!MenuOpen)
+            if (!M.MenuOpen)
             {
-                MenuOpen = !MenuOpen;
+                M.MenuOpen = !M.MenuOpen;
                 if (winlong != (WS_EX_LAYERED | WS_EX_TOPMOST))
                     SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST);
                 SetForegroundWindow(hWnd);
@@ -191,7 +188,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             }
             else
             {
-                MenuOpen = !MenuOpen;
+                M.MenuOpen = !M.MenuOpen;
                 if (winlong != (WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT))
                     SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT);
                 //clog.AddLog("Menu Closed");
@@ -230,8 +227,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     //}
 
         //clog.AddLog("%x", Local.GetSpellByID(0));
-
-        Sleep(1);
+      
+        Sleep((M.AntiLag) +1);
     }
 
     Config->Save();

@@ -3,6 +3,9 @@
 
 void CConfig::Setup()
 {
+	SetupValue(M.AntiLag, 0, "Main", "AntiLag");
+
+
 	SetupValue(M.AARange.Master, 1, "AARange", "Master");
 	SetupValue(M.AARange.Local, 0, "AARange", "Local");
 	SetupValue(M.AARange.Turrets, 0, "AARange", "Turrets");

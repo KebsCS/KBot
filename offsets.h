@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef _OFFSETS_H
-#define _OFFSETS_H
+#ifndef _OFFSETS_H_
+#define _OFFSETS_H_
 
 /*
 Offset dumper by @Ph4nton
@@ -87,4 +87,4 @@ Wed Oct 28 20:45:23 2020
 
 
 
-#endif //_OFFSETS_H
+#endif //!_OFFSETS_H_

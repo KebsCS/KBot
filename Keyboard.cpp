@@ -1,6 +1,5 @@
 #include "Keyboard.h"
 
-//extern ConsoleLog clog;
 
 void Keyboard::SetDelay(int ms)
 {

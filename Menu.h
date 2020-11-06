@@ -1,11 +1,18 @@
 #pragma once
 
+#ifndef _MENU_H_
+#define _MENU_H_
 
 
 struct Menu
 {
     Menu()
     {};
+
+
+    bool MenuOpen = false;
+    bool ExitBot = false;
+    int AntiLag = 1;
 
     struct
     {
@@ -34,3 +41,5 @@ struct Menu
 };
 
 extern Menu M;
+
+#endif //!_MENU_H_

@@ -1,9 +1,10 @@
 #pragma once
+
+
+#ifndef _KINTERFACE_H_
+#define _KINTERFACE_H_
+
 #pragma warning (disable: 4302 4311 4244 4700 )
-
-
-#ifndef _KINTERFACE_H
-#define _KINTERFACE_H
 
 #include <Windows.h>
 #include <apiquery2.h>
@@ -143,7 +144,7 @@ public:
 		if (hDriver == INVALID_HANDLE_VALUE)
 			return (type)false;
 
-		DWORD Return, Bytes;
+		//DWORD Return, Bytes;
 		KERNEL_READ_REQUEST ReadRequest;
 
 		ReadRequest.ProcessId = ProcessID;
@@ -217,4 +218,4 @@ public:
 
 
 
-#endif //_KINTERFACE_H
+#endif //!_KINTERFACE_H_

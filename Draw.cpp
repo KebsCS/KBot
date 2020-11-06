@@ -170,8 +170,10 @@ void Draw::BorderBox(int x, int y, int l, int h, int thickness, RGBA color)
 }
 
 
+
 void Draw::DrawCircleRange(Vector3 vPos, float flPoints, float flRadius, RGBA color, float flThickness)
 {
+
 	float flPoint = M_PI_F * 2.0f / flPoints;
 	
 
@@ -192,8 +194,8 @@ void Draw::DrawCircleRange(Vector3 vPos, float flPoints, float flRadius, RGBA co
 		vEnd.Y = z_temp;
 
 		ImVec2 vStartScreen, vEndScreen;
-		vStartScreen = Direct3D.WorldToScreen(vStart);
-		vEndScreen = Direct3D.WorldToScreen(vEnd);
+		vStartScreen = Direct3D9.WorldToScreen(vStart);
+		vEndScreen = Direct3D9.WorldToScreen(vEnd);
 
 		if (vStartScreen.x == 0 && vStartScreen.y == 0) break;
 		if (vEndScreen.x == 0 && vEndScreen.y == 0) break;

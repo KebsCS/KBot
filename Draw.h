@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef _DRAW_H
-#define _DRAW_H
+#ifndef _DRAW_H_
+#define _DRAW_H_
 
 #include "DirectX.h"
 
@@ -10,7 +10,6 @@ class Draw
 {
 private:
 	LPDIRECT3DTEXTURE9 LoadTextureFromFile(const char* filename, LPDIRECT3DTEXTURE9* out_texture, int* out_width, int* out_height, LPDIRECT3DDEVICE9 xD);
-	Direct3D9Render Direct3D;
 public:
 
 
@@ -29,8 +28,8 @@ public:
 	void DrawCircleRange(Vector3 vPos, float flPoints, float flRadius, RGBA color, float flThickness = 1.f);
 
 };
+extern Draw* draw;
 
 
 
-
-#endif // !_DRAW_H
+#endif // !_DRAW_H_

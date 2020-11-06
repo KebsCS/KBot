@@ -1,10 +1,8 @@
 #include "DirectX.h"
 
-bool MenuOpen = false;
 
 #include "Draw.h"
 #include "Visuals.h"
-#include "Initialize.h"
 
 
 LPDIRECT3D9              g_pD3D = NULL;
@@ -16,7 +14,7 @@ LPDIRECT3DVERTEXBUFFER9  g_pVB = NULL;
 RECT rc;
 ID3DXFont* pFont;
 
-ConsoleLog clog;
+
 Draw* draw;
 Visuals vis;
 
@@ -143,6 +141,20 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 	return true;
 }
 
+// Helper to display a little (?) mark which shows a tooltip when hovered.
+// In your own code you may want to display an actual icon if you are using a merged icon fonts (see docs/FONTS.md)
+static void HelpMarker(const char* desc)
+{
+	ImGui::TextDisabled("(?)");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+		ImGui::TextUnformatted(desc);
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
+}
 
 int Direct3D9Render::Render()
 {
@@ -154,14 +166,14 @@ int Direct3D9Render::Render()
 	ImGui::NewFrame();
 
 
-	if (MenuOpen)
+	if (M.MenuOpen)
 	{
 		
 		static int counter = 0;
 		char buf[128];
 		sprintf(buf, "KBot %.1f FPS ###AnimatedTitle", ImGui::GetIO().Framerate);
 		//ImGui::SetNextWindowPos(ImVec2(100, 300), ImGuiCond_FirstUseEver);
-		ImGui::Begin(buf, &MenuOpen, ImGuiWindowFlags_AlwaysAutoResize);           
+		ImGui::Begin(buf, &M.MenuOpen, ImGuiWindowFlags_AlwaysAutoResize);
 		if (ImGui::BeginPopupContextItem())
 		{
 			if (ImGui::MenuItem("Open Console"))
@@ -189,6 +201,11 @@ int Direct3D9Render::Render()
 		ImGui::Separator();
 
 		ImGui::Checkbox("Cooldowns", &M.Cooldowns.Master);
+
+		ImGui::Separator();
+
+		ImGui::SliderInt("AntiLag", &M.AntiLag, 0, 50);
+		ImGui::SameLine(); HelpMarker("Higher for slower PCs");
 
 		ImGui::Separator();
 

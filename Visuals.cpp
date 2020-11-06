@@ -1,9 +1,6 @@
 #include "Visuals.h"
 #include "Draw.h"
 
-extern Direct3D9Render Direct3D9;
-extern Draw* draw;
-extern ConsoleLog clog;
 
 
 

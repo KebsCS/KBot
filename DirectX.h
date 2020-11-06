@@ -39,13 +39,6 @@ extern ID3DXLine* g_Line;
 extern LPDIRECT3DVERTEXBUFFER9  g_pVB;
 
 
-extern bool MenuOpen;
-extern bool ExitBot;
-
-
-
-
-
 
 class Direct3D9Render
 {
@@ -83,6 +76,7 @@ public:
 
 
 };
+extern Direct3D9Render Direct3D9;
 
 class image {
 
@@ -360,7 +354,7 @@ struct ConsoleLog
         }
         else if (Stricmp(command_line, "EXIT") == 0)
         {
-            ExitBot = true;
+            M.ExitBot = true;
         }
         else if (Stricmp(command_line, "REINIT") == 0)
         {
@@ -371,13 +365,13 @@ struct ConsoleLog
         else if (Stricmp(command_line, "SAVECFG") == 0)
         {
             IgnoreStopPrint = true;
-            AddLog("Saving config");
+            AddLog("Saved config");
             Config->Save();
         }
         else if (Stricmp(command_line, "LOADCFG") == 0)
         {
             IgnoreStopPrint = true;
-            AddLog("Loading config");
+            AddLog("Loaded config");
             Config->Load();
         }
         else
@@ -502,5 +496,6 @@ struct ConsoleLog
         return 0;
     }
 };
+extern ConsoleLog clog;
 
 #endif //_DIRECTX_H_

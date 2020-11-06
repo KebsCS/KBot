@@ -1,7 +1,6 @@
 #include "Initialize.h"
 
 #include "DirectX.h"
-extern ConsoleLog clog;
 
 void Initialize::AddObjects() //todo move this out of directx.cpp
 {

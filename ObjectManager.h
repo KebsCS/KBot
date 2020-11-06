@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef _OBJECTMANAGER_H
-#define _OBJECTMANAGER_H
+#ifndef _OBJECTMANAGER_H_
+#define _OBJECTMANAGER_H_
 
 #include "KInterface.h"
 #include "offsets.h"
@@ -129,4 +129,4 @@ public:
 };
 
 
-#endif // _OBJECTMANAGER_H
+#endif // !_OBJECTMANAGER_H_
