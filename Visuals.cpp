@@ -13,11 +13,11 @@ void Visuals::CooldownTimers(CObject obj, int type)
 	DWORD LocalPlayer = Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD));
 	CObject Local(LocalPlayer);
 
-	//if (obj.GetTeam() == Local.GetTeam())
-	//	return;
+	if (obj.GetTeam() == Local.GetTeam())
+		return;
 
 
-	if (obj.GetHealth() <= 0.f)
+	if (obj.GetHealth() <= 0.01f)
 		return;
 
 	if (!obj.IsVisible())
@@ -154,30 +154,33 @@ void Visuals::CooldownTimers(CObject obj, int type)
 	{
 		int SmiteStacks = Memory.Read<int>(Summ1 + 0x58);
 		float SmiteDamage = Memory.Read<float>(Summ1 + 0x90);
-		if (SmiteStacks == 2)
-			draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x - 10, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
-		else if (SmiteStacks == 0)
-			Dcolor = colorDown;
-		else if (SmiteStacks == 1)
-		{
-			draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x - 10, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
-			Dcolor = RGBA(255, 125, 0);
-		}
+		draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x - 10, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+		//if (SmiteStacks == 2)
+		//	draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x - 10, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+		//else if (SmiteStacks == 0)
+		//	Dcolor = colorDown;
+		//else if (SmiteStacks == 1)
+		//{
+		//	draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x - 10, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+		//	Dcolor = RGBA(255, 125, 0);
+		//}
 		
 	}
 	else if (obj.SummonerSpell2() == "summonersmite")
 	{
 		int SmiteStacks = Memory.Read<int>(Summ2 + 0x58);
 		float SmiteDamage = Memory.Read<float>(Summ2 + 0x90);
-		if (SmiteStacks == 2)
-			draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x + 27, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+		//clog.AddLog("%i", SmiteStacks);
+		draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x + 27, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+		/*if (SmiteStacks == 2)
+			int a;
 		else if (SmiteStacks == 0)
 			Fcolor = colorDown;
 		else if (SmiteStacks == 1)
 		{
 			draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x + 27, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
 			Fcolor = RGBA(255, 125, 0);
-		}
+		}*/
 	}
 
 
@@ -194,7 +197,7 @@ void Visuals::DrawAARanges(CObject obj, int points, int thickness, RGBA color, b
 	CObject Local(LocalPlayer);
 
 
-	if (obj.GetHealth() <= 0.f)
+	if (obj.GetHealth() <= 0.01f)
 		return;
 
 	if (local && obj.Address() == Local.Address())
@@ -281,11 +284,11 @@ void Visuals::AutoSmite(CObject obj)
 {
 	CObject Local(Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD)));
 	DWORD SmiteSlot;
-	if (Local.SummonerSpell1() == "summonersmite")
+	if (Local.SummonerSpell1().c_str() == "summonersmite")
 	{
 		SmiteSlot = Local.GetSpellByID(SpellSlotID::Summoner1);
 	}
-	else if (Local.SummonerSpell2() == "summonersmite")
+	else if (Local.SummonerSpell2().c_str() == "summonersmite")
 	{
 		SmiteSlot = Local.GetSpellByID(SpellSlotID::Summoner2);
 	}

@@ -4,7 +4,6 @@
 #include "offsets.h"
 #include "ObjectManager.h"
 
-
 LPCWSTR overlayClassName = L"ovrl"; // overlay window name
 
 Utils util;
@@ -118,6 +117,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ::UpdateWindow(hWnd);
 
     
+
+    Config->Load();
+    clog.AddLog("[startup] Config loaded");
+
+
     clog.AddLog("ProcessId: %d", Memory.ProcessID);
     clog.AddLog("ClientAddress: %x", ClientAddress);
 
@@ -125,7 +129,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     CObject Local(LocalPlayer);
     float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
- 
 
     if (GameTime > 0) // if in game
     {
@@ -230,8 +233,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         Sleep(1);
     }
+
+    Config->Save();
     Direct3D9.Shutdown();
     ::DestroyWindow(hWnd);
     ::UnregisterClass(wc.lpszClassName, wc.hInstance);
-    return Msg.wParam;
+    return 0;
 }

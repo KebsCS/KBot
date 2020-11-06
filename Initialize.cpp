@@ -20,7 +20,7 @@ void Initialize::AddObjects() //todo move this out of directx.cpp
 
 		CObject obj(Memory.Read<DWORD>(HeroArray + i));
 		herolist.emplace_back(obj);
-		clog.AddLog("%s", obj.GetName().c_str());
+		clog.AddLog("%s : %x %s %s ", obj.GetName().c_str(), obj.Address(), obj.SummonerSpell1().c_str(), obj.SummonerSpell2());
 	}
 	if (herolist.size() < 10)
 	{

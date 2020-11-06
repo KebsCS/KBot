@@ -30,6 +30,7 @@
 #include "ByteFiles.h"
 
 #include "Initialize.h"
+#include "Config.h"
 
 extern LPDIRECT3D9              g_pD3D;
 extern LPDIRECT3DDEVICE9        g_pd3dDevice;
@@ -40,6 +41,9 @@ extern LPDIRECT3DVERTEXBUFFER9  g_pVB;
 
 extern bool MenuOpen;
 extern bool ExitBot;
+
+
+
 
 
 
@@ -123,6 +127,8 @@ struct ConsoleLog
         Commands.push_back("RESUME");
         Commands.push_back("EXIT");
         Commands.push_back("REINIT");
+        Commands.push_back("LOADCFG");
+        Commands.push_back("SAVECFG");
         AutoScroll = true;
         ScrollToBottom = false;
         StopPrinting = false;
@@ -358,11 +364,25 @@ struct ConsoleLog
         }
         else if (Stricmp(command_line, "REINIT") == 0)
         {
+            IgnoreStopPrint = true;
             AddLog("Reinitializing objects");
             init.AddObjects();
         }
+        else if (Stricmp(command_line, "SAVECFG") == 0)
+        {
+            IgnoreStopPrint = true;
+            AddLog("Saving config");
+            Config->Save();
+        }
+        else if (Stricmp(command_line, "LOADCFG") == 0)
+        {
+            IgnoreStopPrint = true;
+            AddLog("Loading config");
+            Config->Load();
+        }
         else
         {
+            IgnoreStopPrint = true;
             AddLog("Unknown command: '%s'\n", command_line);
         }
 

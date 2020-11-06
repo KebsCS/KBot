@@ -6,6 +6,7 @@ bool MenuOpen = false;
 #include "Visuals.h"
 #include "Initialize.h"
 
+
 LPDIRECT3D9              g_pD3D = NULL;
 LPDIRECT3DDEVICE9        g_pd3dDevice = NULL;
 D3DPRESENT_PARAMETERS    g_d3dpp = {};
@@ -135,6 +136,8 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 	}
 	Sleep(2000);
 
+
+
 	init.AddObjects();
 	
 	return true;
@@ -144,17 +147,6 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 int Direct3D9Render::Render()
 {
 
-	static bool AARange = false;
-	static bool AARangeLocal = true;
-	static bool AARangeTurrets = true;
-	static int AARangeSlider[2] = { 10,10 };
-	static ImVec4 AARangeColor = ImVec4(255.0f / 255.0f, 85.0f / 255.0f, 50.0f / 255.0f, 255.0f / 255.0f);
-	static ImVec4 AARangeLocalColor = ImVec4(83.0f / 255.0f, 85.0f / 255.0f, 251.0f / 255.0f, 255.0f / 255.0f);
-
-	static bool TracerLines = false;
-	static int TracerLinesThickness = 10;
-
-	static bool Cooldowns = false;
 
 	// Start the Dear ImGui frame
 	ImGui_ImplDX9_NewFrame();
@@ -177,26 +169,26 @@ int Direct3D9Render::Render()
 			ImGui::EndPopup();
 		}
 		
-		ImGui::Checkbox("AA Range", &AARange);
+		ImGui::Checkbox("AA Range", &M.AARange.Master);
 		ImGui::SameLine();
-		ImGui::ColorEdit4("AARangeColor##3", (float*)&AARangeColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
+		ImGui::ColorEdit4("AARangeColor##3", (float*)&M.AARange.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
 		ImGui::SameLine();
-		ImGui::Checkbox("Local Player", &AARangeLocal);
+		ImGui::Checkbox("Local Player", &M.AARange.Local);
 		ImGui::SameLine();
-		ImGui::ColorEdit4("AARangeLocalColor##3", (float*)&AARangeLocalColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
+		ImGui::ColorEdit4("AARangeLocalColor##3", (float*)&M.AARange.LocalColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
 		ImGui::SameLine();
-		ImGui::Checkbox("Turrets", &AARangeTurrets);
+		ImGui::Checkbox("Turrets", &M.AARange.Turrets);
 
 	
-		ImGui::SliderInt2("", AARangeSlider, 10, 60,"%d");
+		ImGui::SliderInt2("", M.AARange.Slider, 10, 60,"%d");
 		ImGui::Separator();
 
-		ImGui::Checkbox("Tracers\t", &TracerLines);
+		ImGui::Checkbox("Tracers\t", &M.Tracers.Master);
 		ImGui::SameLine();
-		ImGui::SliderInt("", &TracerLinesThickness, 10, 60, "Thickness: %d ");
+		ImGui::SliderInt("", &M.Tracers.Thickness, 10, 60, "Thickness: %d ");
 		ImGui::Separator();
 
-		ImGui::Checkbox("Cooldowns", &Cooldowns);
+		ImGui::Checkbox("Cooldowns", &M.Cooldowns.Master);
 
 		ImGui::Separator();
 
@@ -215,7 +207,7 @@ int Direct3D9Render::Render()
 		ImGui::Columns(1);
 		ImGui::End();
 
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 		
 	}
 
@@ -238,32 +230,32 @@ int Direct3D9Render::Render()
 		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
 		//turret loop
-		if (AARangeTurrets)
+		if (M.AARange.Turrets)
 		{
 			for (auto obj : init.turretlist)
 			{
-				if(AARangeTurrets)
-					vis.DrawAARanges(obj, AARangeSlider[0], AARangeSlider[1] / 10.f, RGBA(AARangeColor.x * 255, AARangeColor.y * 255, AARangeColor.z * 255, AARangeColor.w * 255),
-						AARangeLocal, RGBA(AARangeLocalColor.x * 255, AARangeLocalColor.y * 255, AARangeLocalColor.z * 255, AARangeLocalColor.w * 255));
+				if(M.AARange.Turrets)
+					vis.DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0] * 255, M.AARange.Color[1] * 255, M.AARange.Color[2] * 255, M.AARange.Color[3] * 255),
+						false, RGBA(M.AARange.LocalColor[0] * 255, M.AARange.LocalColor[1] * 255, M.AARange.LocalColor[2] * 255, M.AARange.LocalColor[3] * 255));
 			}
 		}
 
 		//hero loop
-		if (Cooldowns || AARange || TracerLines)
+		if (M.Cooldowns.Master || M.AARange.Master || M.Tracers.Master)
 		{
 			for (auto obj : init.herolist)
 			{
-				if (Cooldowns)
+				if (M.Cooldowns.Master)
 					vis.CooldownTimers(obj, 1);
 
-				if (AARange)
-					vis.DrawAARanges(obj, AARangeSlider[0], AARangeSlider[1] / 10.f, RGBA(AARangeColor.x * 255, AARangeColor.y * 255, AARangeColor.z * 255, AARangeColor.w * 255),
-						AARangeLocal, RGBA(AARangeLocalColor.x * 255, AARangeLocalColor.y * 255, AARangeLocalColor.z * 255, AARangeLocalColor.w * 255));
+				if (M.AARange.Master)
+					vis.DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0] * 255, M.AARange.Color[1] * 255, M.AARange.Color[2] * 255, M.AARange.Color[3] * 255),
+						M.AARange.Local, RGBA(M.AARange.LocalColor[0] * 255, M.AARange.LocalColor[1] * 255, M.AARange.LocalColor[2] * 255, M.AARange.LocalColor[3] * 255));
 
-				if (TracerLines)
-					vis.DrawTracers(obj, TracerLinesThickness / 10.f);
+				if (M.Tracers.Master)
+					vis.DrawTracers(obj, M.Tracers.Thickness / 10.f);
 
-				vis.AutoSmite(obj);
+				//vis.AutoSmite(obj);
 
 			}
 		}
@@ -369,6 +361,8 @@ void Direct3D9Render::MenuInit()
 	ImGui_ImplDX9_Init(g_pd3dDevice);
 
 	ImGuiIO& io = ImGui::GetIO();
+	io.IniFilename = "imgui.ini";
+	io.IniSavingRate = 10.f;
 	io.ConfigWindowsResizeFromEdges = 0;
 
 	ImGuiStyle& style = ImGui::GetStyle();
