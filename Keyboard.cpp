@@ -26,6 +26,7 @@ void Keyboard::SpecialKeyUp(int vk)
 	::SendInput(1, &Input, sizeof(Input));
 }
 
+//https://www.asciitable.com
 void Keyboard::GenerateKey(int vk, BOOL bExtended, bool shift)
 {
 
@@ -109,6 +110,7 @@ void Keyboard::GenerateKey(int vk, BOOL bExtended, bool shift)
 	return;
 }
 
+//http://www.philipstorr.id.au/pcbook/book3/scancode.htm
 void Keyboard::GenerateKeyScancode(int vk, bool shift)
 {
 

@@ -278,17 +278,19 @@ void Visuals::DrawTracers(CObject obj, int thickness)
 Mouse mouse;
 Keyboard key;
 
-void Visuals::AutoSmite(CObject obj)
+//todo reverse bounding radius and check it within smite range
+//https://www.unknowncheats.me/forum/league-of-legends/327917-incoming-damage-minions.html
+void Visuals::AutoSmite(CObject obj, int slot)
 {
 	DWORD SmiteSlot;
 	int SpellKey;
 	//todo smite check on load instead of every frame
-	if (Local.SummonerSpell1()== "summonersmite")
+	if (slot == 0)
 	{
 		SmiteSlot = Local.GetSpellByID(SpellSlotID::Summoner1);
 		SpellKey = 0x20;
 	}
-	else if (Local.SummonerSpell2() == "summonersmite")
+	else if (slot == 1)
 	{
 
 		SmiteSlot = Local.GetSpellByID(SpellSlotID::Summoner2);
@@ -303,6 +305,9 @@ void Visuals::AutoSmite(CObject obj)
 		return;
 
 	if (obj.GetDistToMe(Local) > 560.f)
+		return;
+
+	if (!obj.IsVisible())
 		return;
 
 	float SmiteCooldownExpire = Memory.Read<float>(SmiteSlot + 0x28, sizeof(float));
@@ -355,6 +360,8 @@ void Visuals::LastHit(CObject obj, RGBA color)
 		return;
 	if (obj.GetHealth() < 0.01f || Local.GetHealth() < 0.01f)
 		return;
+	if (!obj.IsVisible())
+		return;
 	Vector3 Position = obj.GetPosition();
 	if (obj.GetDistToMe(Local) > 1500)
 		return;
@@ -366,10 +373,10 @@ void Visuals::LastHit(CObject obj, RGBA color)
 		return;
 	if ((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1)))
 	{
-		float dmg = Local.GetTotalAD() * (100 / (100 + obj.GetArmor()));
+		float dmg = Local.GetTotalDamage(&obj);
 		float critChance = Local.GetCrit();
-		//draw->String(std::to_string(dmg), RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
-		if (obj.IsLasthitable(Local))
+		//draw->String(std::to_string(dmg*2), RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
+		if (obj.GetHealth() <= dmg)
 		{
 			draw->Circle(RealPos.x, RealPos.y, 10, color);
 		}

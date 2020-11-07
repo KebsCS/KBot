@@ -16,7 +16,7 @@ public:
 	void DrawAARanges(CObject obj, int points, int thickness, RGBA color, bool local, RGBA localcolor);
 	void DrawTracers(CObject obj, int thickness);
 
-	void AutoSmite(CObject obj);
+	void AutoSmite(CObject obj, int slot);
 
 	void LastHit(CObject obj, RGBA color);
 };

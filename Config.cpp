@@ -38,6 +38,7 @@ void CConfig::Setup()
 	SetupValue(M.LastHit.Color[3], 1.f, "LastHit", "ColorA");
 
 	SetupValue(M.AutoSmite.Master, 1, "AutoSmite", "Master");
+	SetupValue(M.AutoSmite.Slot, 0, "AutoSmite", "Slot");
 
 
 }

@@ -48,6 +48,7 @@ struct Menu
     struct
     {
         bool Master;
+        int Slot = 0;
     }AutoSmite;
 
 };

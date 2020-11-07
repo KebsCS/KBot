@@ -208,7 +208,6 @@ int Direct3D9Render::Render()
 
 		ImGui::Separator();
 
-
 		ImGui::Checkbox("LastHit Helper", &M.LastHit.Master);
 		ImGui::SameLine();
 		ImGui::ColorEdit4("LastHitColor##3", (float*)&M.LastHit.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
@@ -220,7 +219,10 @@ int Direct3D9Render::Render()
 
 		ImGui::Separator();
 
-		ImGui::Checkbox("Auto Smite", &M.AutoSmite.Master);
+		ImGui::Checkbox("Auto Smite \tSlot:", &M.AutoSmite.Master);
+		ImGui::SameLine();
+		ImGui::RadioButton("D", &M.AutoSmite.Slot, 0); ImGui::SameLine();
+		ImGui::RadioButton("F", &M.AutoSmite.Slot, 1);
 
 		ImGui::Separator();
 
@@ -290,23 +292,33 @@ int Direct3D9Render::Render()
 
 				//float dist = obj.GetDistToMe(Local);
 				//clog.AddLog("%s , %f", obj.GetName(), dist);
+				//float dmg = Local.GetTotalDamage(&obj);
+				//ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+				//std::string str = obj.GetName() + " , " + std::to_string(dmg);
+				//draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
 
 			}
 		}
-		
+		//minion/monster loop
 		if (M.LastHit.Master || M.AutoSmite.Master)
 		{
 			DWORD MinionArray = Memory.Read<DWORD>(MinionList + 0x04);
 			int MinionLength = Memory.Read<int>(MinionList + 0x08);
 			for (int i = 0; i < MinionLength * 4; i += 4)
 			{
-				CObject minion(Memory.Read<DWORD>(MinionArray + i)); // finds minions faster when its in loop
+				CObject obj(Memory.Read<DWORD>(MinionArray + i)); // finds minions faster when its in loop
+
 
 				if(M.AutoSmite.Master)
-					vis.AutoSmite(minion);
+					vis.AutoSmite(obj, M.AutoSmite.Slot);
 				//clog.AddLog("%s , %x ", minion.GetName().c_str(), minion.Address());
 				if (M.LastHit.Master)
-					vis.LastHit(minion, RGBA(M.LastHit.Color[0] * 255, M.LastHit.Color[1] * 255, M.LastHit.Color[2] * 255, M.LastHit.Color[3] * 255));
+					vis.LastHit(obj, RGBA(M.LastHit.Color[0] * 255, M.LastHit.Color[1] * 255, M.LastHit.Color[2] * 255, M.LastHit.Color[3] * 255));
+				
+				/*ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+				float dmg = Local.GetTotalDamage(&obj);
+				std::string str = obj.GetName() + " , " + std::to_string(dmg) + " , " + std::to_string(obj.Address());
+				draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);*/
 
 			}
 		}
@@ -320,6 +332,7 @@ int Direct3D9Render::Render()
 		//draw->StringBoxed("asdfsdgSVX123!_", 700, 200, lefted, RGBA(255, 255, 255), fontTahoma, RGBA(1,0,0),RGBA(255,0,0));
 		//draw->Circle(1100, 500, 100, RGBA(255, 0, 0));
 		//draw->CircleFilled(1400, 500, 100, RGBA(255, 0, 0));
+		//draw->Image("Smite.png", 0, 0, "", 99, 32, 32, false);
 
 		g_pd3dDevice->EndScene();
 	}

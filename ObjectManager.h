@@ -109,9 +109,9 @@ public:
         return Memory.ReadString(base + 0x3B7C);
     }
 
-    int GetLevel() // 1 lower than an actual level
+    int GetLevel() 
     {
-        return Memory.Read<int>(base + 0x36BC, sizeof(int));
+        return Memory.Read<int>(base + 0x3694, sizeof(int)); //0x36BC - skillpoints avaiable
     }
     bool IsAlive()
     {
@@ -121,9 +121,40 @@ public:
     {
         return Memory.Read<float>(base + mGoldTotal, sizeof(float));
     }
+    float GetLethality()
+    {
+        return Memory.Read<float>(base + 0x11CC, sizeof(float));
+    }
     float GetTotalDamage(CObject* target)
     {
-        return this->GetTotalAD() * (100 / (100 + target->GetArmor()));
+
+        float lethality = (this->GetLethality() * (0.6 + 0.4 * this->GetLevel() / 18));
+        float reducedArmor;
+        if (target->GetArmor() <= 0)
+        {
+            reducedArmor = target->GetArmor();
+        }
+        else if (target->GetArmor() - lethality <= 0)
+        {
+            reducedArmor = 0;
+        }
+        else
+        {
+            reducedArmor = target->GetArmor() - lethality;
+        }
+
+
+        if(target->GetArmor() >=0)
+            return this->GetTotalAD() * (100 / (100 + reducedArmor));
+        else
+            return this->GetTotalAD() * (2 - (100 / (100 - reducedArmor)));
+    }
+    float GetTotalAPDamage(CObject target)
+    {
+        if (target.GetMR() >= 0)
+            return this->GetAP() * (100 / (100 + target.GetMR()));
+        else
+            return this->GetAP() * (2 - (100 / (100 - target.GetMR())));
     }
     float GetCrit()
     {
@@ -139,7 +170,11 @@ public:
     bool IsLasthitable(CObject me)
     {
 
-        return this->GetHealth() <= me.GetTotalAD() * (100 / (100 + this->GetArmor())); 
+        return this->GetHealth() <= GetTotalDamage(this);
+    }
+    bool IsWard()
+    {
+        return this->GetMaxHealth() == 3.f;
     }
 
 	CObject(DWORD base)
