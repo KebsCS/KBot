@@ -21,6 +21,7 @@ private:
     DWORD base;
     // 
 public:
+
     int GetTeam()
     {
         return Memory.Read<int>(base + 0x4C);
@@ -69,6 +70,10 @@ public:
     {
         return Memory.Read<float>(base + 0x1208, sizeof(float));
     }
+    float GetTotalAD()
+    {
+        return GetBaseAD() + GetBonusAD();
+    }
     float GetAP()
     {
         return Memory.Read<float>(base + 0x1218, sizeof(float));
@@ -116,6 +121,27 @@ public:
     {
         return Memory.Read<float>(base + mGoldTotal, sizeof(float));
     }
+    float GetTotalDamage(CObject* target)
+    {
+        return this->GetTotalAD() * (100 / (100 + target->GetArmor()));
+    }
+    float GetCrit()
+    {
+        return Memory.Read<float>(base + 0x12AC, sizeof(float)); //0x1848
+    }
+
+    // Return the Distance to your player
+    float GetDistToMe(CObject me)
+    {
+        return this->GetPosition().DistTo(me.GetPosition());
+    }
+
+    bool IsLasthitable(CObject me)
+    {
+
+        return this->GetHealth() <= me.GetTotalAD() * (100 / (100 + this->GetArmor())); 
+    }
+
 	CObject(DWORD base)
 	{
 		this->base = base;
@@ -127,6 +153,10 @@ public:
 
 
 };
+
+
+static DWORD LocalPlayer = Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD));
+static CObject Local(LocalPlayer);
 
 
 #endif // !_OBJECTMANAGER_H_

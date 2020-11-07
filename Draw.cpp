@@ -22,7 +22,7 @@ LPDIRECT3DTEXTURE9 Draw::LoadTextureFromFile(const char* filename, LPDIRECT3DTEX
 
 
 
-void Draw::DrawImage(std::string _filename, int x, int y, std::string text, int index, int in_width, int in_height, bool inWindow)
+void Draw::Image(std::string _filename, int x, int y, std::string text, int index, int in_width, int in_height, bool inWindow)
 {
 
 	bool has_saved_img_Ptr = false;
@@ -78,31 +78,6 @@ void Draw::DrawImage(std::string _filename, int x, int y, std::string text, int 
 }
 
 
-void Draw::String(std::string text, int x, int y, RGBA rgb, ID3DXFont* font)
-{
-	RECT FontPos{ x, y, x + 500, y + 100 };
-	x -= 16 / 2; // center text
-	font->DrawTextA(0, text.c_str(), text.size(), &FontPos, DT_NOCLIP, D3DCOLOR_ARGB(rgb.A, rgb.R, rgb.G, rgb.B));
-}
-
-void Draw::StringOutlined(std::string text, int x, int y, RGBA rgb, ID3DXFont* pFont)
-{
-
-	this->String(text, x - 1, y, RGBA(1, 0, 0), pFont);
-	this->String(text, x, y - 1, RGBA(1, 0, 0), pFont);
-	this->String(text, x + 1, y, RGBA(1, 0, 0), pFont);
-	this->String(text, x, y + 1, RGBA(1, 0, 0), pFont);
-	this->String(text, x, y, rgb, pFont);
-
-}
-
-void Draw::Rect(int x, int y, int l, int h, RGBA rgb)
-{
-	D3DRECT rect = { x, y, x + l, y + h };
-	g_pd3dDevice->Clear(1, &rect, D3DCLEAR_TARGET, D3DCOLOR_ARGB(rgb.A, rgb.R, rgb.G, rgb.B), 0, 0);
-
-}
-
 void Draw::Line(int x, int y, int x2, int y2, RGBA rgb, float thickness)
 {
 	g_Line->SetWidth(thickness);
@@ -114,7 +89,123 @@ void Draw::Line(int x, int y, int x2, int y2, RGBA rgb, float thickness)
 	g_Line->Draw(points, 2, D3DCOLOR_ARGB(rgb.A, rgb.R, rgb.G, rgb.B));
 }
 
-static const int CIRCLE_RESOLUTION = 64;
+
+
+void Draw::String(std::string text, int x, int y, int orientation, RGBA color, ID3DXFont* font, bool bordered, RGBA bcolor)
+{
+	RECT rect;
+
+	switch (orientation)
+	{
+	case lefted:
+		if (bordered)
+		{
+			SetRect(&rect, x - 1, y, x - 1, y);
+			font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_LEFT | DT_NOCLIP, D3DCOLOR_ARGB(bcolor.A, bcolor.R, bcolor.G, bcolor.B));
+			SetRect(&rect, x + 1, y, x + 1, y);
+			font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_LEFT | DT_NOCLIP, D3DCOLOR_ARGB(bcolor.A, bcolor.R, bcolor.G, bcolor.B));
+			SetRect(&rect, x, y - 1, x, y - 1);
+			font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_LEFT | DT_NOCLIP, D3DCOLOR_ARGB(bcolor.A, bcolor.R, bcolor.G, bcolor.B));
+			SetRect(&rect, x, y + 1, x, y + 1);
+			font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_LEFT | DT_NOCLIP, D3DCOLOR_ARGB(bcolor.A, bcolor.R, bcolor.G, bcolor.B));
+		}
+		SetRect(&rect, x, y, x, y);
+		font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_LEFT | DT_NOCLIP, D3DCOLOR_ARGB(color.A, color.R, color.G, color.B));
+		break;
+	case centered:
+		if (bordered)
+		{
+			SetRect(&rect, x - 1, y, x - 1, y);
+			font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_CENTER | DT_NOCLIP, D3DCOLOR_ARGB(bcolor.A, bcolor.R, bcolor.G, bcolor.B));
+			SetRect(&rect, x + 1, y, x + 1, y);
+			font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_CENTER | DT_NOCLIP, D3DCOLOR_ARGB(bcolor.A, bcolor.R, bcolor.G, bcolor.B));
+			SetRect(&rect, x, y - 1, x, y - 1);
+			font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_CENTER | DT_NOCLIP, D3DCOLOR_ARGB(bcolor.A, bcolor.R, bcolor.G, bcolor.B));
+			SetRect(&rect, x, y + 1, x, y + 1);
+			font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_CENTER | DT_NOCLIP, D3DCOLOR_ARGB(bcolor.A, bcolor.R, bcolor.G, bcolor.B));
+		}
+		SetRect(&rect, x, y, x, y);
+		font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_CENTER | DT_NOCLIP, D3DCOLOR_ARGB(color.A, color.R, color.G, color.B));
+		break;
+	case righted:
+		if (bordered)
+		{
+			SetRect(&rect, x - 1, y, x - 1, y);
+			font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_RIGHT | DT_NOCLIP, D3DCOLOR_ARGB(bcolor.A, bcolor.R, bcolor.G, bcolor.B));
+			SetRect(&rect, x + 1, y, x + 1, y);
+			font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_RIGHT | DT_NOCLIP, D3DCOLOR_ARGB(bcolor.A, bcolor.R, bcolor.G, bcolor.B));
+			SetRect(&rect, x, y - 1, x, y - 1);
+			font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_RIGHT | DT_NOCLIP, D3DCOLOR_ARGB(bcolor.A, bcolor.R, bcolor.G, bcolor.B));
+			SetRect(&rect, x, y + 1, x, y + 1);
+			font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_RIGHT | DT_NOCLIP, D3DCOLOR_ARGB(bcolor.A, bcolor.R, bcolor.G, bcolor.B));
+		}
+		SetRect(&rect, x, y, x, y);
+		font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_RIGHT | DT_NOCLIP, D3DCOLOR_ARGB(color.A, color.R, color.G, color.B));
+		break;
+	}
+}
+
+
+void Draw::BoxFilled(int x, int y, int w, int h, RGBA rgb)
+{
+	D3DRECT rect = { x, y, x + w, y + h };
+	g_pd3dDevice->Clear(1, &rect, D3DCLEAR_TARGET, D3DCOLOR_ARGB(rgb.A, rgb.R, rgb.G, rgb.B), 0, 0);
+
+}
+
+void Draw::BoxBordered(int x, int y, int w, int h, RGBA color, int thickness)
+{
+	this->BoxFilled(x, y, w, thickness, color);
+	this->BoxFilled(x, y, thickness, h, color);
+	this->BoxFilled(x + w, y, thickness, h, color);
+	this->BoxFilled(x, y + h, w + thickness, thickness, color);
+}
+
+void Draw::BoxOutlined(int x, int y, int w, int h, RGBA color, float thickness, RGBA bcolor)
+{
+	BoxFilled(x, y, w, h, color);
+	BoxBordered(x - thickness, y - thickness, w + thickness, h + thickness, bcolor, thickness);
+
+}
+
+
+void Draw::StringBoxed(std::string text, int x, int y, int orientation, RGBA color, ID3DXFont* font, RGBA bcolor, RGBA background)
+{
+
+	RECT rect = { x, y, x, y };
+
+	switch (orientation)
+	{
+	case lefted:
+		font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_CALCRECT | DT_LEFT, D3DCOLOR_ARGB(0, 0, 0, 0));
+
+		BoxOutlined(x - 5, rect.top - 5, rect.right - x + 10, rect.bottom - rect.top + 10, background, 1, bcolor);
+		SetRect(&rect, x, y, x, y);	
+
+		String(text, x, y, orientation, color, font, true);
+		break;
+	case centered:
+		font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_CALCRECT | DT_CENTER, D3DCOLOR_ARGB(0, 0, 0, 0));
+
+		BoxOutlined(rect.left - 5, rect.top - 5, rect.right - rect.left + 10, rect.bottom - rect.top + 10, background, 1, bcolor);
+		SetRect(&rect, x, y, x, y);
+
+		String(text, x, y, orientation, color, font, true);
+		break;
+	case righted:
+		font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_CALCRECT | DT_RIGHT, D3DCOLOR_ARGB(0, 0, 0, 0));
+
+		BoxOutlined(rect.left - 5, rect.top - 5, rect.right - rect.left + 10, rect.bottom - rect.top + 10, background, 1, bcolor);
+		SetRect(&rect, x, y, x, y);
+
+		String(text, x, y, orientation, color, font, true);
+		break;
+	}
+
+}
+
+
+static const int CIRCLE_RESOLUTION = 32;
 
 struct VERTEX_2D_DIF 
 { 
@@ -124,7 +215,7 @@ struct VERTEX_2D_DIF
 };
 
 
-void  Draw::DrawCircle(float x, float y, float r, RGBA rgb)
+void Draw::Circle(int x, int y, float r, RGBA rgb)
 {
 	VERTEX_2D_DIF verts[CIRCLE_RESOLUTION + 1];
 
@@ -143,7 +234,7 @@ void  Draw::DrawCircle(float x, float y, float r, RGBA rgb)
 
 
 
-void  Draw::DrawCircleFilled(float x, float y, float r, RGBA rgb)
+void  Draw::CircleFilled(int x, int y, float r, RGBA rgb)
 {
 	VERTEX_2D_DIF verts[CIRCLE_RESOLUTION + 1];
 
@@ -161,29 +252,23 @@ void  Draw::DrawCircleFilled(float x, float y, float r, RGBA rgb)
 }
 
 
-void Draw::BorderBox(int x, int y, int l, int h, int thickness, RGBA color)
-{
-	this->Rect(x, y, l, thickness, color);
-	this->Rect(x, y, thickness, h, color);
-	this->Rect(x + l, y, thickness, h, color);
-	this->Rect(x, y + h, l + thickness, thickness, color);
-}
 
 
 
-void Draw::DrawCircleRange(Vector3 vPos, float flPoints, float flRadius, RGBA color, float flThickness)
+
+void Draw::CircleRange(Vector3 vPos, float points, float r, RGBA color, float thickness)
 {
 
-	float flPoint = M_PI_F * 2.0f / flPoints;
+	float flPoint = M_PI_F * 2.0f / points;
 	
 
-	flRadius = flRadius + 100;
+	r += 100;
 	bool first = true;
 	ImVec2 First, Last;
 	for (float flAngle = flPoint; flAngle < (M_PI_F * 2.0f); flAngle += flPoint)
 	{
-		Vector3 vStart(flRadius * cosf(flAngle) + vPos.X, flRadius * sinf(flAngle) + vPos.Z, vPos.Y);
-		Vector3 vEnd(flRadius * cosf(flAngle + flPoint) + vPos.X, flRadius * sinf(flAngle + flPoint) + vPos.Z, vPos.Y);
+		Vector3 vStart(r * cosf(flAngle) + vPos.X, r * sinf(flAngle) + vPos.Z, vPos.Y);
+		Vector3 vEnd(r * cosf(flAngle + flPoint) + vPos.X, r * sinf(flAngle + flPoint) + vPos.Z, vPos.Y);
 
 		float z_temp = vStart.Z;
 		vStart.Z = vStart.Y;
@@ -209,9 +294,9 @@ void Draw::DrawCircleRange(Vector3 vPos, float flPoints, float flRadius, RGBA co
 		if (!((vStartScreen.x <= SCREENWIDTH * 1.2) && (vStartScreen.x >= SCREENWIDTH / 2 * (-1)) && (vStartScreen.y <= SCREENHEIGHT * 1.5) && (vStartScreen.y >= SCREENHEIGHT / 2 * (-1))))
 			return;
 
-		Line(vStartScreen.x, vStartScreen.y, vEndScreen.x, vEndScreen.y, color, flThickness);
+		Line(vStartScreen.x, vStartScreen.y, vEndScreen.x, vEndScreen.y, color, thickness);
 		Last = vEndScreen;
 	}
 
-	Line(First.x, First.y, Last.x, Last.y, color, flThickness);
+	Line(First.x, First.y, Last.x, Last.y, color, thickness);
 }

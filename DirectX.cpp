@@ -156,6 +156,10 @@ static void HelpMarker(const char* desc)
 	}
 }
 
+static DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oMinionList);
+
+static int MinionLength = Memory.Read<int>(MinionList + 0x08);
+
 int Direct3D9Render::Render()
 {
 
@@ -204,23 +208,35 @@ int Direct3D9Render::Render()
 
 		ImGui::Separator();
 
+
+		ImGui::Checkbox("LastHit Helper", &M.LastHit.Master);
+		ImGui::SameLine();
+		ImGui::ColorEdit4("LastHitColor##3", (float*)&M.LastHit.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
+
+		ImGui::Separator();
+
 		ImGui::SliderInt("AntiLag", &M.AntiLag, 0, 50);
 		ImGui::SameLine(); HelpMarker("Higher for slower PCs");
 
 		ImGui::Separator();
 
+		ImGui::Checkbox("Auto Smite", &M.AutoSmite.Master);
+
+		ImGui::Separator();
+
+
 		ImGui::Columns(2, 0, false);
-		draw->DrawImage("Flash.png", 0, 0, "", 99, 32, 32, true);
-		draw->DrawImage("Smite.png", 0, 0, "", 99, 32, 32, true);
-		draw->DrawImage("Ignite.png", 0, 0, "", 99, 32, 32, true);
-		draw->DrawImage("Teleport.png", 0, 0, "", 99, 32, 32, true);
-		draw->DrawImage("Heal.png", 0, 0, "", 99, 32, 32, true);
+		draw->Image("Flash.png", 0, 0, "", 99, 32, 32, true);
+		draw->Image("Smite.png", 0, 0, "", 99, 32, 32, true);
+		draw->Image("Ignite.png", 0, 0, "", 99, 32, 32, true);
+		draw->Image("Teleport.png", 0, 0, "", 99, 32, 32, true);
+		draw->Image("Heal.png", 0, 0, "", 99, 32, 32, true);
 		ImGui::NextColumn();
-		draw->DrawImage("Exhaust.png", 0, 0, "", 99, 32, 32, true);
-		draw->DrawImage("Barrier.png", 0, 0, "", 99, 32, 32, true);
-		draw->DrawImage("Cleanse.png", 0, 0, "", 99, 32, 32, true);
-		draw->DrawImage("Ghost.png", 0, 0, "", 99, 32, 32, true);
-		draw->DrawImage("Clarity.png", 0, 0, "", 99, 32, 32, true);
+		draw->Image("Exhaust.png", 0, 0, "", 99, 32, 32, true);
+		draw->Image("Barrier.png", 0, 0, "", 99, 32, 32, true);
+		draw->Image("Cleanse.png", 0, 0, "", 99, 32, 32, true);
+		draw->Image("Ghost.png", 0, 0, "", 99, 32, 32, true);
+		draw->Image("Clarity.png", 0, 0, "", 99, 32, 32, true);
 		ImGui::Columns(1);
 		ImGui::End();
 
@@ -272,12 +288,37 @@ int Direct3D9Render::Render()
 				if (M.Tracers.Master)
 					vis.DrawTracers(obj, M.Tracers.Thickness / 10.f);
 
-				//vis.AutoSmite(obj);
+				//float dist = obj.GetDistToMe(Local);
+				//clog.AddLog("%s , %f", obj.GetName(), dist);
+
+			}
+		}
+		
+		if (M.LastHit.Master || M.AutoSmite.Master)
+		{
+			DWORD MinionArray = Memory.Read<DWORD>(MinionList + 0x04);
+			for (int i = 0; i < MinionLength * 4; i += 4)
+			{
+				CObject minion(Memory.Read<DWORD>(MinionArray + i)); // finds minions faster when its in loop
+
+				if(M.AutoSmite.Master)
+					vis.AutoSmite(minion);
+				//clog.AddLog("%s , %x ", minion.GetName().c_str(), minion.Address());
+				if (M.LastHit.Master)
+					vis.LastHit(minion, RGBA(M.LastHit.Color[0] * 255, M.LastHit.Color[1] * 255, M.LastHit.Color[2] * 255, M.LastHit.Color[3] * 255));
 
 			}
 		}
 
+		
+		//drawings test
 
+		//draw->BoxFilled(200, 500, 100, 100, RGBA(255, 0, 0));
+		//draw->BoxBordered(500, 500, 100, 100,RGBA(255, 0, 0));
+		//draw->BoxOutlined(800, 500, 100, 100, RGBA(255, 0, 0));
+		//draw->StringBoxed("asdfsdgSVX123!_", 700, 200, lefted, RGBA(255, 255, 255), fontTahoma, RGBA(1,0,0),RGBA(255,0,0));
+		//draw->Circle(1100, 500, 100, RGBA(255, 0, 0));
+		//draw->CircleFilled(1400, 500, 100, RGBA(255, 0, 0));
 
 		g_pd3dDevice->EndScene();
 	}

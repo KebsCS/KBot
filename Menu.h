@@ -38,6 +38,18 @@ struct Menu
         bool Master = true;
 
     }Cooldowns;
+
+    struct
+    {
+        bool Master;
+        float Color[4] = { 255.0f / 255.0f, 85.0f / 255.0f, 50.0f / 255.0f, 255.0f / 255.0f };
+    }LastHit;
+
+    struct
+    {
+        bool Master;
+    }AutoSmite;
+
 };
 
 extern Menu M;

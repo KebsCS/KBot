@@ -50,6 +50,8 @@
 
 #endif
 
+enum text_alignment { lefted, centered, righted };
+
 enum Arrow_Keys : int
 {
 	LEFT = 1,

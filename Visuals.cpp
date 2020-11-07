@@ -7,8 +7,6 @@
 void Visuals::CooldownTimers(CObject obj, int type)
 {
 
-	DWORD LocalPlayer = Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD));
-	CObject Local(LocalPlayer);
 
 	if (obj.GetTeam() == Local.GetTeam())
 		return;
@@ -21,6 +19,7 @@ void Visuals::CooldownTimers(CObject obj, int type)
 		return;
 
 	Vector3 Position = obj.GetPosition();
+
 	ImVec2 RealPos = Direct3D9.WorldToScreen(Position);
 
 	if (RealPos.x == 0.f && RealPos.y == 0.f)
@@ -119,10 +118,11 @@ void Visuals::CooldownTimers(CObject obj, int type)
 		Rcolor = colorReady;
 	}
 
-	draw->StringOutlined(sQcd, RealPos.x - 40, RealPos.y + 15, Qcolor, Direct3D9.fontTahoma);
-	draw->StringOutlined(sWcd, RealPos.x - 10, RealPos.y + 15, Wcolor, Direct3D9.fontTahoma);
-	draw->StringOutlined(sEcd, RealPos.x + 20, RealPos.y + 15, Ecolor, Direct3D9.fontTahoma);
-	draw->StringOutlined(sRcd, RealPos.x + 40, RealPos.y + 15, Rcolor, Direct3D9.fontTahoma);
+	
+	draw->String(sQcd, RealPos.x - 20, RealPos.y + 15, centered, Qcolor, Direct3D9.fontTahoma);
+	draw->String(sWcd, RealPos.x - 0, RealPos.y + 15, centered, Wcolor, Direct3D9.fontTahoma);
+	draw->String(sEcd, RealPos.x + 20, RealPos.y + 15, centered, Ecolor, Direct3D9.fontTahoma);
+	draw->String(sRcd, RealPos.x + 40, RealPos.y + 15, centered, Rcolor, Direct3D9.fontTahoma);
 
 
 
@@ -146,12 +146,15 @@ void Visuals::CooldownTimers(CObject obj, int type)
 		Fcolor = colorReady;
 	}
 
+
+
 	//todo smite cooldown is always 15s 
 	if (obj.SummonerSpell1() == "summonersmite")
 	{
-		int SmiteStacks = Memory.Read<int>(Summ1 + 0x58);
 		float SmiteDamage = Memory.Read<float>(Summ1 + 0x90);
-		draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x - 10, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+		draw->String(std::to_string((int)SmiteDamage), RealPos.x - 7, RealPos.y + 28, lefted, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+		//int SmiteStacks = Memory.Read<int>(Summ1 + 0x58);
+		
 		//if (SmiteStacks == 2)
 		//	draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x - 10, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
 		//else if (SmiteStacks == 0)
@@ -165,10 +168,10 @@ void Visuals::CooldownTimers(CObject obj, int type)
 	}
 	else if (obj.SummonerSpell2() == "summonersmite")
 	{
-		int SmiteStacks = Memory.Read<int>(Summ2 + 0x58);
+		//int SmiteStacks = Memory.Read<int>(Summ2 + 0x58);
 		float SmiteDamage = Memory.Read<float>(Summ2 + 0x90);
 		//clog.AddLog("%i", SmiteStacks);
-		draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x + 27, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+		draw->String(std::to_string((int)SmiteDamage), RealPos.x + 33, RealPos.y + 28, lefted, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
 		/*if (SmiteStacks == 2)
 			int a;
 		else if (SmiteStacks == 0)
@@ -182,26 +185,23 @@ void Visuals::CooldownTimers(CObject obj, int type)
 
 
 
-
-	draw->StringOutlined(sDcd, RealPos.x - 20, RealPos.y + 30, Dcolor, Direct3D9.fontTahoma);
-	draw->StringOutlined(sFcd, RealPos.x + 20, RealPos.y + 30, Fcolor, Direct3D9.fontTahoma);
+	draw->String(sDcd, RealPos.x -10, RealPos.y + 30, centered, Dcolor, Direct3D9.fontTahoma);
+	draw->String(sFcd, RealPos.x + 30, RealPos.y + 30, centered, Fcolor, Direct3D9.fontTahoma);
 
 }
 
 void Visuals::DrawAARanges(CObject obj, int points, int thickness, RGBA color, bool local, RGBA localcolor)
 {
-	DWORD LocalPlayer = Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(float));
-	CObject Local(LocalPlayer);
-
 
 	if (obj.GetHealth() <= 0.01f)
 		return;
+
 
 	if (local && obj.Address() == Local.Address())
 	{
 
 		Vector3 Position = Local.GetPosition();
-		draw->DrawCircleRange(Position, points, Local.GetAARange(), localcolor, thickness);
+		draw->CircleRange(Position, points, Local.GetAARange(), localcolor, thickness);
 		return;
 	 
 	}
@@ -213,7 +213,7 @@ void Visuals::DrawAARanges(CObject obj, int points, int thickness, RGBA color, b
 	{
 
 		Vector3 Position = obj.GetPosition();
-		draw->DrawCircleRange(Position, points, 750, color, thickness);
+		draw->CircleRange(Position, points, 750, color, thickness);
 
 		return;
 	}
@@ -222,13 +222,12 @@ void Visuals::DrawAARanges(CObject obj, int points, int thickness, RGBA color, b
 	{
 		Vector3 Position = obj.GetPosition();
 
-		draw->DrawCircleRange(Position, points, obj.GetAARange(), color, thickness);
+		draw->CircleRange(Position, points, obj.GetAARange(), color, thickness);
 	}
 }
 
 void Visuals::DrawTracers(CObject obj, int thickness)
 {
-	CObject Local(Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD)));
 
 	if (obj.GetTeam() == Local.GetTeam())
 		return;
@@ -263,7 +262,7 @@ void Visuals::DrawTracers(CObject obj, int thickness)
 			b = 255;
 
 			if ((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1)))
-				draw->StringOutlined(obj.GetChampName(), RealPos.x, RealPos.y, RGBA(255, 255, 255), Direct3D9.fontTahoma);
+				draw->String(obj.GetChampName(), RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
 
 		}
 
@@ -279,36 +278,103 @@ void Visuals::DrawTracers(CObject obj, int thickness)
 
 void Visuals::AutoSmite(CObject obj)
 {
-	CObject Local(Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD)));
 	DWORD SmiteSlot;
-	if (Local.SummonerSpell1().c_str() == "summonersmite")
+	int SpellKey;
+	if (Local.SummonerSpell1()== "summonersmite")
 	{
 		SmiteSlot = Local.GetSpellByID(SpellSlotID::Summoner1);
+		SpellKey = 0x44;
 	}
-	else if (Local.SummonerSpell2().c_str() == "summonersmite")
+	else if (Local.SummonerSpell2() == "summonersmite")
 	{
+
 		SmiteSlot = Local.GetSpellByID(SpellSlotID::Summoner2);
+		SpellKey = 0x46;
 	}
 	else return;
-
-	if (obj.Address() == Local.Address())
-		return;
 
 	if (obj.GetTeam() == Local.GetTeam())
 		return;
 
-	
+	if (obj.GetHealth() < 0.01f)
+		return;
 
-	float Smite = Memory.Read<float>(SmiteSlot + 0x28, sizeof(float));
+	if (obj.GetDistToMe(Local) > 550.f)
+		return;
 
-	int SmiteStacks = Memory.Read<int>(Smite + 0x58);
-	float SmiteDamage = Memory.Read<float>(Smite + 0x90);
-	/*
-	0x58 Stacks
+	if (obj.GetName().find("Plant") != std::string::npos)
+		return;
 
-	*/
+	float SmiteCooldownExpire = Memory.Read<float>(SmiteSlot + 0x28, sizeof(float));
+	int SmiteStacks = Memory.Read<int>(SmiteSlot + 0x58);
+	float SmiteDamage = Memory.Read<float>(SmiteSlot + 0x90);
+
+	if (!SmiteStacks)
+		return;
+
+	float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+	float cd = SmiteCooldownExpire - GameTime + 1;
+
+	if (cd > 0.f)
+		return;
+
+	Vector3 Position = obj.GetPosition();
+	ImVec2 RealPos = Direct3D9.WorldToScreen(Position);
+
+	if (RealPos.x == 0 && RealPos.y == 0)
+		return;
+
+	if (obj.GetHealth() <= SmiteDamage)
+	{
+		//draw->Image("Smite.png", RealPos.x, RealPos.y, "", 43, 32, 32);  //not working? todo
+		draw->BoxFilled(RealPos.x, RealPos.y, 10, 10, RGBA(255, 0, 0));
+		Mouse mouse;
+		//mouse.ChangeSpeed(1.0f);
+		//mouse.MouseMove(RealPos.x, RealPos.y);
+		Keyboard key;
+		key.HitKey(SpellKey);
+	}
 
 	//todo
 
+
+}
+
+void Visuals::LastHit(CObject obj, RGBA color)
+{
+
+	if (obj.GetTeam() == Local.GetTeam())
+		return;
+	if (obj.GetHealth() < 0.01f || Local.GetHealth() < 0.01f)
+		return;
+	Vector3 Position = obj.GetPosition();
+	if (obj.GetDistToMe(Local) > 1500)
+		return;
+	if (obj.GetName().find("Minion_") == std::string::npos)
+		return;
+
+	ImVec2 RealPos = Direct3D9.WorldToScreen(Position);
+	if (RealPos.x == 0 && RealPos.y == 0)
+		return;
+	if ((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1)))
+	{
+		float dmg = Local.GetTotalAD() * (100 / (100 + obj.GetArmor()));
+		float critChance = Local.GetCrit();
+		//draw->String(std::to_string(dmg), RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
+		if (obj.IsLasthitable(Local))
+		{
+			draw->Circle(RealPos.x, RealPos.y, 10, color);
+		}
+		else if (critChance == 1.f && obj.GetHealth() <= dmg * 2)
+		{
+			draw->Circle(RealPos.x, RealPos.y, 10, color);
+		}
+		else if (critChance > 0.f && obj.GetHealth() <= dmg * 2)
+		{
+			draw->Circle(RealPos.x, RealPos.y, 10, RGBA(255,255,0));
+		}
+
+
+	}
 
 }

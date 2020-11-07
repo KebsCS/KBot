@@ -18,6 +18,7 @@ public:
 
 	void AutoSmite(CObject obj);
 
+	void LastHit(CObject obj, RGBA color);
 };
 
 

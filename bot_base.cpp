@@ -122,8 +122,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     clog.AddLog("ProcessId: %d", Memory.ProcessID);
     clog.AddLog("ClientAddress: %x", ClientAddress);
 
-    DWORD LocalPlayer = Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD));
-    CObject Local(LocalPlayer);
+
     float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
 
@@ -201,30 +200,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             break;
         }
         //GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
-
-
-  /*      DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oHeroList);
-        DWORD MinionArray = Memory.Read<DWORD>(MinionList + 0x04);
-        int MinionLength = Memory.Read<int>(MinionList + 0x08);
-        for (int i = 0; i < MinionLength * 4; i += 4)
-        {
-
-            CObject minion(Memory.Read<DWORD>(MinionArray + i));
-            clog.AddLog("%s , %x , %i", minion.GetName().c_str(), minion.Address(), Memory.Read<bool>(minion.Address()+ oIsHero));
-
-        
-        }*/
-
-    //DWORD Obj = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
-
-    //DWORD ObjectArray = Memory.Read<DWORD>(Obj + 0x20, sizeof(DWORD));
-    //for (int i = 0; i < 1000; i++) 
-    //{
-    //    CObject obj(Memory.Read<DWORD>(ObjectArray + (0x4 * i), sizeof(DWORD)));
-    //    int aa = Memory.Read<int>(obj.Address() + 0x1ADAB0,4);
-    //    //if(aa==1)
-    //    clog.AddLog("%s , %x , %i", obj.GetName().c_str(), obj.Address(),aa);
-    //}
 
         //clog.AddLog("%x", Local.GetSpellByID(0));
       

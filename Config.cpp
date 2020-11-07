@@ -31,6 +31,15 @@ void CConfig::Setup()
 
 	SetupValue(M.Cooldowns.Master, 1, "Cooldowns", "Master");
 
+	SetupValue(M.LastHit.Master, 1, "LastHit", "Master");
+	SetupValue(M.LastHit.Color[0], 0.f, "LastHit", "ColorR");
+	SetupValue(M.LastHit.Color[1], 1.f, "LastHit", "ColorG");
+	SetupValue(M.LastHit.Color[2], 1.f, "LastHit", "ColorB");
+	SetupValue(M.LastHit.Color[3], 1.f, "LastHit", "ColorA");
+
+	SetupValue(M.AutoSmite.Master, 1, "AutoSmite", "Master");
+
+
 }
 
 void CConfig::SetupValue(int& value, int def, std::string category, std::string name)
