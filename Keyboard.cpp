@@ -79,9 +79,11 @@ void Keyboard::GenerateKey(int vk, BOOL bExtended, bool shift)
 
 	/* Generate a "key down" */
 	if (bExtended) { kb.dwFlags = KEYEVENTF_EXTENDEDKEY; }
+	else kb.dwFlags = 0;
 	kb.wVk = vk;
 	Input.type = INPUT_KEYBOARD;
 	Input.ki = kb;
+	
 	::SendInput(1, &Input, sizeof(Input));
 
 	Sleep(FAST_REACTION_TIME);
@@ -103,6 +105,54 @@ void Keyboard::GenerateKey(int vk, BOOL bExtended, bool shift)
 		SpecialKeyUp(VK_SHIFT);
 
 	}
+
+	return;
+}
+
+void Keyboard::GenerateKeyScancode(int vk, bool shift)
+{
+
+	KEYBDINPUT  kb = { 0 };
+	INPUT       Input = { 0 };
+
+	//todo shift work with scancodes
+	//if (shift) // press the shift key
+	//{
+	//	// Press shift key
+	//	SpecialKeyDown(VK_SHIFT);
+
+	//}
+
+	/* Generate a "key down" */
+	kb.dwFlags = KEYEVENTF_SCANCODE;
+	kb.wVk = 0;
+	kb.wScan = vk;
+	kb.time = 0;
+	kb.dwExtraInfo = 0;
+	Input.type = INPUT_KEYBOARD;
+	Input.ki = kb;
+
+	::SendInput(1, &Input, sizeof(Input));
+
+	Sleep(AVERAGE_REACTION_TIME);
+
+	/* Generate a "key up" */
+	ZeroMemory(&kb, sizeof(KEYBDINPUT));
+	ZeroMemory(&Input, sizeof(INPUT));
+	kb.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
+	kb.wVk = 0;
+	kb.wScan = vk;
+	Input.type = INPUT_KEYBOARD;
+	Input.ki = kb;
+	::SendInput(1, &Input, sizeof(Input));
+
+
+	//if (shift) //release shift key if pressed
+	//{
+	//	// Release shift key
+	//	SpecialKeyUp(VK_SHIFT);
+
+	//}
 
 	return;
 }

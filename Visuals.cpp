@@ -275,34 +275,34 @@ void Visuals::DrawTracers(CObject obj, int thickness)
 	
 }
 
+Mouse mouse;
+Keyboard key;
 
 void Visuals::AutoSmite(CObject obj)
 {
 	DWORD SmiteSlot;
 	int SpellKey;
+	//todo smite check on load instead of every frame
 	if (Local.SummonerSpell1()== "summonersmite")
 	{
 		SmiteSlot = Local.GetSpellByID(SpellSlotID::Summoner1);
-		SpellKey = 0x44;
+		SpellKey = 0x20;
 	}
 	else if (Local.SummonerSpell2() == "summonersmite")
 	{
 
 		SmiteSlot = Local.GetSpellByID(SpellSlotID::Summoner2);
-		SpellKey = 0x46;
+		SpellKey = 0x21;
 	}
 	else return;
-
+	//clog.AddLog("%s , %x , %f ", obj.GetName().c_str(), obj.Address(), obj.GetDistToMe(Local));
 	if (obj.GetTeam() == Local.GetTeam())
 		return;
 
-	if (obj.GetHealth() < 0.01f)
+	if (obj.GetHealth() < 0.01f || Local.GetHealth() < 0.01f)
 		return;
 
-	if (obj.GetDistToMe(Local) > 550.f)
-		return;
-
-	if (obj.GetName().find("Plant") != std::string::npos)
+	if (obj.GetDistToMe(Local) > 560.f)
 		return;
 
 	float SmiteCooldownExpire = Memory.Read<float>(SmiteSlot + 0x28, sizeof(float));
@@ -314,9 +314,17 @@ void Visuals::AutoSmite(CObject obj)
 
 	float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 	float cd = SmiteCooldownExpire - GameTime + 1;
-
+	//clog.AddLog("%f", cd);
 	if (cd > 0.f)
 		return;
+	std::string objName = obj.GetName();
+
+	if (!(objName.find("SRU_Baron") != std::string::npos || objName.find("SRU_Dragon") != std::string::npos || objName.find("SRU_Gromp") != std::string::npos
+		|| objName.find("SRU_Razorbeak3") != std::string::npos || objName.find("SRU_Razorbeak9") != std::string::npos || objName.find("SRU_Blue") != std::string::npos || objName.find("SRU_Red") != std::string::npos
+		|| objName.find("SRU_Murkwolf2") != std::string::npos || objName.find("SRU_Murkwolf8") != std::string::npos || objName.find("SRU_RiftHerald") != std::string::npos
+		|| objName.find("Sru_Crab") != std::string::npos || objName.find("SRU_Krug1") != std::string::npos))
+		return;
+
 
 	Vector3 Position = obj.GetPosition();
 	ImVec2 RealPos = Direct3D9.WorldToScreen(Position);
@@ -324,19 +332,19 @@ void Visuals::AutoSmite(CObject obj)
 	if (RealPos.x == 0 && RealPos.y == 0)
 		return;
 
+	draw->BoxFilled(RealPos.x, RealPos.y, 10, 10, RGBA(255, 0, 0));
+
 	if (obj.GetHealth() <= SmiteDamage)
 	{
 		//draw->Image("Smite.png", RealPos.x, RealPos.y, "", 43, 32, 32);  //not working? todo
-		draw->BoxFilled(RealPos.x, RealPos.y, 10, 10, RGBA(255, 0, 0));
-		Mouse mouse;
-		//mouse.ChangeSpeed(1.0f);
-		//mouse.MouseMove(RealPos.x, RealPos.y);
-		Keyboard key;
-		key.HitKey(SpellKey);
+		
+		BlockInput(1);
+		mouse.StoreCurrentPos();
+		mouse.MouseMoveSLD(RealPos.x, RealPos.y);
+		key.GenerateKeyScancode(SpellKey,false);
+		mouse.MouseMoveSLD(mouse.PrevX, mouse.PrevY);
+		BlockInput(0);
 	}
-
-	//todo
-
 
 }
 

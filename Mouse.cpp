@@ -65,7 +65,7 @@ bool Mouse::MouseMove(int x, int y)
 		::SendInput(1, &Input, sizeof(INPUT));
 
 		//SetCursorPos(round(interimX), round(interimY));
-		Sleep(1);
+		//Sleep(1);
 	}
 	//LOG("Moved mouse to:", x, y, "with speed of", stepSize);
 
@@ -111,7 +111,7 @@ bool Mouse::MouseMoveSLD(int x, int y)
 		::SendInput(1, &Input, sizeof(INPUT));
 
 		//SetCursorPos(round(interimX), round(interimY));
-		Sleep(1);
+		//Sleep(1);
 	}
 	//LOG("Moved mouse to:", x, y, "with speed of", stepSize);
 

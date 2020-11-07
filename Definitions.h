@@ -39,6 +39,7 @@
 
 #define VERYFAST_REACTION_TIME RandomInt(1,10)
 #define FAST_REACTION_TIME RandomInt(9,11)
+#define AVERAGE_REACTION_TIME RandomInt(40,60)
 #define MEDIUM_REACTION_TIME RandomInt(90,110)
 #define SLOW_REACTION_TIME RandomInt(900,1100)
 

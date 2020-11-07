@@ -38,6 +38,8 @@ public:
 	// to achieve 'A', send ('A',false,true)
 	void GenerateKey(int vk, BOOL bExtended, bool shift);
 
+	void GenerateKeyScancode(int vk, bool shift);
+
 	//types given text
 	void Type(std::string phrase);
 

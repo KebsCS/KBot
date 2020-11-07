@@ -14,8 +14,9 @@ private:
 	float MouseSpeed = 1.0; //Speed range: 0.1 -> 1.0
 	int deviation = RandomInt(240, 260); //amount of arc path deviation  (E.g. 250pixels  will deviate the path in an arc randomly maxing at (-250 to 250)
 	LARGE_INTEGER frequency, startCount, endCount; // for timer
-	int PrevX, PrevY = 0; // for storing previous coords
+	
 public:
+	int PrevX, PrevY = 0; // for storing previous coords todo make function for getting those
 
 	Mouse()
 	{

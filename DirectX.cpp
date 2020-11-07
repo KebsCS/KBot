@@ -158,7 +158,7 @@ static void HelpMarker(const char* desc)
 
 static DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oMinionList);
 
-static int MinionLength = Memory.Read<int>(MinionList + 0x08);
+
 
 int Direct3D9Render::Render()
 {
@@ -297,6 +297,7 @@ int Direct3D9Render::Render()
 		if (M.LastHit.Master || M.AutoSmite.Master)
 		{
 			DWORD MinionArray = Memory.Read<DWORD>(MinionList + 0x04);
+			int MinionLength = Memory.Read<int>(MinionList + 0x08);
 			for (int i = 0; i < MinionLength * 4; i += 4)
 			{
 				CObject minion(Memory.Read<DWORD>(MinionArray + i)); // finds minions faster when its in loop
