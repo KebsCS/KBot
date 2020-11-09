@@ -252,11 +252,16 @@ void  Draw::CircleFilled(int x, int y, float r, RGBA rgb)
 }
 
 
+ImVec2 getCordByAngle(float angle, float distance) {
+	angle = M_PI * angle / 180;
+	ImVec2 point{ float(0), float(0) };
+	point.x = distance * cos(angle);
+	point.y = distance * sin(angle);
 
+	return point;
+}
 
-
-
-void Draw::CircleRange(Vector3 vPos, float points, float r, RGBA color, float thickness)
+void Draw::CircleRange(Vector3 Pos, float points, float r, RGBA color, float thickness)
 {
 
 	float flPoint = M_PI_F * 2.0f / points;
@@ -267,8 +272,8 @@ void Draw::CircleRange(Vector3 vPos, float points, float r, RGBA color, float th
 	ImVec2 First, Last;
 	for (float flAngle = flPoint; flAngle < (M_PI_F * 2.0f); flAngle += flPoint)
 	{
-		Vector3 vStart(r * cosf(flAngle) + vPos.X, r * sinf(flAngle) + vPos.Z, vPos.Y);
-		Vector3 vEnd(r * cosf(flAngle + flPoint) + vPos.X, r * sinf(flAngle + flPoint) + vPos.Z, vPos.Y);
+		Vector3 vStart(r * cosf(flAngle) + Pos.X, r * sinf(flAngle) + Pos.Z, Pos.Y);
+		Vector3 vEnd(r * cosf(flAngle + flPoint) + Pos.X, r * sinf(flAngle + flPoint) + Pos.Z, Pos.Y);
 
 		float z_temp = vStart.Z;
 		vStart.Z = vStart.Y;
@@ -279,10 +284,13 @@ void Draw::CircleRange(Vector3 vPos, float points, float r, RGBA color, float th
 		vEnd.Y = z_temp;
 
 		ImVec2 vStartScreen, vEndScreen;
-		vStartScreen = Direct3D9.WorldToScreen(vStart);
-		vEndScreen = Direct3D9.WorldToScreen(vEnd);
 
+		vStartScreen = Direct3D9.WorldToScreen(vStart);
 		if (vStartScreen.x == 0 && vStartScreen.y == 0) break;
+		if (!((vStartScreen.x <= SCREENWIDTH * 1.2) && (vStartScreen.x >= SCREENWIDTH / 2 * (-1)) && (vStartScreen.y <= SCREENHEIGHT * 1.5) && (vStartScreen.y >= SCREENHEIGHT / 2 * (-1))))
+			return;
+
+		vEndScreen = Direct3D9.WorldToScreen(vEnd);
 		if (vEndScreen.x == 0 && vEndScreen.y == 0) break;
 
 		if (first)
@@ -291,8 +299,6 @@ void Draw::CircleRange(Vector3 vPos, float points, float r, RGBA color, float th
 			first = false;
 		}
 
-		if (!((vStartScreen.x <= SCREENWIDTH * 1.2) && (vStartScreen.x >= SCREENWIDTH / 2 * (-1)) && (vStartScreen.y <= SCREENHEIGHT * 1.5) && (vStartScreen.y >= SCREENHEIGHT / 2 * (-1))))
-			return;
 
 		Line(vStartScreen.x, vStartScreen.y, vEndScreen.x, vEndScreen.y, color, thickness);
 		Last = vEndScreen;

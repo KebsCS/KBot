@@ -284,17 +284,16 @@ void Visuals::AutoSmite(CObject obj, int slot)
 {
 	DWORD SmiteSlot;
 	int SpellKey;
-	//todo smite check on load instead of every frame
 	if (slot == 0)
 	{
 		SmiteSlot = Local.GetSpellByID(SpellSlotID::Summoner1);
-		SpellKey = 0x20;
+		SpellKey = 0x20; //D
 	}
 	else if (slot == 1)
 	{
 
 		SmiteSlot = Local.GetSpellByID(SpellSlotID::Summoner2);
-		SpellKey = 0x21;
+		SpellKey = 0x21; //F
 	}
 	else return;
 	//clog.AddLog("%s , %x , %f ", obj.GetName().c_str(), obj.Address(), obj.GetDistToMe(Local));
@@ -376,20 +375,91 @@ void Visuals::LastHit(CObject obj, RGBA color)
 		float dmg = Local.GetTotalDamage(&obj);
 		float critChance = Local.GetCrit();
 		//draw->String(std::to_string(dmg*2), RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
-		if (obj.GetHealth() <= dmg)
-		{
-			draw->Circle(RealPos.x, RealPos.y, 10, color);
-		}
-		else if (critChance == 1.f && obj.GetHealth() <= dmg * 2)
-		{
-			draw->Circle(RealPos.x, RealPos.y, 10, color);
-		}
-		else if (critChance > 0.f && obj.GetHealth() <= dmg * 2)
-		{
-			draw->Circle(RealPos.x, RealPos.y, 10, RGBA(255,255,0));
-		}
-
-
+		//todo draw over hp bar instead of circles
+		float xd = dmg / obj.GetHealth();
+		if (critChance == 1.f)
+			xd = dmg*2 / obj.GetHealth();
+		//else if (critChance > 0.f && xd <0.5)
+		//	draw->Circle(RealPos.x, RealPos.y, 11 * 0.5, RGBA(255, 255, 0));
+		
+		if(xd<=1)
+			draw->Circle(RealPos.x, RealPos.y, 11 * xd, RGBA(255, 255, 255));
+		draw->Circle(RealPos.x, RealPos.y, 11, color);
 	}
+
+}
+
+void Visuals::InhibTimers(CObject* obj)
+{
+	//todo , not working even though its the same code as for localplayer which works???????????????
+
+
+	//if (Local.IsDead())
+	//{
+	//	clog.AddLog("Dead %i , %f", Local.GetAlive(), Local.GetHealth());
+	//	float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+	//	clog.AddLog("%f , %i", Local.GetTimer(), Local.GetAlive());
+	//	if (Local.GetAlive())
+	//	{
+	//		Local.SetTimer(GameTime + 300);
+	//		Local.SetAlive(false);
+	//	}
+
+	//	ImVec2 RealPos = Direct3D9.WorldToScreen(Local.GetPosition());
+
+	//	if ((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1)))
+	//	{
+	//		float timer = Local.GetTimer() - GameTime;
+	//		std::string sTimer = std::to_string(timer);
+	//		draw->String(sTimer, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
+	//		clog.AddLog("%f , %f , %i", Local.GetTimer(), timer, Local.GetAlive());
+	//	}
+	//}
+	//else
+	//{
+	//	clog.AddLog("Alive %i, %f , %x", Local.GetAlive(), Local.GetHealth(), Local.Address());
+	//	if (!Local.GetAlive())
+	//	{
+	//		clog.AddLog("ssdads");
+	//		Local.SetAlive(true);
+	//	}
+	//}
+
+
+
+
+	//if (obj->GetTeam() == Local.GetTeam())
+	//	return;
+	//if (obj->IsDead())
+	//{
+	//	clog.AddLog("Dead %i , %f", obj->GetAlive(), obj->GetHealth());
+	//	float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+	//	clog.AddLog("%f , %i", obj->GetTimer(), obj->GetAlive());
+	//	if (obj->GetAlive())
+	//	{
+	//		obj->SetTimer(GameTime + 300);
+	//		obj->SetAlive(false);
+	//	}
+
+	//	ImVec2 RealPos = Direct3D9.WorldToScreen(obj->GetPosition());
+
+	//	if ((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1)))
+	//	{
+	//		float timer = obj->GetTimer() - GameTime;
+	//		std::string sTimer = std::to_string(timer);
+	//		draw->String(sTimer, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
+	//		clog.AddLog("%f , %f , %i", obj->GetTimer(), timer, obj->GetAlive());
+	//	}
+	//}
+	//else
+	//{
+	//	clog.AddLog("Alive %i, %f , %x" , obj->GetAlive(), obj->GetHealth(), obj->Address());
+	//	if (!obj->GetAlive())
+	//	{
+	//		clog.AddLog("ssdads");
+	//		obj->SetAlive(true);
+	//	}
+	//}
+
 
 }

@@ -51,6 +51,16 @@ struct Menu
         int Slot = 0;
     }AutoSmite;
 
+    struct
+    {
+        bool Master;
+    }Wards;
+
+    struct
+    {
+        bool Master;
+    }Inhibs;
+
 };
 
 extern Menu M;

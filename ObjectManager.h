@@ -19,9 +19,10 @@ class CObject
 private:
     
     DWORD base;
-    // 
+    bool alive;
+    float timer;
 public:
-
+    
     int GetTeam()
     {
         return Memory.Read<int>(base + 0x4C);
@@ -113,9 +114,9 @@ public:
     {
         return Memory.Read<int>(base + 0x3694, sizeof(int)); //0x36BC - skillpoints avaiable
     }
-    bool IsAlive()
+    bool IsDead()
     {
-        return Memory.Read<bool>(base + oIsAlive, sizeof(bool));
+        return this->GetHealth() <= 0.01f;
     }
     float GetGold()
     {
@@ -174,13 +175,49 @@ public:
     }
     bool IsWard()
     {
-        return this->GetMaxHealth() == 3.f;
+        return this->GetMaxHealth() == 3.f || this->GetName() == "JammerDevice";
     }
 
-	CObject(DWORD base)
-	{
-		this->base = base;
-	}
+    Vector3 GetMissileStartPos()
+    {
+        Vector3 startPos = Vector3(Memory.Read<float>(base + oMissileStartPos, sizeof(float)),
+            Memory.Read<float>(base + oMissileStartPos + 0x4, sizeof(float)),
+            Memory.Read<float>(base + oMissileStartPos + 0x8, sizeof(float)));
+        startPos.Y += 100;
+        return startPos;
+    }
+
+    Vector3 GetMissileEndPos()
+    {
+        Vector3 startPos = Vector3(Memory.Read<float>(base + oMissileEndPos, sizeof(float)),
+            Memory.Read<float>(base + oMissileEndPos + 0x4, sizeof(float)),
+            Memory.Read<float>(base + oMissileEndPos + 0x8, sizeof(float)));
+        startPos.Y += 100;
+        return startPos;
+    }
+    bool GetAlive()
+    {
+        return this->alive;
+    }
+    void SetAlive(bool state)
+    {
+        this->alive = state;
+    }
+    float GetTimer()
+    {
+        return this->timer;
+    }
+    void SetTimer(float value)
+    {
+        this->timer = value;
+    }
+
+    CObject(DWORD base)
+    {
+        this->timer = 0;
+        this->alive = true;
+        this->base = base;
+    }
     DWORD Address()
     {
         return base;

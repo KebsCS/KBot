@@ -6,10 +6,10 @@ void Initialize::AddObjects() //todo move this out of directx.cpp
 {
 	//todo looping through static object lists (turrets,heroes) and population their lists instead of 1
 	//ObjList.clear();
-	//herolist.clear();
-	//turretlist.clear();
-	//inhiblist.clear();
-
+	/*herolist.clear();
+	turretlist.clear();
+	inhiblist.clear();
+*/
 
 	DWORD dwHeroList = Memory.Read<DWORD>(ClientAddress + oHeroList);
 	DWORD HeroArray = Memory.Read<DWORD>(dwHeroList + 0x04);
@@ -103,3 +103,5 @@ void Initialize::AddObjects() //todo move this out of directx.cpp
 	//}
 
 }
+Initialize* init = new Initialize();
+

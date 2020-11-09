@@ -12,7 +12,7 @@ class Initialize
 {
 public:
 
-	std::list<std::string>ChampNames = {
+	const std::list<std::string>ChampNames = {
 		"Aatrox", "Ahri", "Akali", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios"
 		"Ashe", "Aurelion Sol", "AurelionSol","Azir", "Bard", "Blitzcrank", "Brand", "Braum", "Caitlyn",
 		"Camille", "Cassiopeia", "Cho'Gath", "Chogath", "Corki", "Darius", "Diana", "Dr. Mundo", "Drmundo", "Draven",
@@ -31,12 +31,13 @@ public:
 		"MonkeyKing", "Mega Gnar", "MegaGnar", "Target Dummy", "TargetDummy"
 	};
 
-	std::list<CObject>ObjList;
+	//std::list<CObject>ObjList;
 	std::list<CObject>herolist;
 	std::list<CObject>turretlist;
 	std::list<CObject>inhiblist;
 	void AddObjects();
 };
 
+extern Initialize* init;
 
 #endif // ! _INITIALIZE_H_

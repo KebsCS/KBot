@@ -27,7 +27,7 @@
 #include "KInterface.h"
 #include "offsets.h"
 #include "ObjectManager.h"
-#include "ByteFiles.h"
+
 
 #include "Initialize.h"
 #include "Config.h"
@@ -50,7 +50,7 @@ private:
     DirectX::XMMATRIX GetViewProjectionMatrix();
 
     bool bConsoleLog = true;
-    Initialize init;
+   
    
 public:
 
@@ -72,7 +72,7 @@ public:
 	void ResetDevice();
 	void MenuInit();
 	ImVec2 WorldToScreen(Vector3 pos);
-    
+
 
 
 };
@@ -105,7 +105,7 @@ struct ConsoleLog
     bool                  ScrollToBottom;
     bool                  StopPrinting;
     bool                  IgnoreStopPrint;
-    Initialize init;
+    
 
     ConsoleLog()
     {
@@ -360,7 +360,7 @@ struct ConsoleLog
         {
             IgnoreStopPrint = true;
             AddLog("Reinitializing objects");
-            init.AddObjects();
+            init->AddObjects();
         }
         else if (Stricmp(command_line, "SAVECFG") == 0)
         {

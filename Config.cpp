@@ -40,6 +40,9 @@ void CConfig::Setup()
 	SetupValue(M.AutoSmite.Master, 1, "AutoSmite", "Master");
 	SetupValue(M.AutoSmite.Slot, 0, "AutoSmite", "Slot");
 
+	SetupValue(M.Wards.Master, 1, "Wards", "Master");
+
+	SetupValue(M.Inhibs.Master, 1, "Inhibs", "Master");
 
 }
 

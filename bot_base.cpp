@@ -4,6 +4,7 @@
 #include "offsets.h"
 #include "ObjectManager.h"
 
+
 LPCWSTR overlayClassName = L"ovrl"; // overlay window name
 
 HWND hWnd;
@@ -46,7 +47,50 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 
+std::list<CObject>wardList;
 
+static DWORD ObjManager = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
+void ObjListLoop()
+{
+    while (true)
+    {
+        std::list<CObject>currobjList;
+        DWORD ObjectArray = Memory.Read<DWORD>(ObjManager + 0x20, sizeof(DWORD));
+
+        for (int i = 0; i < 10000; i++)
+        {
+            CObject obj(Memory.Read<DWORD>(ObjectArray + (0x4 * i), sizeof(DWORD)));
+
+          //  if (obj.Address() == Local.Address())
+          //      continue;
+          /*  if (!obj.IsVisible())
+                continue;
+            if (obj.GetHealth() > 1.f || obj.GetHealth() < -1.f)
+                continue;
+            Vector3 StartPos = obj.GetMissileStartPos();
+            if (StartPos.X == 0 || StartPos.Z == 0 || StartPos.Y == 0)
+                continue;
+            Vector3 EndPos = obj.GetMissileEndPos();
+            if (EndPos.X == 0 || EndPos.Z == 0 || StartPos.Y == 0)
+                continue;
+            if (obj.GetDistToMe(Local) > 1000)
+                continue;*/
+           // clog.AddLog("%s %x %i", obj.GetName().c_str(), obj.Address(), obj.GetAlive());
+            
+              
+            if (!obj.IsWard())// || obj.GetMaxHealth() != 4.f)
+                continue;
+            //clog.AddLog("%s ", obj.GetName().c_str());
+
+            currobjList.emplace_back(obj);
+
+        }
+        //objList.clear();
+       // if(!currobjList.empty())
+        wardList = currobjList;
+        Sleep(5000);
+    }
+}
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -125,6 +169,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
+    CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0);
 
     if (GameTime > 0) // if in game
     {
@@ -153,9 +198,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
     }
-    DWORD Obj = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
 
-    DWORD ObjectArray = Memory.Read<DWORD>(Obj + 0x20, sizeof(DWORD));
 
     //message Loop
     ZeroMemory(&Msg, sizeof(Msg));
@@ -201,7 +244,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
         //GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
-        //clog.AddLog("%x", Local.GetSpellByID(0));
       
         Sleep((M.AntiLag) +1);
     }

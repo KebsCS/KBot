@@ -16,7 +16,7 @@ ID3DXFont* pFont;
 
 
 Draw* draw;
-Visuals vis;
+Visuals *vis;
 
 
 DirectX::XMMATRIX Direct3D9Render::ReadMatrix(DWORD address)
@@ -136,7 +136,7 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 
 
 
-	init.AddObjects();
+	init->AddObjects();
 	
 	return true;
 }
@@ -159,6 +159,10 @@ static void HelpMarker(const char* desc)
 static DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oMinionList);
 
 
+extern std::list<CObject>wardList;
+
+bool xd = true;
+float xdtimer = 0;
 
 int Direct3D9Render::Render()
 {
@@ -214,10 +218,12 @@ int Direct3D9Render::Render()
 
 		ImGui::Separator();
 
-		ImGui::SliderInt("AntiLag", &M.AntiLag, 0, 50);
-		ImGui::SameLine(); HelpMarker("Higher for slower PCs");
+		ImGui::Checkbox("Wards Range", &M.Wards.Master);
+		ImGui::Checkbox("Inhib Respawn Time", &M.Inhibs.Master);
 
 		ImGui::Separator();
+
+
 
 		ImGui::Checkbox("Auto Smite \tSlot:", &M.AutoSmite.Master);
 		ImGui::SameLine();
@@ -225,6 +231,13 @@ int Direct3D9Render::Render()
 		ImGui::RadioButton("F", &M.AutoSmite.Slot, 1);
 
 		ImGui::Separator();
+
+		ImGui::SliderInt("AntiLag", &M.AntiLag, 0, 50);
+		ImGui::SameLine(); HelpMarker("Higher for slower PCs");
+
+		ImGui::Separator();
+
+
 
 
 		ImGui::Columns(2, 0, false);
@@ -267,10 +280,10 @@ int Direct3D9Render::Render()
 		//turret loop
 		if (M.AARange.Turrets)
 		{
-			for (auto obj : init.turretlist)
+			for (auto obj : init->turretlist)
 			{
 				if(M.AARange.Turrets)
-					vis.DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0] * 255, M.AARange.Color[1] * 255, M.AARange.Color[2] * 255, M.AARange.Color[3] * 255),
+					vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0] * 255, M.AARange.Color[1] * 255, M.AARange.Color[2] * 255, M.AARange.Color[3] * 255),
 						false, RGBA(M.AARange.LocalColor[0] * 255, M.AARange.LocalColor[1] * 255, M.AARange.LocalColor[2] * 255, M.AARange.LocalColor[3] * 255));
 			}
 		}
@@ -278,17 +291,17 @@ int Direct3D9Render::Render()
 		//hero loop
 		if (M.Cooldowns.Master || M.AARange.Master || M.Tracers.Master)
 		{
-			for (auto obj : init.herolist)
+			for (auto obj : init->herolist)
 			{
 				if (M.Cooldowns.Master)
-					vis.CooldownTimers(obj, 1);
+					vis->CooldownTimers(obj, 1);
 
 				if (M.AARange.Master)
-					vis.DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0] * 255, M.AARange.Color[1] * 255, M.AARange.Color[2] * 255, M.AARange.Color[3] * 255),
+					vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0] * 255, M.AARange.Color[1] * 255, M.AARange.Color[2] * 255, M.AARange.Color[3] * 255),
 						M.AARange.Local, RGBA(M.AARange.LocalColor[0] * 255, M.AARange.LocalColor[1] * 255, M.AARange.LocalColor[2] * 255, M.AARange.LocalColor[3] * 255));
 
 				if (M.Tracers.Master)
-					vis.DrawTracers(obj, M.Tracers.Thickness / 10.f);
+					vis->DrawTracers(obj, M.Tracers.Thickness / 10.f);
 
 				//float dist = obj.GetDistToMe(Local);
 				//clog.AddLog("%s , %f", obj.GetName(), dist);
@@ -310,10 +323,10 @@ int Direct3D9Render::Render()
 
 
 				if(M.AutoSmite.Master)
-					vis.AutoSmite(obj, M.AutoSmite.Slot);
+					vis->AutoSmite(obj, M.AutoSmite.Slot);
 				//clog.AddLog("%s , %x ", minion.GetName().c_str(), minion.Address());
 				if (M.LastHit.Master)
-					vis.LastHit(obj, RGBA(M.LastHit.Color[0] * 255, M.LastHit.Color[1] * 255, M.LastHit.Color[2] * 255, M.LastHit.Color[3] * 255));
+					vis->LastHit(obj, RGBA(M.LastHit.Color[0] * 255, M.LastHit.Color[1] * 255, M.LastHit.Color[2] * 255, M.LastHit.Color[3] * 255));
 				
 				/*ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
 				float dmg = Local.GetTotalDamage(&obj);
@@ -322,7 +335,58 @@ int Direct3D9Render::Render()
 
 			}
 		}
+		//clog.AddLog("%i", wardList.size());
+		if (M.Wards.Master)
+		{
+			for (auto obj : wardList)
+			{
+				draw->CircleRange(obj.GetPosition(), 10, 900, RGBA(255, 0, 0));
+			}
+		}
 
+		if (M.Inhibs.Master)
+		{
+			for (auto obj : init->inhiblist)
+			{
+				if (M.Inhibs.Master)
+				{
+					vis->InhibTimers(&obj);
+				}
+
+			}
+		}
+		
+		float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+		if (xd)
+		{
+			xd = false;
+			xdtimer = GameTime + 300;
+
+		}
+		draw->String(std::to_string(xdtimer - GameTime), 100, 100, centered, RGBA(255, 255, 255),fontTahoma);
+
+	/*	DWORD Obj = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
+
+		DWORD ObjectArray = Memory.Read<DWORD>(Obj + 0x20, sizeof(DWORD));
+		for (int i = 0; i < 1500; i++)*/
+		//if (!objList.empty())
+		//{
+		//	for (auto obj : objList)
+		//	{
+		//		//CObject obj(Memory.Read<DWORD>(ObjectArray + (0x4 * i), sizeof(DWORD)));
+		//		Vector3 StartPos = obj.GetMissileStartPos();
+		//		Vector3 EndPos = obj.GetMissileEndPos();
+		//		std::string sName = obj.GetName();
+		//		if (sName.empty())
+		//			continue;
+		//		if (sName.find("SRU_") != std::string::npos)
+		//			continue;
+		//		ImVec2 RealStartPos = WorldToScreen(StartPos);
+		//		ImVec2 RealEndPos = WorldToScreen(EndPos);
+		//		draw->Line(RealStartPos.x, RealStartPos.y, RealEndPos.x, RealEndPos.y, RGBA(255, 255, 255));
+		//		clog.AddLog("%s , %x , %f", sName.c_str(), obj.Address(), obj.GetHealth());
+		//	}
+		//}
 		
 		//drawings test
 

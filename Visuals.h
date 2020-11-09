@@ -19,6 +19,8 @@ public:
 	void AutoSmite(CObject obj, int slot);
 
 	void LastHit(CObject obj, RGBA color);
+
+	void InhibTimers(CObject* obj);
 };
 
 
