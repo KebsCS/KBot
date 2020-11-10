@@ -7,6 +7,15 @@
 
 #include <cmath>
 
+#include "xor.h"
+
+#define ENABLE_XOR
+
+#ifdef ENABLE_XOR
+#define XorStr _xor_ 
+#else
+#define XorStr
+#endif
 
 // default size
 #define SCREENWIDTH ::GetSystemMetrics(SM_CXSCREEN)

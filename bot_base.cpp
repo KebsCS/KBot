@@ -45,11 +45,74 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
+DWORD GetFirst(DWORD objManager)
+{
+    int v1; // eax
+    int v2; // edx
+
+    v1 = Memory.Read<int>(objManager + 20);
+    v2 = Memory.Read<int>(objManager + 24);
+    if (v1 == v2)
+        return 0;
+    while (Memory.Read<BYTE>(v1) & 1 || !Memory.Read<DWORD>(v1))
+    {
+        v1 += 4;
+        if (v1 == v2)
+            return 0;
+    }
+    return Memory.Read<DWORD>(v1);
+}
+
+DWORD OBJManager = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
+DWORD GetNext(DWORD objManager, DWORD a2)
+{
+    int v2; // eax
+    uint16_t v3; // edx
+    uint16_t v4; // esi
+    int v5; // eax
+
+    v2 = Memory.Read<int>(objManager + 20);
+    v3 = Memory.Read<uint16_t>(a2 + 32) + 1;
+    v4 = (Memory.Read<uint16_t>(objManager + 24) - v2) >> 2;
+    if (v3 >= v4)
+        return 0;
+    v5 = v2 + 4 * v3;
+    while (Memory.Read<BYTE>(v5) & 1 || !Memory.Read<DWORD>(v5))
+    {
+        ++v3;
+        v5 += 4;
+        if (v3 >= v4)
+            return 0;
+    }
+    return Memory.Read<DWORD>(v5);
+}
+
+
+std::vector<DWORD> GetObjectList()
+{
+
+    std::vector<DWORD> list;
+    auto obj = GetFirst(OBJManager);
+
+    while (obj)
+    {
+        if (obj)
+        {
+            // clog.AddLog("%x", obj);
+            list.push_back(obj);
+        }
+
+        obj = GetNext(OBJManager, obj);
+    }
+
+    return list;
+}
 
 std::list<CObject>minionList;
-DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oMinionList);
-void ObjListLoop()
+
+void MinionListLoop()
 {
+    DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oMinionList);
     while (true)
     {
         std::list<CObject>currobjList;
@@ -85,6 +148,41 @@ void ObjListLoop()
     }
 }
 
+std::list<CObject>objList;
+
+void ObjListLoop()
+{
+    while (true)
+    {
+     
+       // GetObjectList();
+        Sleep(1);
+    }
+    //DWORD Obj = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
+    //
+    //while (true)
+    //{
+    //    DWORD ObjectArray = Memory.Read<DWORD>(Obj + 0x20, sizeof(DWORD));
+    //    std::list<CObject>currobjList;
+    //    int i = 0;
+    //    while (true)
+    //    {
+    //        CObject obj(Memory.Read<DWORD>(ObjectArray + (0x4 * i), sizeof(DWORD)));
+    //        i++;
+    //        if (obj.Address() == 0x1) // if at the end of obj manager
+    //        {
+    //             clog.AddLog("size: %i", objList.size());
+    //            break;
+    //        }
+    //        currobjList.emplace_back(obj);
+    //       
+    //    }
+    //    objList = currobjList;
+    //    Sleep(1);
+    //}
+
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 
@@ -114,7 +212,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
 
-    if (FindWindow(0, L"League of Legends (TM) Client"))
+    if (FindWindowA(0, XorStr("League of Legends (TM) Client")))
     {
        // clog.AddLog("Window Found");
 
@@ -129,7 +227,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     else
     {
        // clog.AddLog("[error] Window Creation Failed");
-        MessageBox(0, L" Window Creation Failed", 0, 0);
+        MessageBox(0, L"Game not found", L"Error - window creation failed", 0);
         ::UnregisterClass(wc.lpszClassName, wc.hInstance);
         return 0;
     }
@@ -161,12 +259,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
-    CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0);
+  //  CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0);
+    CreateThread(0, 0, (LPTHREAD_START_ROUTINE)MinionListLoop, 0, 0, 0);
+    Sleep(1000);
 
     if (GameTime > 0) // if in game
     {
         
-
+        clog.AddLog("OBJManager: %x", OBJManager);
         clog.AddLog("LocalPlayer: %x", LocalPlayer);
         clog.AddLog("Name: %s", Local.GetName().c_str());
         clog.AddLog("IsVisible: %d", Local.IsVisible());
@@ -235,8 +335,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             break;
         }
         //GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
-
+        //GetObjectList();
       
+        clog.AddLog("%i", GetObjectList().size());
+    
         Sleep(M.AntiLag );
     }
 

@@ -20,6 +20,7 @@ Visuals *vis;
 
 extern std::list<CObject>minionList;
 
+extern std::vector<DWORD> GetObjectList();
 DirectX::XMMATRIX Direct3D9Render::ReadMatrix(DWORD address)
 {
 
@@ -160,6 +161,71 @@ static void HelpMarker(const char* desc)
 
 //bool xd = true;
 //float xdtimer = 0;
+
+bool IsXD(DWORD addy, int flag)
+{
+
+	auto v12 = Memory.Read<DWORD>(addy + 92);
+	auto v5 = addy + 84;
+	auto v6 = Memory.Read<DWORD>(v5);
+	v12 ^= ~(v6);
+
+	auto v7 = Memory.Read<byte>(addy + 82);
+
+	if (v7)
+	{
+		//This probably does not work, i did it blindly because i didn't find a case where v7 was true.
+		auto v8 = 4 - v7;
+		if (v8 < 4)
+		{
+			auto v9 = addy + v8 + 84;
+			auto v9xor = Memory.Read<DWORD>(v9);
+			v12 ^= (int)~(v9xor);
+		}
+	}
+
+	return (v12 & flag) != 0;
+
+}
+
+bool IsDecrypt(int addy, int flag)
+{
+	auto v3 = 0;
+	auto v4 = Memory.Read<byte>(addy + 81);
+	auto v12 = Memory.Read<int>(addy + 92);
+
+	int key = 0;
+	if (v4)
+	{
+		auto v5 = addy + 84;
+		while (v3 < v4)
+		{
+			if (v3 > 1)
+			{
+				// Console.WriteLine("XD");
+			}
+			auto v6 = Memory.Read<int>(v5);
+			v5 += 4;
+			v12 ^= ~(v6);
+			++v3;
+		}
+	}
+
+	auto v7 = Memory.Read<byte>(addy + 82);
+
+	if (v7)
+	{
+		//This probably does not work, i did it blindly because i didn't find a case where v7 was true.
+		auto v8 = 4 - v7;
+		if (v8 < 4)
+		{
+			auto v9 = addy + v8 + 84;
+			auto v9xor = Memory.Read<DWORD>(v9);
+			v12 ^= (int)~(v9xor);
+		}
+	}
+	return (v12 & flag) != 0;
+}
 
 int Direct3D9Render::Render()
 {
@@ -314,6 +380,7 @@ int Direct3D9Render::Render()
 		{
 			for (auto obj : minionList)
 			{
+				//clog.AddLog("%s", obj.GetName().c_str());
 				if (M.Wards.Master)
 					vis->WardsRange(obj);
 
@@ -344,6 +411,27 @@ int Direct3D9Render::Render()
 			}
 		}
 		
+		for (auto a : GetObjectList())
+		{
+			CObject xd(a);
+			ImVec2 RealPos = Direct3D9.WorldToScreen(xd.GetPosition());
+			std::string str = xd.GetName() + " , " + std::to_string(xd.Address());
+			draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+		
+
+		}
+
+		//for (auto obj : objList)
+		//{
+		//	if (IsDecrypt(obj.Address(), 0x1000))
+		//	{
+		//		//clog.AddLog("%s , %i ", obj.GetName().c_str(), obj.Address());
+		//		ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+		//		std::string str = obj.GetName() + " , " + std::to_string(obj.Address());
+		//		draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+		//	
+		//	}
+		//}
 		//float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 		//if (xd)
 		//{
@@ -365,10 +453,7 @@ int Direct3D9Render::Render()
 		//	//clog.AddLog("%s, %i", obj.GetName().c_str() , Memory.Read<int>(obj.Address() + 0xCC));
 		//}
 
-	/*	DWORD Obj = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
 
-		DWORD ObjectArray = Memory.Read<DWORD>(Obj + 0x20, sizeof(DWORD));
-		for (int i = 0; i < 1500; i++)*/
 		//if (!objList.empty())
 		//{
 		//	for (auto obj : objList)
