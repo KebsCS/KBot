@@ -10,10 +10,10 @@ struct Menu
     {};
 
 
-    bool MenuOpen = false;
-    bool ExitBot = false;
-    int AntiLag = 1;
-    bool ConsoleOpen = false;
+    bool MenuOpen;
+    bool ExitBot;
+    int AntiLag;
+    bool ConsoleOpen;
 
     struct
     {

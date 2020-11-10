@@ -119,7 +119,7 @@ void Visuals::CooldownTimers(CObject obj, int type)
 		Rcolor = colorReady;
 	}
 
-	
+
 	draw->String(sQcd, RealPos.x - 20, RealPos.y + 15, centered, Qcolor, Direct3D9.fontTahoma);
 	draw->String(sWcd, RealPos.x - 0, RealPos.y + 15, centered, Wcolor, Direct3D9.fontTahoma);
 	draw->String(sEcd, RealPos.x + 20, RealPos.y + 15, centered, Ecolor, Direct3D9.fontTahoma);
@@ -155,7 +155,7 @@ void Visuals::CooldownTimers(CObject obj, int type)
 		float SmiteDamage = Memory.Read<float>(Summ1 + 0x90);
 		draw->String(std::to_string((int)SmiteDamage), RealPos.x - 7, RealPos.y + 28, lefted, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
 		//int SmiteStacks = Memory.Read<int>(Summ1 + 0x58);
-		
+
 		//if (SmiteStacks == 2)
 		//	draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x - 10, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
 		//else if (SmiteStacks == 0)
@@ -165,7 +165,7 @@ void Visuals::CooldownTimers(CObject obj, int type)
 		//	draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x - 10, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
 		//	Dcolor = RGBA(255, 125, 0);
 		//}
-		
+
 	}
 	else if (obj.SummonerSpell2() == "summonersmite")
 	{
@@ -184,7 +184,7 @@ void Visuals::CooldownTimers(CObject obj, int type)
 		}*/
 	}
 
-	draw->String(sDcd, RealPos.x -10, RealPos.y + 30, centered, Dcolor, Direct3D9.fontTahoma);
+	draw->String(sDcd, RealPos.x - 10, RealPos.y + 30, centered, Dcolor, Direct3D9.fontTahoma);
 	draw->String(sFcd, RealPos.x + 30, RealPos.y + 30, centered, Fcolor, Direct3D9.fontTahoma);
 
 }
@@ -202,7 +202,7 @@ void Visuals::DrawAARanges(CObject obj, int points, int thickness, RGBA color, b
 		Vector3 Position = Local.GetPosition();
 		draw->CircleRange(Position, points, Local.GetAARange(), localcolor, thickness);
 		return;
-	 
+
 	}
 
 	if (obj.GetTeam() == Local.GetTeam())
@@ -271,7 +271,7 @@ void Visuals::DrawTracers(CObject obj, int thickness)
 			draw->Line(LocalRealPos.x, LocalRealPos.y, RealPos.x, RealPos.y, color, thickness);
 
 	}
-	
+
 }
 
 Mouse mouse;
@@ -286,13 +286,13 @@ void Visuals::AutoSmite(CObject obj, int slot)
 	if (slot == 0)
 	{
 		SmiteSlot = Local.GetSpellByID(SpellSlotID::Summoner1);
-		SpellKey = 0x20; //D
+		SpellKey = DIK_D; 
 	}
 	else if (slot == 1)
 	{
 
 		SmiteSlot = Local.GetSpellByID(SpellSlotID::Summoner2);
-		SpellKey = 0x21; //F
+		SpellKey = DIK_F; 
 	}
 	else return;
 	//clog.AddLog("%s , %x , %f ", obj.GetName().c_str(), obj.Address(), obj.GetDistToMe(Local));
@@ -340,11 +340,11 @@ void Visuals::AutoSmite(CObject obj, int slot)
 	if (obj.GetHealth() <= SmiteDamage)
 	{
 		//draw->Image("Smite.png", RealPos.x, RealPos.y, "", 43, 32, 32);  //not working? todo
-		
+
 		BlockInput(1);
 		mouse.StoreCurrentPos();
 		mouse.MouseMoveSLD(RealPos.x, RealPos.y);
-		key.GenerateKeyScancode(SpellKey,false);
+		key.GenerateKeyScancode(SpellKey, false);
 		mouse.MouseMoveSLD(mouse.PrevX, mouse.PrevY);
 		BlockInput(0);
 	}
@@ -377,11 +377,11 @@ void Visuals::LastHit(CObject obj, RGBA color)
 		//todo draw over hp bar instead of circles
 		float xd = dmg / obj.GetHealth();
 		if (critChance == 1.f)
-			xd = dmg*2 / obj.GetHealth();
+			xd = dmg * 2 / obj.GetHealth();
 		//else if (critChance > 0.f && xd <0.5)
 		//	draw->Circle(RealPos.x, RealPos.y, 11 * 0.5, RGBA(255, 255, 0));
-		
-		if(xd<=1)
+
+		if (xd <= 1)
 			draw->Circle(RealPos.x, RealPos.y, 11 * xd, RGBA(255, 255, 255));
 		draw->Circle(RealPos.x, RealPos.y, 11, color);
 	}

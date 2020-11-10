@@ -16,12 +16,12 @@ static DWORD ClientAddress = Memory.GetClientModule();
 class CObject
 {
 private:
-    
+
     DWORD base;
     bool alive;
     float timer;
 public:
-    
+
     int GetTeam()
     {
         return Memory.Read<int>(base + 0x4C);
@@ -34,10 +34,10 @@ public:
     {
         return Memory.ReadString(base + 0x006C);
     }
-	float GetHealth()
-	{
-		return Memory.Read<float>(base + mHP, sizeof(float));
-	}
+    float GetHealth()
+    {
+        return Memory.Read<float>(base + mHP, sizeof(float));
+    }
     float GetMaxHealth()
     {
         return Memory.Read<float>(base + mMaxHP, sizeof(float));
@@ -48,7 +48,7 @@ public:
     }
     float GetMaxMana()
     {
-        return Memory.Read<float>(base+ 0x2A8, sizeof(float));
+        return Memory.Read<float>(base + 0x2A8, sizeof(float));
     }
     float GetArmor()
     {
@@ -109,7 +109,7 @@ public:
         return Memory.ReadString(base + 0x3B7C);
     }
 
-    int GetLevel() 
+    int GetLevel()
     {
         return Memory.Read<int>(base + 0x3694, sizeof(int)); //0x36BC - skillpoints avaiable
     }
@@ -144,7 +144,7 @@ public:
         }
 
 
-        if(target->GetArmor() >=0)
+        if (target->GetArmor() >= 0)
             return this->GetTotalAD() * (100 / (100 + reducedArmor));
         else
             return this->GetTotalAD() * (2 - (100 / (100 - reducedArmor)));

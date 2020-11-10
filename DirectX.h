@@ -43,12 +43,12 @@ extern LPDIRECT3DVERTEXBUFFER9  g_pVB;
 class Direct3D9Render
 {
 private:
-
     DirectX::XMMATRIX ReadMatrix(DWORD address);
     DirectX::XMMATRIX GetViewMatrix();
     DirectX::XMMATRIX GetProjectionMatrix();
     DirectX::XMMATRIX GetViewProjectionMatrix();
   
+
 public:
 
 
@@ -61,13 +61,29 @@ public:
 	}
 	
     ~Direct3D9Render() = default;
-	bool DirectXInit(HWND hWnd); // initializes directx 
-	int Render(); // main loop
-	void InitializeFonts(); // initializes fonts
+
+    // initializes directx, fonts, imgui and objects
+	bool DirectXInit(HWND hWnd); 
+
+    // main rendering loop
+	int Render(); 
+
+    // initializes fonts
+    void InitializeFonts();
+
+    //releases directx and clears imgui
 	void Shutdown();
+
+    //initializes imgui
 	void Renderimgui(HWND hWnd);
+
+    //initializes imgui styles
+    void MenuInit();
+
+    //restarts directx drawings
 	void ResetDevice();
-	void MenuInit();
+	
+    //w2s
 	ImVec2 WorldToScreen(Vector3 pos);
 
 
@@ -363,13 +379,13 @@ struct ConsoleLog
         {
             IgnoreStopPrint = true;
             AddLog("Saved config");
-            Config->Save();
+            Config->Save("cfg");
         }
         else if (Stricmp(command_line, "LOADCFG") == 0)
         {
             IgnoreStopPrint = true;
             AddLog("Loaded config");
-            Config->Load();
+            Config->Load("cfg");
         }
         else
         {

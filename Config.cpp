@@ -3,47 +3,47 @@
 
 void CConfig::Setup()
 {
-	SetupValue(M.AntiLag, 0, "Main", "AntiLag");
-	SetupValue(M.ConsoleOpen, 0, "Main", "ConsoleOpen");
 
+	SetupValue(M.MenuOpen, 1, "Main", "MenuOpen");
+	SetupValue(M.ConsoleOpen, 1, "Main", "ConsoleOpen");
+	SetupValue(M.AntiLag, 1, "Main", "AntiLag");
+	
 
-	SetupValue(M.AARange.Master, 1, "AARange", "Master");
+	SetupValue(M.AARange.Master, 0, "AARange", "Master");
 	SetupValue(M.AARange.Local, 0, "AARange", "Local");
 	SetupValue(M.AARange.Turrets, 0, "AARange", "Turrets");
-	SetupValue(M.AARange.Slider[0], 16, "AARange", "SliderPoints");
-	SetupValue(M.AARange.Slider[1], 10, "AARange", "SliderThickness");
+	SetupValue(M.AARange.Slider[0], 14, "AARange", "SliderPoints");
+	SetupValue(M.AARange.Slider[1], 20, "AARange", "SliderThickness");
 
-	SetupValue(M.AARange.Color[0], 0.f, "AARange", "ColorR");
-	SetupValue(M.AARange.Color[1], 1.f, "AARange", "ColorG");
-	SetupValue(M.AARange.Color[2], 1.f, "AARange", "ColorB");
+	SetupValue(M.AARange.Color[0], 0.965517f, "AARange", "ColorR");
+	SetupValue(M.AARange.Color[1], 0.207541f, "AARange", "ColorG");
+	SetupValue(M.AARange.Color[2], 0.076100f, "AARange", "ColorB");
 	SetupValue(M.AARange.Color[3], 1.f, "AARange", "ColorA");
 
-	SetupValue(M.AARange.LocalColor[0], 0.f, "AARange", "LocalColorR");
-	SetupValue(M.AARange.LocalColor[1], 1.f, "AARange", "LocalColorG");
-	SetupValue(M.AARange.LocalColor[2], 1.f, "AARange", "LocalColorB");
+	SetupValue(M.AARange.LocalColor[0], 0.116188f, "AARange", "LocalColorR");
+	SetupValue(M.AARange.LocalColor[1], 0.209196f, "AARange", "LocalColorG");
+	SetupValue(M.AARange.LocalColor[2], 0.842365f, "AARange", "LocalColorB");
 	SetupValue(M.AARange.LocalColor[3], 1.f, "AARange", "LocalColorA");
 
 
-
-	SetupValue(M.Tracers.Master, 1, "Tracers", "Master");
+	SetupValue(M.Tracers.Master, 0, "Tracers", "Master");
 	SetupValue(M.Tracers.Thickness, 10, "Tracers", "Thickness");
 
 
+	SetupValue(M.Cooldowns.Master, 0, "Cooldowns", "Master");
 
-	SetupValue(M.Cooldowns.Master, 1, "Cooldowns", "Master");
-
-	SetupValue(M.LastHit.Master, 1, "LastHit", "Master");
+	SetupValue(M.LastHit.Master, 0, "LastHit", "Master");
 	SetupValue(M.LastHit.Color[0], 0.f, "LastHit", "ColorR");
 	SetupValue(M.LastHit.Color[1], 1.f, "LastHit", "ColorG");
-	SetupValue(M.LastHit.Color[2], 1.f, "LastHit", "ColorB");
+	SetupValue(M.LastHit.Color[2], 0.f, "LastHit", "ColorB");
 	SetupValue(M.LastHit.Color[3], 1.f, "LastHit", "ColorA");
 
-	SetupValue(M.AutoSmite.Master, 1, "AutoSmite", "Master");
-	SetupValue(M.AutoSmite.Slot, 0, "AutoSmite", "Slot");
+	SetupValue(M.AutoSmite.Master, 0, "AutoSmite", "Master");
+	SetupValue(M.AutoSmite.Slot, 1, "AutoSmite", "Slot");
 
-	SetupValue(M.Wards.Master, 1, "Wards", "Master");
+	SetupValue(M.Wards.Master, 0, "Wards", "Master");
 
-	SetupValue(M.Inhibs.Master, 1, "Inhibs", "Master");
+	SetupValue(M.Inhibs.Master, 0, "Inhibs", "Master");
 
 }
 
@@ -66,7 +66,7 @@ void CConfig::SetupValue(bool& value, bool def, std::string category, std::strin
 }
 
 
-void CConfig::Save()
+void CConfig::Save(std::string fileName)
 {
 	static CHAR path[MAX_PATH];
 	std::string folder, file;
@@ -74,7 +74,7 @@ void CConfig::Save()
 //	if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, path)))
 //	{
 		//folder = std::string(path) + ".\\config\\";
-		file = std::string(path) + ".\\cfg.ini";
+		file = std::string(path) + ".\\" + fileName + ".ini";
 //	}
 
 	//CreateDirectoryA(folder.c_str(), NULL);
@@ -90,7 +90,7 @@ void CConfig::Save()
 		WritePrivateProfileStringA(value->category.c_str(), value->name.c_str(), std::to_string(*value->value).c_str(), file.c_str());
 }
 
-void CConfig::Load()
+void CConfig::Load(std::string fileName)
 {
 	static CHAR path[MAX_PATH];
 	std::string folder, file;
@@ -98,7 +98,7 @@ void CConfig::Load()
 	//if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, path)))
 //	{
 		//folder = std::string(path) + ".\\config\\";
-		file = std::string(path) + ".\\cfg.ini";
+	file = std::string(path) + ".\\" + fileName + ".ini";
 //	}
 
 	//CreateDirectoryA(folder.c_str(), NULL);
@@ -108,6 +108,8 @@ void CConfig::Load()
 	for (auto value : ints)
 	{
 		GetPrivateProfileStringA(value->category.c_str(), value->name.c_str(), "", value_l, 32, file.c_str());
+		if (GetLastError() == 0x2) // if file not found dont load settings
+			return;
 		*value->value = atoi(value_l);
 	}
 

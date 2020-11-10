@@ -4,7 +4,6 @@
 #include "offsets.h"
 #include "ObjectManager.h"
 
-
 LPCWSTR overlayClassName = L"ovrl"; // overlay window name
 
 HWND hWnd;
@@ -119,7 +118,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     {
        // clog.AddLog("Window Found");
 
-        hWnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_LAYERED, overlayClassName, overlayClassName, WS_POPUP, 1, 1, SCREENWIDTH, SCREENHEIGHT, 0, 0, 0, 0);
+        hWnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_LAYERED, overlayClassName, overlayClassName, WS_POPUP, 1, 1, SCREENWIDTH, SCREENHEIGHT, 0, 0, 0, 0);
         SetLayeredWindowAttributes(hWnd, 0, 0, LWA_ALPHA);
         SetLayeredWindowAttributes(hWnd, 0, 0, LWA_COLORKEY);
         //SetLayeredWindowAttributes(hWnd, RGB(255, 255, 255),100, /* 0=transparent, 255=completely solid*/LWA_COLORKEY);
@@ -151,9 +150,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ::ShowWindow(hWnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hWnd);
 
-    
-
-    Config->Load();
+    Config->Setup();
+    Config->Load("cfg");
     clog.AddLog("[startup] Config loaded");
 
 
@@ -239,10 +237,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         //GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
       
-        Sleep((M.AntiLag) +1);
+        Sleep(M.AntiLag );
     }
 
-    Config->Save();
+    Config->Save("cfg");
     Direct3D9.Shutdown();
     ::DestroyWindow(hWnd);
     ::UnregisterClass(wc.lpszClassName, wc.hInstance);

@@ -11,20 +11,6 @@
 
 
 template< typename T >
-class ConfigItem
-{
-	std::string category, name;
-	T* value;
-public:
-	ConfigItem(std::string category, std::string name, T* value)
-	{
-		this->category = category;
-		this->name = name;
-		this->value = value;
-	}
-};
-
-template< typename T >
 class ConfigValue
 {
 public:
@@ -56,10 +42,14 @@ public:
 		Setup();
 	}
 
+	//sets up initial values
 	void Setup();
 
-	void Save();
-	void Load();
+	//saves config to fileName.ini
+	void Save(std::string fileName);
+
+	////loads config from fileName.ini
+	void Load(std::string fileName);
 };
 
 extern CConfig* Config;

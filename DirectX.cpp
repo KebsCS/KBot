@@ -85,7 +85,7 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 
 	if ((g_pD3D = Direct3DCreate9(D3D_SDK_VERSION)) == NULL)
 	{
-		clog.AddLog("[error] Direct3DCreate9Ex failed");
+		MessageBox(0, L" Direct3DCreate9 Failed", 0, 0);
 
 		return false;
 	}
@@ -101,20 +101,21 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 	g_d3dpp.BackBufferHeight = SCREENHEIGHT;
 	g_d3dpp.EnableAutoDepthStencil = TRUE;
 	g_d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
-	g_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+	g_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE; //D3DPRESENT_INTERVAL_ONE - vsync D3DPRESENT_INTERVAL_IMMEDIATE - no vsync
 	g_d3dpp.MultiSampleType = D3DMULTISAMPLE_NONMASKABLE;
 
 
 	if (g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &g_d3dpp, &g_pd3dDevice) < 0)
 	{
-		clog.AddLog("[error] CreateDeviceEx failed");
+		MessageBox(0, L" CreateDevice Failed", 0, 0);
 
 		return false;
 	}
 
 	if (FAILED(D3DXCreateLine(g_pd3dDevice, &g_Line)))
 	{
-		clog.AddLog("[error] D3DXCreateLine failed");
+		MessageBox(0, L" D3DXCreateLine Failed", 0, 0);
+
 		return false;
 	}
 
@@ -127,6 +128,7 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 	
 	Renderimgui(hWnd);
 
+
 	float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
 	while (GameTime < 1) // pause if not in game
@@ -134,8 +136,6 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 		Sleep(1);
 	}
 	Sleep(2000);
-
-
 
 	init->AddObjects();
 	
@@ -185,7 +185,6 @@ int Direct3D9Render::Render()
 				M.ConsoleOpen = true;
 			ImGui::EndPopup();
 		}
-		
 		ImGui::Checkbox("AA Range", &M.AARange.Master);
 		ImGui::SameLine();
 		ImGui::ColorEdit4("AARangeColor##3", (float*)&M.AARange.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
@@ -232,22 +231,24 @@ int Direct3D9Render::Render()
 		ImGui::SliderInt("AntiLag", &M.AntiLag, 0, 50);
 		ImGui::SameLine(); HelpMarker("Higher for slower PCs");
 
-		ImGui::Separator();
 
 
-		ImGui::Columns(2, 0, false);
-		draw->Image("Flash.png", 0, 0, "", 99, 32, 32, true);
-		draw->Image("Smite.png", 0, 0, "", 99, 32, 32, true);
-		draw->Image("Ignite.png", 0, 0, "", 99, 32, 32, true);
-		draw->Image("Teleport.png", 0, 0, "", 99, 32, 32, true);
-		draw->Image("Heal.png", 0, 0, "", 99, 32, 32, true);
-		ImGui::NextColumn();
-		draw->Image("Exhaust.png", 0, 0, "", 99, 32, 32, true);
-		draw->Image("Barrier.png", 0, 0, "", 99, 32, 32, true);
-		draw->Image("Cleanse.png", 0, 0, "", 99, 32, 32, true);
-		draw->Image("Ghost.png", 0, 0, "", 99, 32, 32, true);
-		draw->Image("Clarity.png", 0, 0, "", 99, 32, 32, true);
-		ImGui::Columns(1);
+		//ImGui::Separator();
+		//ImGui::Columns(2, 0, false);
+		//draw->Image("Flash.png", 0, 0, "", 99, 32, 32, true);
+		//draw->Image("Smite.png", 0, 0, "", 99, 32, 32, true);
+		//draw->Image("Ignite.png", 0, 0, "", 99, 32, 32, true);
+		//draw->Image("Teleport.png", 0, 0, "", 99, 32, 32, true);
+		//draw->Image("Heal.png", 0, 0, "", 99, 32, 32, true);
+		//ImGui::NextColumn();
+		//draw->Image("Exhaust.png", 0, 0, "", 99, 32, 32, true);
+		//draw->Image("Barrier.png", 0, 0, "", 99, 32, 32, true);
+		//draw->Image("Cleanse.png", 0, 0, "", 99, 32, 32, true);
+		//draw->Image("Ghost.png", 0, 0, "", 99, 32, 32, true);
+		//draw->Image("Clarity.png", 0, 0, "", 99, 32, 32, true);
+		//ImGui::Columns(1);
+
+
 		ImGui::End();
 
 		//ImGui::ShowDemoWindow();
@@ -330,6 +331,7 @@ int Direct3D9Render::Render()
 			}
 		}
 
+		//inhib loop
 		if (M.Inhibs.Master)
 		{
 			for (auto obj : init->inhiblist)
@@ -443,6 +445,7 @@ void Direct3D9Render::Renderimgui(HWND hWnd)
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(hWnd);
+	ImGui_ImplDX9_Init(g_pd3dDevice);
 
 }
 
@@ -492,7 +495,6 @@ ImVec2 Direct3D9Render::WorldToScreen(Vector3 pos)
 void Direct3D9Render::MenuInit()
 {
 
-	ImGui_ImplDX9_Init(g_pd3dDevice);
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.IniFilename = "imgui.ini";

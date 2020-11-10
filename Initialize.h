@@ -35,6 +35,8 @@ public:
 	std::list<CObject>herolist;
 	std::list<CObject>turretlist;
 	std::list<CObject>inhiblist;
+
+	//populates object lists
 	void AddObjects();
 };
 
