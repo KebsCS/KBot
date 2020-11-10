@@ -56,6 +56,8 @@ Wed Oct 28 20:45:23 2020
 #define oObjectList 0x28C80E0
 #define oObjectList2 0x28C8108
 
+#define oObjAllList 0x1C7BB5C			//6A 10 A3 ? ? ? ? E8 ? ? ? ? 83 C4 04 85 C0 74 09 
+
 //28C9344
 
 

@@ -13,7 +13,6 @@ static KInterface Memory(R"(\\.\kbotl)");
 static DWORD ClientAddress = Memory.GetClientModule();
 
 
-
 class CObject
 {
 private:
@@ -173,9 +172,16 @@ public:
 
         return this->GetHealth() <= GetTotalDamage(this);
     }
-    bool IsWard()
+    int IsWard()
     {
-        return this->GetMaxHealth() == 3.f || this->GetName() == "JammerDevice";
+        std::string name = this->GetName();
+        if (this->GetMaxHealth() == 3.f)
+            return 1;
+        else if (name == "JammerDevice")
+            return 2;
+        else if (this->GetMaxHealth() == 1.f && this->GetHealth() == 1.f && name.find("Plant") == std::string::npos)
+            return 3;
+        else return 0;
     }
 
     Vector3 GetMissileStartPos()
@@ -229,6 +235,8 @@ public:
 
 static DWORD LocalPlayer = Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD));
 static CObject Local(LocalPlayer);
+
+
 
 
 #endif // !_OBJECTMANAGER_H_

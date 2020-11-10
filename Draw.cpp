@@ -251,16 +251,6 @@ void  Draw::CircleFilled(int x, int y, float r, RGBA rgb)
 	g_pd3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, CIRCLE_RESOLUTION - 1, &verts, sizeof(VERTEX_2D_DIF));
 }
 
-
-ImVec2 getCordByAngle(float angle, float distance) {
-	angle = M_PI * angle / 180;
-	ImVec2 point{ float(0), float(0) };
-	point.x = distance * cos(angle);
-	point.y = distance * sin(angle);
-
-	return point;
-}
-
 void Draw::CircleRange(Vector3 Pos, float points, float r, RGBA color, float thickness)
 {
 

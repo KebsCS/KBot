@@ -13,6 +13,7 @@ struct Menu
     bool MenuOpen = false;
     bool ExitBot = false;
     int AntiLag = 1;
+    bool ConsoleOpen = false;
 
     struct
     {

@@ -28,7 +28,7 @@ public:
 	void StringBoxed(std::string text, int x, int y, int orientation, RGBA color, ID3DXFont* font, RGBA bcolor = RGBA(1, 0, 0), RGBA background = RGBA(0,0,0,0));
 	void Circle(int x, int y, float r, RGBA rgb);
 	void CircleFilled(int x, int y, float r, RGBA rgb);
-	void CircleRange(Vector3 vPos, float points, float r, RGBA color, float thickness = 1.f);
+	void CircleRange(Vector3 Pos, float points, float r, RGBA color, float thickness = 1.f);
 
 };
 extern Draw* draw;

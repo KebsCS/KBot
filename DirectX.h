@@ -48,10 +48,7 @@ private:
     DirectX::XMMATRIX GetViewMatrix();
     DirectX::XMMATRIX GetProjectionMatrix();
     DirectX::XMMATRIX GetViewProjectionMatrix();
-
-    bool bConsoleLog = true;
-   
-   
+  
 public:
 
 
@@ -320,7 +317,7 @@ struct ConsoleLog
 
         IgnoreStopPrint = true;
         // Process command
-        if (Stricmp(command_line, "CLEAR") == 0)
+        if (Stricmp(command_line, "CLEAR") == 0 || Stricmp(command_line, "CLS") == 0)
         {
             ClearLog();
         }

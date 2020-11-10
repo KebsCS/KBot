@@ -4,6 +4,7 @@
 void CConfig::Setup()
 {
 	SetupValue(M.AntiLag, 0, "Main", "AntiLag");
+	SetupValue(M.ConsoleOpen, 0, "Main", "ConsoleOpen");
 
 
 	SetupValue(M.AARange.Master, 1, "AARange", "Master");

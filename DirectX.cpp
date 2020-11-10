@@ -18,6 +18,7 @@ ID3DXFont* pFont;
 Draw* draw;
 Visuals *vis;
 
+extern std::list<CObject>minionList;
 
 DirectX::XMMATRIX Direct3D9Render::ReadMatrix(DWORD address)
 {
@@ -156,13 +157,9 @@ static void HelpMarker(const char* desc)
 	}
 }
 
-static DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oMinionList);
 
-
-extern std::list<CObject>wardList;
-
-bool xd = true;
-float xdtimer = 0;
+//bool xd = true;
+//float xdtimer = 0;
 
 int Direct3D9Render::Render()
 {
@@ -185,7 +182,7 @@ int Direct3D9Render::Render()
 		if (ImGui::BeginPopupContextItem())
 		{
 			if (ImGui::MenuItem("Open Console"))
-				bConsoleLog = true;
+				M.ConsoleOpen = true;
 			ImGui::EndPopup();
 		}
 		
@@ -238,8 +235,6 @@ int Direct3D9Render::Render()
 		ImGui::Separator();
 
 
-
-
 		ImGui::Columns(2, 0, false);
 		draw->Image("Flash.png", 0, 0, "", 99, 32, 32, true);
 		draw->Image("Smite.png", 0, 0, "", 99, 32, 32, true);
@@ -259,12 +254,12 @@ int Direct3D9Render::Render()
 		
 	}
 
-	if (bConsoleLog)
+	if (M.ConsoleOpen)
 	{
-		clog.Draw("Console Log", &bConsoleLog);
+		clog.Draw("Console Log", &M.ConsoleOpen);
 	}
 
-
+	//draw->Image("Smite.png", 0, 0, "", 99, 32, 32, false);
 
 	// Rendering
 	ImGui::EndFrame();
@@ -312,35 +307,26 @@ int Direct3D9Render::Render()
 
 			}
 		}
-		//minion/monster loop
-		if (M.LastHit.Master || M.AutoSmite.Master)
+
+		//minions/monsters/wards loop
+		if (M.Wards.Master || M.LastHit.Master || M.AutoSmite.Master)
 		{
-			DWORD MinionArray = Memory.Read<DWORD>(MinionList + 0x04);
-			int MinionLength = Memory.Read<int>(MinionList + 0x08);
-			for (int i = 0; i < MinionLength * 4; i += 4)
+			for (auto obj : minionList)
 			{
-				CObject obj(Memory.Read<DWORD>(MinionArray + i)); // finds minions faster when its in loop
+				if (M.Wards.Master)
+					vis->WardsRange(obj);
 
-
-				if(M.AutoSmite.Master)
+				if (M.AutoSmite.Master)
 					vis->AutoSmite(obj, M.AutoSmite.Slot);
-				//clog.AddLog("%s , %x ", minion.GetName().c_str(), minion.Address());
+
 				if (M.LastHit.Master)
 					vis->LastHit(obj, RGBA(M.LastHit.Color[0] * 255, M.LastHit.Color[1] * 255, M.LastHit.Color[2] * 255, M.LastHit.Color[3] * 255));
-				
-				/*ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+
+				/*	ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
 				float dmg = Local.GetTotalDamage(&obj);
 				std::string str = obj.GetName() + " , " + std::to_string(dmg) + " , " + std::to_string(obj.Address());
 				draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);*/
 
-			}
-		}
-		//clog.AddLog("%i", wardList.size());
-		if (M.Wards.Master)
-		{
-			for (auto obj : wardList)
-			{
-				draw->CircleRange(obj.GetPosition(), 10, 900, RGBA(255, 0, 0));
 			}
 		}
 
@@ -356,14 +342,26 @@ int Direct3D9Render::Render()
 			}
 		}
 		
-		float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
-		if (xd)
-		{
-			xd = false;
-			xdtimer = GameTime + 300;
+		//float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+		//if (xd)
+		//{
+		//	xd = false;
+		//	xdtimer = GameTime + 300;
 
-		}
-		draw->String(std::to_string(xdtimer - GameTime), 100, 100, centered, RGBA(255, 255, 255),fontTahoma);
+		//}
+		//draw->String(std::to_string(xdtimer - GameTime), 100, 100, centered, RGBA(255, 255, 255),fontTahoma);
+
+
+
+		//DWORD dwMissileList = Memory.Read<DWORD>(ClientAddress + 0x1C7BB5C);
+		//DWORD MissileArray = Memory.Read<DWORD>(dwMissileList + 0x04);
+		//int MissileArrayLength = Memory.Read<int>(dwMissileList + 0x08);
+		//for (int i = 0; i < MissileArrayLength * 4; i += 4)
+		//{
+
+		//	CObject obj(Memory.Read<DWORD>(MissileArray + i));
+		//	//clog.AddLog("%s, %i", obj.GetName().c_str() , Memory.Read<int>(obj.Address() + 0xCC));
+		//}
 
 	/*	DWORD Obj = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
 
@@ -396,7 +394,7 @@ int Direct3D9Render::Render()
 		//draw->StringBoxed("asdfsdgSVX123!_", 700, 200, lefted, RGBA(255, 255, 255), fontTahoma, RGBA(1,0,0),RGBA(255,0,0));
 		//draw->Circle(1100, 500, 100, RGBA(255, 0, 0));
 		//draw->CircleFilled(1400, 500, 100, RGBA(255, 0, 0));
-		//draw->Image("Smite.png", 0, 0, "", 99, 32, 32, false);
+		
 
 		g_pd3dDevice->EndScene();
 	}

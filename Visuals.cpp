@@ -38,7 +38,8 @@ void Visuals::CooldownTimers(CObject obj, int type)
 	int Level = 0x20;
 	int CooldownExpire = 0x28;
 
-	//todo clean this up and summoner icons instead of text and text alligning to center
+	//todo clean this up and summoner icons instead of text 
+	//also spellclass with spell offsets
 	DWORD QSpell = obj.GetSpellByID(SpellSlotID::Q);
 	float GetQCooldownExpire = Memory.Read<float>(QSpell + CooldownExpire, sizeof(float));
 	int GetQLevel = Memory.Read<int>(QSpell + Level, sizeof(int));
@@ -182,8 +183,6 @@ void Visuals::CooldownTimers(CObject obj, int type)
 			Fcolor = RGBA(255, 125, 0);
 		}*/
 	}
-
-
 
 	draw->String(sDcd, RealPos.x -10, RealPos.y + 30, centered, Dcolor, Direct3D9.fontTahoma);
 	draw->String(sFcd, RealPos.x + 30, RealPos.y + 30, centered, Fcolor, Direct3D9.fontTahoma);
@@ -460,6 +459,48 @@ void Visuals::InhibTimers(CObject* obj)
 	//		obj->SetAlive(true);
 	//	}
 	//}
+
+
+}
+
+
+void Visuals::WardsRange(CObject obj)
+{
+	if (Local.GetTeam() == obj.GetTeam())
+		return;
+
+	int type = obj.IsWard();
+	if (!type)
+		return;
+
+	Vector3 Pos = obj.GetPosition();
+	ImVec2 RealPos = Direct3D9.WorldToScreen(Pos);
+
+	if (RealPos.x == 0.f && RealPos.y == 0.f)
+		return;
+
+	if (!((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1))))
+		return;
+
+	if (type == NormalWard)
+	{
+		RGBA WardColor(255, 170, 0);
+		draw->String("Ward", RealPos.x, RealPos.y, centered, WardColor, Direct3D9.fontTahomaSmall);
+		draw->CircleRange(Pos, 14, 900, WardColor);
+	}
+	else if (type == ControlWard)
+	{
+		RGBA ControlWardColor(255, 40, 0);
+		draw->String("Control Ward", RealPos.x, RealPos.y, centered, ControlWardColor, Direct3D9.fontTahomaSmall);
+		draw->CircleRange(Pos, 14, 900, ControlWardColor);
+	}
+	else if (type == BlueWard)
+	{
+		RGBA BlueWardColor(0, 65, 255);
+		draw->String("Blue Ward", RealPos.x, RealPos.y, centered, BlueWardColor, Direct3D9.fontTahomaSmall);
+		draw->CircleRange(Pos, 14, 500, BlueWardColor);
+	}
+
 
 
 }

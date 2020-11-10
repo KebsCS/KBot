@@ -47,19 +47,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 
-std::list<CObject>wardList;
-
-static DWORD ObjManager = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
+std::list<CObject>minionList;
+DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oMinionList);
 void ObjListLoop()
 {
     while (true)
     {
         std::list<CObject>currobjList;
-        DWORD ObjectArray = Memory.Read<DWORD>(ObjManager + 0x20, sizeof(DWORD));
-
-        for (int i = 0; i < 10000; i++)
+        DWORD MinionArray = Memory.Read<DWORD>(MinionList + 0x4);
+        int MinionArrayLength = Memory.Read<int>(MinionList + 0x8);
+        for (int i = 0; i < MinionArrayLength * 4; i += 4)
         {
-            CObject obj(Memory.Read<DWORD>(ObjectArray + (0x4 * i), sizeof(DWORD)));
+            CObject obj(Memory.Read<DWORD>(MinionArray + i));
 
           //  if (obj.Address() == Local.Address())
           //      continue;
@@ -77,18 +76,13 @@ void ObjListLoop()
                 continue;*/
            // clog.AddLog("%s %x %i", obj.GetName().c_str(), obj.Address(), obj.GetAlive());
             
-              
-            if (!obj.IsWard())// || obj.GetMaxHealth() != 4.f)
-                continue;
             //clog.AddLog("%s ", obj.GetName().c_str());
 
             currobjList.emplace_back(obj);
 
         }
-        //objList.clear();
-       // if(!currobjList.empty())
-        wardList = currobjList;
-        Sleep(5000);
+        minionList = currobjList;
+        Sleep(1000);
     }
 }
 

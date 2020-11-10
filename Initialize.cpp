@@ -57,6 +57,10 @@ void Initialize::AddObjects() //todo move this out of directx.cpp
 		clog.AddLog("[error] Added %i/6 inhibitors", inhiblist.size());
 	}
 
+	DWORD dwMissileList = Memory.Read<DWORD>(ClientAddress + 0x1C7BB5C);
+
+	clog.AddLog("inhib %x", dwInhibList);
+	clog.AddLog("missile %x", dwMissileList);
 
 	//DWORD Obj = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
 

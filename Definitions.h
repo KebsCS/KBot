@@ -63,6 +63,13 @@ enum Arrow_Keys : int
 
 };
 
+enum WardType
+{
+	NormalWard = 1,
+	ControlWard = 2,
+	BlueWard = 3,
+};
+
 enum SpellSlotID
 {
 	Q = 0,
@@ -78,7 +85,8 @@ enum SpellSlotID
 	Item5 = 10,
 	Item6 = 11,
 	Trinket = 12,
-	Recall = 13
+	Recall = 13,
+	Passive = 63, 
 };
 
 struct fPoint

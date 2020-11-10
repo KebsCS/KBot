@@ -21,6 +21,8 @@ public:
 	void LastHit(CObject obj, RGBA color);
 
 	void InhibTimers(CObject* obj);
+
+	void WardsRange(CObject obj);
 };
 
 
