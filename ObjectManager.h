@@ -174,14 +174,19 @@ public:
     }
     int IsWard()
     {
-        std::string name = this->GetName();
-        if (this->GetMaxHealth() == 3.f)
-            return 1;
-        else if (name == "JammerDevice")
-            return 2;
-        else if (this->GetMaxHealth() == 1.f && this->GetHealth() == 1.f && name.find("Plant") == std::string::npos)
-            return 3;
-        else return 0;
+        float maxHP = this->GetMaxHealth();
+        if (maxHP == 1.f || maxHP == 3.f || maxHP == 4.f)
+        {
+            std::string name = this->GetName();
+            if (maxHP == 3.f)
+                return 1;
+            else if (name == "JammerDevice")
+                return 2;
+            else if (maxHP == 1.f && this->GetHealth() == 1.f && name.find("Plant") == std::string::npos)
+                return 3;
+            else return 0;
+        }
+        return 0;
     }
 
     Vector3 GetMissileStartPos()

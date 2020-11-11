@@ -20,7 +20,7 @@ Visuals *vis;
 
 extern std::list<CObject>minionList;
 
-extern std::vector<DWORD> GetObjectList();
+extern std::vector<DWORD> objList;
 DirectX::XMMATRIX Direct3D9Render::ReadMatrix(DWORD address)
 {
 
@@ -157,75 +157,123 @@ static void HelpMarker(const char* desc)
 		ImGui::EndTooltip();
 	}
 }
-
-
-//bool xd = true;
-//float xdtimer = 0;
-
-bool IsXD(DWORD addy, int flag)
-{
-
-	auto v12 = Memory.Read<DWORD>(addy + 92);
-	auto v5 = addy + 84;
-	auto v6 = Memory.Read<DWORD>(v5);
-	v12 ^= ~(v6);
-
-	auto v7 = Memory.Read<byte>(addy + 82);
-
-	if (v7)
-	{
-		//This probably does not work, i did it blindly because i didn't find a case where v7 was true.
-		auto v8 = 4 - v7;
-		if (v8 < 4)
-		{
-			auto v9 = addy + v8 + 84;
-			auto v9xor = Memory.Read<DWORD>(v9);
-			v12 ^= (int)~(v9xor);
-		}
-	}
-
-	return (v12 & flag) != 0;
-
-}
-
-bool IsDecrypt(int addy, int flag)
-{
-	auto v3 = 0;
-	auto v4 = Memory.Read<byte>(addy + 81);
-	auto v12 = Memory.Read<int>(addy + 92);
-
-	int key = 0;
-	if (v4)
-	{
-		auto v5 = addy + 84;
-		while (v3 < v4)
-		{
-			if (v3 > 1)
-			{
-				// Console.WriteLine("XD");
-			}
-			auto v6 = Memory.Read<int>(v5);
-			v5 += 4;
-			v12 ^= ~(v6);
-			++v3;
-		}
-	}
-
-	auto v7 = Memory.Read<byte>(addy + 82);
-
-	if (v7)
-	{
-		//This probably does not work, i did it blindly because i didn't find a case where v7 was true.
-		auto v8 = 4 - v7;
-		if (v8 < 4)
-		{
-			auto v9 = addy + v8 + 84;
-			auto v9xor = Memory.Read<DWORD>(v9);
-			v12 ^= (int)~(v9xor);
-		}
-	}
-	return (v12 & flag) != 0;
-}
+//
+//
+//bool sub_2E2450(DWORD obj, int flag)
+//{
+//	DWORD v2; // edi
+//	DWORD v3; // edx
+//	DWORD v4; // esi
+//	DWORD v5; // ecx
+//	DWORD v6; // eax
+//	DWORD v7; // al
+//	DWORD v8; // eax
+//	DWORD v9; // edx
+//	DWORD v10; // cl
+//	int v12; // [esp+8h] [ebp-4h]
+//
+//	v2 = obj;
+//	v3 = 0;
+//	v4 = Memory.Read<int>(obj + 324);
+//	int xd1 = Memory.Read<int>(obj + (88 * 4));
+//	int xd2 = Memory.Read<int>(obj + ((4 * xd1 + 92) * 4));
+//	v12 = Memory.Read<DWORD>(xd2);
+//	if (v4)
+//	{
+//		v5 = obj + 84;
+//	//	do
+//		//{
+//			v6 = Memory.Read<DWORD>(v5);
+//			v5 += 4;
+//			//*(&v12 + v3) ^= ~v6;
+//			++v3;
+//		//} while (v3 < v4);
+//	}
+//	v7 = Memory.Read<int>(v2 + 328);
+//	if (v7)
+//	{
+//		v8 = 4 - v7;
+//		if (v8 < 4)
+//		{
+//			v9 = Memory.Read<int>(v2 + ((	v8 + 84) * 4));
+//			do
+//			{
+//				v10 = v9++;
+//				BYTE xd = Memory.Read<BYTE>(v12 + v8);
+//				xd ^= ~v10;
+//			} while (v8 < 4);
+//		}
+//	}
+//	return (v12 & flag) != 0;
+//}
+//
+////bool xd = true;
+////float xdtimer = 0;
+//
+//bool IsXD(DWORD addy, int flag)
+//{
+//
+//	auto v12 = Memory.Read<int>(addy + 92);
+//	auto v5 = addy + 84;
+//	auto v6 = Memory.Read<int>(v5);
+//	v12 ^= ~v6;
+//
+//	//auto v7 = Memory.Read<int>(addy + 328);
+//
+//	//if (v7)
+//	//{
+//	//	//This probably does not work, i did it blindly because i didn't find a case where v7 was true.
+//	//	auto v8 = 4 - v7;
+//	//	if (v8 < 4)
+//	//	{
+//	//		auto v9 = addy + v8 + 84;
+//	//		auto v9xor = Memory.Read<DWORD>(v9);
+//	//		v12 ^= (int)~(v9xor);
+//	//	}
+//	//}
+//
+//	return (v12 & flag) != 0;
+//
+//}
+//
+//bool IsDecrypt(int addy, int flag)
+//{
+//	auto v3 = 0;
+//	auto v4 = Memory.Read<byte>(addy + 81);
+//	auto v12 = Memory.Read<int>(addy + 92);
+//
+//	int key = 0;
+//	if (v4)
+//	{
+//		auto v5 = addy + 84;
+//		while (v3 < v4)
+//		{
+//			if (v3 > 1)
+//			{
+//				// Console.WriteLine("XD");
+//			}
+//			auto v6 = Memory.Read<int>(v5);
+//			v5 += 4;
+//			v12 ^= ~(v6);
+//			++v3;
+//		}
+//	}
+//
+//	auto v7 = Memory.Read<byte>(addy + 82);
+//
+//	if (v7)
+//	{
+//		//This probably does not work, i did it blindly because i didn't find a case where v7 was true.
+//		auto v8 = 4 - v7;
+//		if (v8 < 4)
+//		{
+//			auto v9 = addy + v8 + 84;
+//			auto v9xor = Memory.Read<DWORD>(v9);
+//			v12 ^= (int)~(v9xor);
+//		}
+//	}
+//	return (v12 & flag) != 0;
+//}
 
 int Direct3D9Render::Render()
 {
@@ -243,76 +291,180 @@ int Direct3D9Render::Render()
 		static int counter = 0;
 		char buf[128];
 		sprintf(buf, "KBot %.1f FPS ###AnimatedTitle", ImGui::GetIO().Framerate);
-		//ImGui::SetNextWindowPos(ImVec2(100, 300), ImGuiCond_FirstUseEver);
-		ImGui::Begin(buf, &M.MenuOpen, ImGuiWindowFlags_AlwaysAutoResize);
+		ImGui::SetNextWindowPos(ImVec2(903, 349), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(350, 350), ImGuiCond_FirstUseEver);
+		ImGui::Begin(buf, &M.MenuOpen);// , ImGuiWindowFlags_AlwaysAutoResize);
 		if (ImGui::BeginPopupContextItem())
 		{
 			if (ImGui::MenuItem("Open Console"))
 				M.ConsoleOpen = true;
 			ImGui::EndPopup();
 		}
-		ImGui::Checkbox("AA Range", &M.AARange.Master);
-		ImGui::SameLine();
-		ImGui::ColorEdit4("AARangeColor##3", (float*)&M.AARange.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
-		ImGui::SameLine();
-		ImGui::Checkbox("Local Player", &M.AARange.Local);
-		ImGui::SameLine();
-		ImGui::ColorEdit4("AARangeLocalColor##3", (float*)&M.AARange.LocalColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
-		ImGui::SameLine();
-		ImGui::Checkbox("Turrets", &M.AARange.Turrets);
 
-	
-		ImGui::SliderInt2("", M.AARange.Slider, 10, 60,"%d");
-		ImGui::Separator();
 
-		ImGui::Checkbox("Tracers\t", &M.Tracers.Master);
-		ImGui::SameLine();
-		ImGui::SliderInt("", &M.Tracers.Thickness, 10, 60, "Thickness: %d ");
-		ImGui::Separator();
-
-		ImGui::Checkbox("Cooldowns", &M.Cooldowns.Master);
-
-		ImGui::Separator();
-
-		ImGui::Checkbox("LastHit Helper", &M.LastHit.Master);
-		ImGui::SameLine();
-		ImGui::ColorEdit4("LastHitColor##3", (float*)&M.LastHit.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
-
-		ImGui::Separator();
-
-		ImGui::Checkbox("Wards Range", &M.Wards.Master);
-		ImGui::Checkbox("Inhib Respawn Time", &M.Inhibs.Master);
-
-		ImGui::Separator();
+		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable;
+		ImGuiTreeNodeFlags collapsing_header_flags = ImGuiTreeNodeFlags_DefaultOpen;
+		if (ImGui::BeginTabBar("TabBar", tab_bar_flags))
+		{
+			if (ImGui::BeginTabItem("Main"))
+			{
+				ImGui::Separator();
+				ImGui::Columns(2, 0, false);
+				draw->Image("Flash.png", 0, 0, "", 99, 32, 32, true);
+				draw->Image("Smite.png", 0, 0, "", 99, 32, 32, true);
+				draw->Image("Ignite.png", 0, 0, "", 99, 32, 32, true);
+				draw->Image("Teleport.png", 0, 0, "", 99, 32, 32, true);
+				draw->Image("Heal.png", 0, 0, "", 99, 32, 32, true);
+				ImGui::NextColumn();
+				draw->Image("Exhaust.png", 0, 0, "", 99, 32, 32, true);
+				draw->Image("Barrier.png", 0, 0, "", 99, 32, 32, true);
+				draw->Image("Cleanse.png", 0, 0, "", 99, 32, 32, true);
+				draw->Image("Ghost.png", 0, 0, "", 99, 32, 32, true);
+				draw->Image("Clarity.png", 0, 0, "", 99, 32, 32, true);
+				ImGui::Columns(1);
 
 
 
-		ImGui::Checkbox("Auto Smite \tSlot:", &M.AutoSmite.Master);
-		ImGui::SameLine();
-		ImGui::RadioButton("D", &M.AutoSmite.Slot, 0); ImGui::SameLine();
-		ImGui::RadioButton("F", &M.AutoSmite.Slot, 1);
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Visuals"))
+			{
+				if (ImGui::CollapsingHeader("AARange", collapsing_header_flags))
+				{
+					ImGui::Separator();
+					ImGui::Checkbox("AA Range", &M.AARange.Master);
+					ImGui::SameLine();
+					ImGui::ColorEdit4("AARangeColor##3", (float*)&M.AARange.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
+					ImGui::SameLine();
+					ImGui::Checkbox("Local Player", &M.AARange.Local);
+					ImGui::SameLine();
+					ImGui::ColorEdit4("AARangeLocalColor##3", (float*)&M.AARange.LocalColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
+					ImGui::SameLine();
+					ImGui::Checkbox("Turrets", &M.AARange.Turrets);
 
-		ImGui::Separator();
-
-		ImGui::SliderInt("AntiLag", &M.AntiLag, 0, 50);
-		ImGui::SameLine(); HelpMarker("Higher for slower PCs");
+				
 
 
+				ImGui::SliderInt2("", M.AARange.Slider, 10, 60, "%d");
+				ImGui::Separator();
 
-		//ImGui::Separator();
-		//ImGui::Columns(2, 0, false);
-		//draw->Image("Flash.png", 0, 0, "", 99, 32, 32, true);
-		//draw->Image("Smite.png", 0, 0, "", 99, 32, 32, true);
-		//draw->Image("Ignite.png", 0, 0, "", 99, 32, 32, true);
-		//draw->Image("Teleport.png", 0, 0, "", 99, 32, 32, true);
-		//draw->Image("Heal.png", 0, 0, "", 99, 32, 32, true);
-		//ImGui::NextColumn();
-		//draw->Image("Exhaust.png", 0, 0, "", 99, 32, 32, true);
-		//draw->Image("Barrier.png", 0, 0, "", 99, 32, 32, true);
-		//draw->Image("Cleanse.png", 0, 0, "", 99, 32, 32, true);
-		//draw->Image("Ghost.png", 0, 0, "", 99, 32, 32, true);
-		//draw->Image("Clarity.png", 0, 0, "", 99, 32, 32, true);
-		//ImGui::Columns(1);
+
+				
+				}
+				
+				if (ImGui::CollapsingHeader("Player", collapsing_header_flags))
+				{
+					ImGui::Checkbox("Tracers\t", &M.Tracers.Master);
+					ImGui::SameLine();
+					ImGui::SliderInt("", &M.Tracers.Thickness, 10, 60, "Thickness: %d ");
+					ImGui::Separator();
+
+					ImGui::Checkbox("Cooldowns", &M.Cooldowns.Master);
+
+				}
+				ImGui::Separator();
+
+				ImGui::Checkbox("LastHit Helper", &M.LastHit.Master);
+				ImGui::SameLine();
+				ImGui::ColorEdit4("LastHitColor##3", (float*)&M.LastHit.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
+
+				ImGui::Separator();
+
+				ImGui::Checkbox("Wards Range", &M.Wards.Master);
+				ImGui::Checkbox("Inhib Respawn Time", &M.Inhibs.Master);
+
+				ImGui::Separator();
+
+
+
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Evade"))
+			{
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Orbwalker"))
+			{
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Misc"))
+			{
+				ImGui::Separator();
+				ImGui::Checkbox("Auto Smite \tSlot:", &M.AutoSmite.Master);
+				ImGui::SameLine();
+				ImGui::RadioButton("D", &M.AutoSmite.Slot, 0); ImGui::SameLine();
+				ImGui::RadioButton("F", &M.AutoSmite.Slot, 1);
+
+				ImGui::Separator();
+
+				ImGui::SliderInt("AntiLag", &M.AntiLag, 0, 50);
+				ImGui::SameLine(); HelpMarker("Higher for slower PCs");
+
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Config"))
+			{
+				ImGui::Separator();
+				static char bufcfg[32] = "cfg";
+				ImGui::InputText("File name", bufcfg, IM_ARRAYSIZE(bufcfg));
+				ImGui::Columns(3, 0, false);
+
+				char value_l[32] = { '\0' };
+				if (ImGui::Button("Save", ImVec2(100.f, 40.f)))
+				{
+					bool exists = false;
+					for (int i = 0; i < M.Configs; i++) // loop through config list size
+					{
+						std::string configName = "fileName" + std::to_string(i);
+						GetPrivateProfileStringA("Config", configName.c_str(), "", value_l, 32, ".\\cfg.ini"); //get every config saved
+						std::string returned = value_l;
+						if (returned == bufcfg) //check if config already exists
+						{
+							exists = true; 
+							Config->Save(bufcfg); //save to it 
+							break;
+						}
+					}
+					if (!exists) // if already exists dont write new configname to file
+					{
+						std::string configName = "fileName" + std::to_string(M.Configs++);
+						WritePrivateProfileStringA("Config", configName.c_str(), bufcfg, ".\\cfg.ini");
+						Config->Save(bufcfg);
+					}
+				}
+				ImGui::NextColumn();
+				if (ImGui::Button("Load", ImVec2(100.f, 40.f)))
+					Config->Load(bufcfg);
+				ImGui::NextColumn();
+				if (ImGui::Button("Default", ImVec2(100.f, 40.f)))
+					Config->Setup();
+				ImGui::Columns(1);
+				ImGui::Separator();
+				
+				for (int i = 0; i < M.Configs; i++) // print every config
+				{
+					std::string configName = "fileName" + std::to_string(i);
+					GetPrivateProfileStringA("Config", configName.c_str(), "", value_l, 32, ".\\cfg.ini");
+					std::string returned = value_l;
+					ImGui::Text(returned.c_str());
+					ImGui::SameLine();
+					std::string savebuttonName = "Save to##" + returned;
+					if (ImGui::Button(savebuttonName.c_str()))
+						Config->Save(returned);
+					ImGui::SameLine();
+					std::string loadbuttonName = "Load##" + returned;
+					if (ImGui::Button(loadbuttonName.c_str()))
+						Config->Load(returned);
+					ImGui::Separator();
+					
+				}
+
+				
+
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
+		}
 
 
 		ImGui::End();
@@ -410,16 +562,44 @@ int Direct3D9Render::Render()
 
 			}
 		}
-		
-		for (auto a : GetObjectList())
+		extern std::list<CObject>missileList;
+		for (auto a : missileList)
 		{
-			CObject xd(a);
-			ImVec2 RealPos = Direct3D9.WorldToScreen(xd.GetPosition());
+			
+			/*ImVec2 RealPos = Direct3D9.WorldToScreen(xd.GetPosition());
 			std::string str = xd.GetName() + " , " + std::to_string(xd.Address());
-			draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+			if (IsXD(xd.Address(), 0x1000))
+				draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);*/
+
+
+			Vector3 StartPos = a.GetMissileStartPos();
+			Vector3 EndPos = a.GetMissileEndPos();
+			//clog.AddLog("%s", obj.GetName().c_str());
+			ImVec2 RealStartPos = WorldToScreen(StartPos);
+			ImVec2 RealEndPos = WorldToScreen(EndPos);
+
+			if (RealStartPos.x == 0 && RealEndPos.y == 0)
+				continue;
+
+			if (!((RealStartPos.x <= SCREENWIDTH * 1.2) && (RealStartPos.x >= SCREENWIDTH / 2 * (-1)) && (RealStartPos.y <= SCREENHEIGHT * 1.5) && (RealStartPos.y >= SCREENHEIGHT / 2 * (-1))))
+				continue;
+
+			draw->Line(RealStartPos.x, RealStartPos.y, RealEndPos.x, RealEndPos.y, RGBA(255, 255, 255));
 		
 
 		}
+
+
+	/*	DWORD dwMissileList = Memory.Read<DWORD>(ClientAddress + 0x1C7BB5C);
+
+		DWORD MinionArray = Memory.Read<DWORD>(dwMissileList + 0x84);
+		int MinionArrayLength = Memory.Read<int>(dwMissileList + 0x88);
+		for (int i = 0; i < MinionArrayLength * 4; i += 4)
+		{
+			CObject obj(Memory.Read<DWORD>(MinionArray + i));
+			clog.AddLog("%s", obj.GetName().c_str());
+		}*/
+
 
 		//for (auto obj : objList)
 		//{

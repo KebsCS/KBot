@@ -63,7 +63,7 @@ DWORD GetFirst(DWORD objManager)
     return Memory.Read<DWORD>(v1);
 }
 
-DWORD OBJManager = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
+static DWORD OBJManager = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
 DWORD GetNext(DWORD objManager, DWORD a2)
 {
     int v2; // eax
@@ -73,7 +73,7 @@ DWORD GetNext(DWORD objManager, DWORD a2)
 
     v2 = Memory.Read<int>(objManager + 20);
     v3 = Memory.Read<uint16_t>(a2 + 32) + 1;
-    v4 = (Memory.Read<uint16_t>(objManager + 24) - v2) >> 2;
+    v4 = (Memory.Read<int>(objManager + 24) - v2) >> 2;
     if (v3 >= v4)
         return 0;
     v5 = v2 + 4 * v3;
@@ -87,6 +87,7 @@ DWORD GetNext(DWORD objManager, DWORD a2)
     return Memory.Read<DWORD>(v5);
 }
 
+std::list<CObject>missileList;
 
 std::vector<DWORD> GetObjectList()
 {
@@ -96,8 +97,37 @@ std::vector<DWORD> GetObjectList()
 
     while (obj)
     {
+        //missileList.clear();
+
         if (obj)
         {
+            CObject xd(obj);
+            if (xd.Address() != Local.Address())
+            {
+                if (xd.GetTeam() == 100 || xd.GetTeam() == 200 || xd.GetTeam() == 300)
+                {
+                    if (xd.IsVisible())
+                    {
+                        if (!(xd.GetHealth() > 1.f || xd.GetHealth() < -1.f))
+                        {
+                            Vector3 StartPos = xd.GetMissileStartPos();
+                            if (!(StartPos.X == 0 || StartPos.Z == 0 || StartPos.Y == 0))
+                            {
+                                Vector3 EndPos = xd.GetMissileEndPos();
+                                if (!(EndPos.X == 0 || EndPos.Z == 0 || StartPos.Y == 0))
+                                {
+                                    if (xd.GetDistToMe(Local) < 1500.f)
+                                    {
+                                        missileList.emplace_back(xd);
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        
             // clog.AddLog("%x", obj);
             list.push_back(obj);
         }
@@ -148,40 +178,205 @@ void MinionListLoop()
     }
 }
 
-std::list<CObject>objList;
+std::vector<DWORD>objList;
 
 void ObjListLoop()
 {
     while (true)
     {
-     
-       // GetObjectList();
-        Sleep(1);
-    }
-    //DWORD Obj = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
-    //
-    //while (true)
-    //{
-    //    DWORD ObjectArray = Memory.Read<DWORD>(Obj + 0x20, sizeof(DWORD));
-    //    std::list<CObject>currobjList;
-    //    int i = 0;
-    //    while (true)
-    //    {
-    //        CObject obj(Memory.Read<DWORD>(ObjectArray + (0x4 * i), sizeof(DWORD)));
-    //        i++;
-    //        if (obj.Address() == 0x1) // if at the end of obj manager
-    //        {
-    //             clog.AddLog("size: %i", objList.size());
-    //            break;
-    //        }
-    //        currobjList.emplace_back(obj);
-    //       
-    //    }
-    //    objList = currobjList;
-    //    Sleep(1);
-    //}
+        objList = GetObjectList();
 
+        Sleep(10);
+    }
 }
+
+//double sub_3A7270(DWORD obj)
+//{
+//    float v1; // xmm0_4
+//    double result; // st7
+//
+//    v1 = Memory.Read<int>(obj + 1108);
+//    if (v1 == 3.4028235e38)
+//        result = 65.0;
+//    else
+//        result = v1;
+//    return result;
+//}
+//
+//
+//bool sub_BA5B80(DWORD obj)
+//{
+//    return Memory.Read<int>(obj) > Memory.Read<int>(obj+12) || Memory.Read<int>(obj+4) > Memory.Read<int>(obj+16) || Memory.Read<int>(obj+8) > Memory.Read<int>(obj +20);
+//}
+//
+//double sub_3F76C0(DWORD obj)
+//{
+//    DWORD v1; // esi
+//    __int64 v3; // [esp+4h] [ebp-24h]
+//    float v4; // [esp+Ch] [ebp-1Ch]
+//    __int64 v5; // [esp+1Ch] [ebp-Ch]
+//    float v6; // [esp+24h] [ebp-4h]
+//
+//    v1 = obj + 60;
+//
+//    auto xd = Memory.Read<float>(v3);
+//    auto xd2 = Memory.Read<float>(v3+1);
+//    if ((unsigned __int8)sub_BA5B80(obj + 60))
+//    {
+//        v3 = ClientAddress + 0x3544B50;
+//        v4 = Memory.Read<float>(ClientAddress + 0x3544B58);
+//    }
+//    else
+//    {
+//        xd = Memory.Read<int>(v1 + 12) - Memory.Read<int>(v1);
+//        xd2 = Memory.Read<int>(v1 + 16) - Memory.Read<int>(v1 + 4);
+//        v4 = Memory.Read<int>(v1 + 20) - Memory.Read<int>(v1 + 8);
+//        
+//    }
+//    v5 = v3;
+//    v6 = v4;
+//    if ((unsigned __int8)sub_BA5B80(v1))
+//    {
+//        v3 = 0x3544B50;
+//        v4 = Memory.Read<float>(0x3544B58);
+//    }
+//    else
+//    {
+//        
+//        xd = Memory.Read<int>(v1 + 12) - Memory.Read<int>(v1);
+//        xd2 = Memory.Read<int>(v1 + 16) - Memory.Read<int>(v1 + 4);
+//        v4 = Memory.Read<int>(v1 + 20) - Memory.Read<int>(v1 + 8);
+//    }
+//    return (xd + v6) * 0.25;
+//}
+//
+//
+//__int64 sub_134ACA0(unsigned int _ECX, signed int a2)
+//{
+//    DWORD _XMM0;
+//
+//    if ((ClientAddress+ 0x3558A0C) < 6)
+//    {
+//        _XMM0 = (double)_ECX + (double)a2 * 4294967296.0;
+//    }
+//    else
+//    {
+//     /*   __asm
+//        {
+//            vmovd   xmm0, ecx; Move 32 bits
+//            vpinsrd xmm0, xmm0, edx, 1; Insert Dword
+//            vcvtqq2pd xmm0, xmm0; Convert Packed Quadword Integers to Packed Double - Precision Floating - Point Values
+//        }*/
+//    }
+//    return _XMM0;
+//}
+//
+//double sub_A4A2C0(DWORD a1, double a2)
+//{
+//    int v2; // eax
+//    unsigned int v3; // esi
+//    int v4; // ecx
+//
+//    
+//    
+//    v2 = Memory.Read<DWORD>(a1);
+//    v3 = Memory.Read<int>(a1 + 16);
+//    v4 = Memory.Read<DWORD>(Memory.Read<DWORD>(a1 + 48));
+//    if ((Memory.Read<DWORD>(v2 + 52) - v4) >> 7 <= v3)
+//        int error = 1;
+//    return (float)((sub_134ACA0(Memory.Read<DWORD>(((v3 << 7) + v4)), Memory.Read<DWORD>(((v3 << 7) + v4))))
+//        * Memory.Read<double>(ClientAddress + 0x3538B28));
+//}
+//
+//double sub_336C00(DWORD obj, int a2)
+//{
+//    DWORD v2; // ebp
+//    BYTE v3; // ebx
+//    BYTE v4; // edi
+//    DWORD v5; // esi
+//    float v6; // xmm2_4
+//    double v7; // st7
+//    float v8; // xmm0_4
+//    float v10; // [esp+4h] [ebp-Ch]
+//    float v11; // [esp+8h] [ebp-8h]
+//    DWORD v12; // [esp+Ch] [ebp-4h]
+//    float v13; // [esp+14h] [ebp+4h]
+//    
+//    
+//    v2 = Memory.Read<DWORD>(Memory.Read<DWORD>(Memory.Read<int>(obj)));
+//    v13 = Memory.Read<float>(a2 + 488);
+//
+//
+//    v12 = Memory.Read<DWORD>(Memory.Read<DWORD>(Memory.Read<int>(obj + 4)));
+//    if (Memory.Read<DWORD>(Memory.Read<DWORD>(Memory.Read<int>(obj))) != v12)
+//    {
+//        do
+//        {
+//            
+//            
+//            v3 = Memory.Read<int>((Memory.Read<BYTE>(Memory.Read<DWORD>(v2))) + 4);
+//            v4 = Memory.Read<BYTE>(Memory.Read<DWORD>(Memory.Read<DWORD>(v2)));
+//            if (v4 != v3)
+//            {
+//                v5 = Memory.Read<float>(v4 + 8);
+//                do
+//                {
+//                    if (!Memory.Read<DWORD>(v4))
+//                    {
+//                        
+//                        
+//                        v6 = Memory.Read<DWORD>(v5 - 1);
+//                        if (v6 != Memory.Read<DWORD>(v5))
+//                        {
+//                            v11 = Memory.Read<int>(v5 + 8) + Memory.Read<int>(v5 + 4);
+//                            v7 = sub_A4A2C0(Memory.Read<DWORD>((ClientAddress + 0x1C79A08) + 8),v11);
+//                            v8 = Memory.Read<int>(v5 + 4);
+//                            v10 = v7;
+//                            if (v8 < v10)
+//                            {
+//                                if (v10 < v11)
+//                                    v6 = (float)((float)((float)(v10 - v8) / Memory.Read<int>(v5 + 8)) * (float)(Memory.Read<int>(v5 ) - Memory.Read<DWORD>(v5 - 1))) + Memory.Read<DWORD>(v5 - 1);
+//                                else
+//                                    v6 = Memory.Read<int>(v5);
+//                            }
+//                            else
+//                            {
+//                                v6 = Memory.Read<DWORD>(v5 - 1);
+//                            }
+//                        }
+//                        v13 = v6 + v13;
+//                    }
+//                    v4 += 20;
+//                    v5 += 5;
+//                } while (v4 != v3);
+//            }
+//            ++v2;
+//        } while (v2 != v12);
+//    }
+//    return v13;
+//}
+//
+//double GetBoundingRadius_(DWORD obj)
+//{
+//    DWORD v1; // esi
+//    DWORD v2; // eax
+//    double v3; // st7
+//    float v4; // ST08_4
+//    float v6; // [esp+8h] [ebp-4h]
+//   
+//    v1 = obj;
+//    if (!Memory.Read<DWORD>(obj + 3006))
+//        return sub_3F76C0(v1);
+//    v2 = Memory.Read<DWORD>(obj + 228);
+//    v3 = sub_3A7270(v2);
+//    v6 = v3;
+//    v4 = v3;
+//    if (v4 == 0.0)
+//        return sub_3F76C0(v1);
+//    if (Memory.Read<BYTE>(v1 + 8240))
+//        return Memory.Read<int>(v1 + 8236) * v6;
+//    return sub_336C00(Memory.Read<DWORD>(v1) + 1678, (int)(v1 + 1070)) * v6;
+//}
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -227,7 +422,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     else
     {
        // clog.AddLog("[error] Window Creation Failed");
-        MessageBox(0, L"Game not found", L"Error - window creation failed", 0);
+        MessageBox(0, L"Game not found", L"Window creation failed", 0);
         ::UnregisterClass(wc.lpszClassName, wc.hInstance);
         return 0;
     }
@@ -259,8 +454,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
-  //  CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0);
+    Sleep(1000);
     CreateThread(0, 0, (LPTHREAD_START_ROUTINE)MinionListLoop, 0, 0, 0);
+   // CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0);
     Sleep(1000);
 
     if (GameTime > 0) // if in game
@@ -335,10 +531,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             break;
         }
         //GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
-        //GetObjectList();
-      
-        clog.AddLog("%i", GetObjectList().size());
     
+        //clog.AddLog("%i", GetObjectList().size());
+        
+
         Sleep(M.AntiLag );
     }
 

@@ -4,10 +4,11 @@
 void CConfig::Setup()
 {
 
+
 	SetupValue(M.MenuOpen, 1, "Main", "MenuOpen");
 	SetupValue(M.ConsoleOpen, 1, "Main", "ConsoleOpen");
 	SetupValue(M.AntiLag, 1, "Main", "AntiLag");
-	
+	//SetupValue(M.Configs, 0, "Main", "Configs");
 
 	SetupValue(M.AARange.Master, 0, "AARange", "Master");
 	SetupValue(M.AARange.Local, 0, "AARange", "Local");
@@ -45,6 +46,7 @@ void CConfig::Setup()
 
 	SetupValue(M.Inhibs.Master, 0, "Inhibs", "Master");
 
+
 }
 
 void CConfig::SetupValue(int& value, int def, std::string category, std::string name)
@@ -74,10 +76,11 @@ void CConfig::Save(std::string fileName)
 //	if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, path)))
 //	{
 		//folder = std::string(path) + ".\\config\\";
-		file = std::string(path) + ".\\" + fileName + ".ini";
+	file = std::string(path) + ".\\" + fileName + ".ini";
 //	}
 
 	//CreateDirectoryA(folder.c_str(), NULL);
+	WritePrivateProfileStringA("Main", "Configs", std::to_string(M.Configs).c_str(), ".\\cfg.ini");
 
 
 	for (auto value : bools)
@@ -103,7 +106,11 @@ void CConfig::Load(std::string fileName)
 
 	//CreateDirectoryA(folder.c_str(), NULL);
 
+
 	char value_l[32] = { '\0' };
+
+	GetPrivateProfileStringA("Main", "Configs", "", value_l, 32, ".\\cfg.ini");
+	M.Configs = atoi(value_l);
 
 	for (auto value : ints)
 	{
@@ -125,6 +132,8 @@ void CConfig::Load(std::string fileName)
 		GetPrivateProfileStringA(value->category.c_str(), value->name.c_str(), "", value_l, 32, file.c_str());
 		*value->value = !strcmp(value_l, "true");
 	}
+
+	
 }
 
 CConfig* Config = new CConfig();

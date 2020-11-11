@@ -15,6 +15,7 @@ struct Menu
     int AntiLag;
     bool ConsoleOpen;
 
+    int Configs = 0;
     struct
     {
         bool Master;

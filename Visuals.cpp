@@ -360,12 +360,12 @@ void Visuals::LastHit(CObject obj, RGBA color)
 		return;
 	if (!obj.IsVisible())
 		return;
-	Vector3 Position = obj.GetPosition();
 	if (obj.GetDistToMe(Local) > 1500)
 		return;
 	if (obj.GetName().find("Minion_") == std::string::npos)
 		return;
 
+	Vector3 Position = obj.GetPosition();
 	ImVec2 RealPos = Direct3D9.WorldToScreen(Position);
 	if (RealPos.x == 0 && RealPos.y == 0)
 		return;
