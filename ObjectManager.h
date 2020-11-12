@@ -98,15 +98,15 @@ public:
     }
     std::string SummonerSpell1()
     {
-        return Memory.ReadString(base + 0x3B50);
+        return Memory.ReadString(base + mSummonerSpell1);
     }
     std::string SummonerSpell2()
     {
-        return Memory.ReadString(base + 0x3B5C);
+        return Memory.ReadString(base + mSummonerSpell2);
     }
     std::string KeystoneName()
     {
-        return Memory.ReadString(base + 0x3B7C);
+        return Memory.ReadString(base + mKeystone1);
     }
 
     int GetLevel()
@@ -239,7 +239,7 @@ public:
 };
 
 
-static DWORD LocalPlayer = Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD));
+const static DWORD LocalPlayer = Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD));
 static CObject Local(LocalPlayer);
 
 

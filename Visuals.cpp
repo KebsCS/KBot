@@ -3,14 +3,67 @@
 
 
 
+//std::string Visuals::getSpellImg(std::string name)
+//{
+//	std::string ret = "";
+//	if (name.find("boost") != std::string::npos)
+//		ret = "Cleanse";
+//	else if (name.find("exhaust") != std::string::npos)
+//		ret = "Exhaust";
+//	else if (name.find("flash") != std::string::npos)
+//		ret = "Flash";
+//	else if (name.find("haste") != std::string::npos)
+//		ret = "Ghost";
+//	else if (name.find("heal") != std::string::npos)
+//		ret = "Heal";
+//	else if (name.find("smite") != std::string::npos)
+//		ret = "Smite";
+//	else if (name.find("teleport") != std::string::npos)
+//		ret = "Teleport";
+//	else if (name.find("dot") != std::string::npos)
+//		ret = "Ignite";
+//	else if (name.find("barrier") != std::string::npos)
+//		ret = "Barrier";
+//	else
+//		ret = "Clarity";
+//
+//	ret += ".png";
+//	return ret;
+//}
+//
+
+LPDIRECT3DTEXTURE9 Visuals::getSpellImg(std::string name)
+{
+	LPDIRECT3DTEXTURE9 ret = NULL;
+	if (name.find("boost") != std::string::npos)
+		ret = draw->textureCleanse;
+	else if (name.find("exhaust") != std::string::npos)
+		ret = draw->textureExhaust;
+	else if (name.find("flash") != std::string::npos)
+		ret = draw->textureFlash;
+	else if (name.find("haste") != std::string::npos)
+		ret = draw->textureGhost;
+	else if (name.find("heal") != std::string::npos)
+		ret = draw->textureHeal;
+	else if (name.find("smite") != std::string::npos)
+		ret = draw->textureSmite;
+	else if (name.find("teleport") != std::string::npos)
+		ret = draw->textureTeleport;
+	else if (name.find("dot") != std::string::npos)
+		ret = draw->textureIgnite;
+	else if (name.find("barrier") != std::string::npos)
+		ret = draw->textureBarrier;
+	else
+		ret = draw->textureClarity;
+
+	return ret;
+}
 
 void Visuals::CooldownTimers(CObject obj, int type)
 {
 
-
 	if (obj.GetTeam() == Local.GetTeam())
 		return;
-
 
 	if (obj.GetHealth() <= 0.01f)
 		return;
@@ -182,6 +235,14 @@ void Visuals::CooldownTimers(CObject obj, int type)
 			draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x + 27, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
 			Fcolor = RGBA(255, 125, 0);
 		}*/
+	}
+
+	if (type == 1)
+	{
+		std::string imgsumm1 = obj.SummonerSpell1();
+		std::string imgsumm2 = obj.SummonerSpell2();
+		draw->ImageFromMemory(getSpellImg(imgsumm1), RealPos.x + 60, RealPos.y - 170, sDcd, obj.Address(), 32, 32, false);
+		draw->ImageFromMemory(getSpellImg(imgsumm2), RealPos.x + 60, RealPos.y - 170 + 32, sFcd, obj.Address(), 32, 32, false);
 	}
 
 	draw->String(sDcd, RealPos.x - 10, RealPos.y + 30, centered, Dcolor, Direct3D9.fontTahoma);
@@ -377,7 +438,7 @@ void Visuals::LastHit(CObject obj, RGBA color)
 		//todo draw over hp bar instead of circles
 		float xd = dmg / obj.GetHealth();
 		if (critChance == 1.f)
-			xd = dmg * 2 / obj.GetHealth();
+			xd = dmg * 1.75 / obj.GetHealth();
 		//else if (critChance > 0.f && xd <0.5)
 		//	draw->Circle(RealPos.x, RealPos.y, 11 * 0.5, RGBA(255, 255, 0));
 

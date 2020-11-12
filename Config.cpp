@@ -8,7 +8,6 @@ void CConfig::Setup()
 	SetupValue(M.MenuOpen, 1, "Main", "MenuOpen");
 	SetupValue(M.ConsoleOpen, 1, "Main", "ConsoleOpen");
 	SetupValue(M.AntiLag, 1, "Main", "AntiLag");
-	//SetupValue(M.Configs, 0, "Main", "Configs");
 
 	SetupValue(M.AARange.Master, 0, "AARange", "Master");
 	SetupValue(M.AARange.Local, 0, "AARange", "Local");
@@ -75,12 +74,14 @@ void CConfig::Save(std::string fileName)
 
 //	if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, path)))
 //	{
-		//folder = std::string(path) + ".\\config\\";
-	file = std::string(path) + ".\\" + fileName + ".ini";
+	folder = std::string(path) + ".\\configs\\";
+	file = folder + fileName + ".ini";
 //	}
 
-	//CreateDirectoryA(folder.c_str(), NULL);
-	WritePrivateProfileStringA("Main", "Configs", std::to_string(M.Configs).c_str(), ".\\cfg.ini");
+	CreateDirectoryA(folder.c_str(), NULL);
+	
+	//save number of configs to default cfg
+	WritePrivateProfileStringA("Main", "Configs", std::to_string(M.Configs).c_str(), ".\\configs\\default.ini"); 
 
 
 	for (auto value : bools)
@@ -100,16 +101,17 @@ void CConfig::Load(std::string fileName)
 
 	//if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, path)))
 //	{
-		//folder = std::string(path) + ".\\config\\";
-	file = std::string(path) + ".\\" + fileName + ".ini";
+	folder = std::string(path) + ".\\configs\\";
+	file = folder + fileName + ".ini";
 //	}
 
-	//CreateDirectoryA(folder.c_str(), NULL);
+	CreateDirectoryA(folder.c_str(), NULL);
 
 
 	char value_l[32] = { '\0' };
 
-	GetPrivateProfileStringA("Main", "Configs", "", value_l, 32, ".\\cfg.ini");
+	//get number of configs on startup
+	GetPrivateProfileStringA("Main", "Configs", "", value_l, 32, ".\\configs\\default.ini");
 	M.Configs = atoi(value_l);
 
 	for (auto value : ints)

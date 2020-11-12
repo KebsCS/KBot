@@ -15,7 +15,6 @@ RECT rc;
 ID3DXFont* pFont;
 
 
-Draw* draw;
 Visuals *vis;
 
 extern std::list<CObject>minionList;
@@ -61,17 +60,16 @@ DirectX::XMMATRIX Direct3D9Render::ReadMatrix(DWORD address)
 }
 DirectX::XMMATRIX Direct3D9Render::GetViewMatrix()
 {
-	//in IDA
-	//B9 ? ? ? ? E8 ? ? ? ? B9 ? ? ? ? E9 ? ? ? ? CC CC CC CC CC CC CC CC 
+	
 
 	//DWORD Renderer = Memory.Read<DWORD>(ClientAddress + oRenderer, sizeof(DWORD));
-	return ReadMatrix(ClientAddress + 0x353DF38); // 10.21 0x3529CC8
+	return ReadMatrix(ClientAddress + oViewMatrix); // 10.21 0x3529CC8
 }
 DirectX::XMMATRIX Direct3D9Render::GetProjectionMatrix()
 {
 
 	//DWORD Renderer = Memory.Read<DWORD>(ClientAddress + oRenderer, sizeof(DWORD));
-	return ReadMatrix(ClientAddress + 0x353DF38 +0x40);
+	return ReadMatrix(ClientAddress + oViewMatrix +0x40);
 }
 
 DirectX::XMMATRIX Direct3D9Render::GetViewProjectionMatrix()
@@ -129,6 +127,7 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 	
 	Renderimgui(hWnd);
 
+	draw->InitTextures();
 
 	float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
@@ -275,6 +274,60 @@ static void HelpMarker(const char* desc)
 //	return (v12 & flag) != 0;
 //}
 
+//
+//bool IsFunc(DWORD obj, int a2)
+//{
+//	DWORD v2; // edi
+//	DWORD v3; // edx
+//	DWORD v4; // esi
+//	int v5; // ecx
+//	int v6; // eax
+//	int v7; // al
+//	DWORD v8; // eax
+//	DWORD v9; // edx
+//	int v10; // cl
+//	int v12; // [esp+8h] [ebp-4h]
+//
+//	v2 = obj;
+//	v3 = 0;
+//	v4 = Memory.Read<int>(obj + 324);
+//	DWORD test = Memory.Read<DWORD>(obj);
+//	int tt = Memory.Read<int>(obj + 352);
+//	int abc = 4 * (4 * tt);
+//	int joy = abc + 368;
+//	v12 = Memory.Read<int>(test + joy);
+//	if (v4)
+//	{
+//		v5 = Memory.Read<int>(obj + 84);
+//		do
+//		{
+//			v6 = Memory.Read<DWORD>(v5);
+//			++v5;
+//			auto ppp = Memory.Read<DWORD>(v12 + v3);
+//			ppp ^= ~v6;
+//			++v3;
+//		} while (v3 < v4);
+//	}
+//	v7 = Memory.Read<int>(v2 + 328);
+//	if (v7)
+//	{
+//		v8 = 4 - v7;
+//		if (v8 < 4)
+//		{
+//			int temp1 = (v8 + 84) * 4;
+//			v9 = Memory.Read<int>(v2 + temp1);
+//			do
+//			{
+//				v10 = Memory.Read<DWORD>(v9++);
+//				BYTE temp2 = Memory.Read<BYTE>(v12);
+//				auto xd = Memory.Read<DWORD>(temp2 + v8++);
+//				xd ^= ~v10;
+//			} while (v8 < 4);
+//		}
+//	}
+//	return (v12 & a2) != 0;
+//}
+
 int Direct3D9Render::Render()
 {
 
@@ -298,6 +351,8 @@ int Direct3D9Render::Render()
 		{
 			if (ImGui::MenuItem("Open Console"))
 				M.ConsoleOpen = true;
+			if (ImGui::MenuItem("Exit"))
+				M.ExitBot = true;
 			ImGui::EndPopup();
 		}
 
@@ -310,70 +365,75 @@ int Direct3D9Render::Render()
 			{
 				ImGui::Separator();
 				ImGui::Columns(2, 0, false);
-				draw->Image("Flash.png", 0, 0, "", 99, 32, 32, true);
-				draw->Image("Smite.png", 0, 0, "", 99, 32, 32, true);
-				draw->Image("Ignite.png", 0, 0, "", 99, 32, 32, true);
-				draw->Image("Teleport.png", 0, 0, "", 99, 32, 32, true);
-				draw->Image("Heal.png", 0, 0, "", 99, 32, 32, true);
+				draw->ImageFromMemory(draw->textureFlash, 0, 0, "", 99, 32, 32, true);
+				draw->ImageFromMemory(draw->textureSmite, 0, 0, "", 99, 32, 32, true);
+				draw->ImageFromMemory(draw->textureIgnite, 0, 0, "", 99, 32, 32, true);
+				draw->ImageFromMemory(draw->textureTeleport, 0, 0, "", 99, 32, 32, true);
+				draw->ImageFromMemory(draw->textureHeal, 0, 0, "", 99, 32, 32, true);
 				ImGui::NextColumn();
-				draw->Image("Exhaust.png", 0, 0, "", 99, 32, 32, true);
-				draw->Image("Barrier.png", 0, 0, "", 99, 32, 32, true);
-				draw->Image("Cleanse.png", 0, 0, "", 99, 32, 32, true);
-				draw->Image("Ghost.png", 0, 0, "", 99, 32, 32, true);
-				draw->Image("Clarity.png", 0, 0, "", 99, 32, 32, true);
+				draw->ImageFromMemory(draw->textureExhaust, 0, 0, "", 99, 32, 32, true);
+				draw->ImageFromMemory(draw->textureBarrier, 0, 0, "", 99, 32, 32, true);
+				draw->ImageFromMemory(draw->textureCleanse, 0, 0, "", 99, 32, 32, true);
+				draw->ImageFromMemory(draw->textureGhost, 0, 0, "", 99, 32, 32, true);
+				draw->ImageFromMemory(draw->textureClarity, 0, 0, "", 99, 32, 32, true);
 				ImGui::Columns(1);
-
-
-
+				
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Visuals"))
 			{
-				if (ImGui::CollapsingHeader("AARange", collapsing_header_flags))
+				if (ImGui::CollapsingHeader("Enemies", collapsing_header_flags))
 				{
-					ImGui::Separator();
 					ImGui::Checkbox("AA Range", &M.AARange.Master);
 					ImGui::SameLine();
 					ImGui::ColorEdit4("AARangeColor##3", (float*)&M.AARange.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
 					ImGui::SameLine();
-					ImGui::Checkbox("Local Player", &M.AARange.Local);
-					ImGui::SameLine();
-					ImGui::ColorEdit4("AARangeLocalColor##3", (float*)&M.AARange.LocalColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
-					ImGui::SameLine();
-					ImGui::Checkbox("Turrets", &M.AARange.Turrets);
-
-				
+					
+					
 
 
-				ImGui::SliderInt2("", M.AARange.Slider, 10, 60, "%d");
-				ImGui::Separator();
+					ImGui::SliderInt2("", M.AARange.Slider, 10, 60, "%d");
+					ImGui::Separator();
 
-
-				
-				}
-				
-				if (ImGui::CollapsingHeader("Player", collapsing_header_flags))
-				{
 					ImGui::Checkbox("Tracers\t", &M.Tracers.Master);
 					ImGui::SameLine();
-					ImGui::SliderInt("", &M.Tracers.Thickness, 10, 60, "Thickness: %d ");
+					ImGui::SliderInt("##thick", &M.Tracers.Thickness, 10, 60, "Thickness: %d ");
 					ImGui::Separator();
 
 					ImGui::Checkbox("Cooldowns", &M.Cooldowns.Master);
 
+				
 				}
-				ImGui::Separator();
+				
+				if (ImGui::CollapsingHeader("Local", collapsing_header_flags))
+				{
+					ImGui::Checkbox("AA Range##Local", &M.AARange.Local);
+					ImGui::SameLine();
+					ImGui::ColorEdit4("AARangeLocalColor##3", (float*)&M.AARange.LocalColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
+					ImGui::Separator();
 
-				ImGui::Checkbox("LastHit Helper", &M.LastHit.Master);
-				ImGui::SameLine();
-				ImGui::ColorEdit4("LastHitColor##3", (float*)&M.LastHit.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
+					ImGui::Checkbox("LastHit Helper", &M.LastHit.Master);
+					ImGui::SameLine();
+					ImGui::ColorEdit4("LastHitColor##3", (float*)&M.LastHit.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
 
-				ImGui::Separator();
 
-				ImGui::Checkbox("Wards Range", &M.Wards.Master);
-				ImGui::Checkbox("Inhib Respawn Time", &M.Inhibs.Master);
+				}
 
-				ImGui::Separator();
+				if (ImGui::CollapsingHeader("Structures", collapsing_header_flags))
+				{
+					
+					ImGui::Checkbox("Turrets Range", &M.AARange.Turrets);
+					ImGui::Separator();
+
+					ImGui::Checkbox("Wards Range", &M.Wards.Master);
+					ImGui::Separator();
+
+					ImGui::Checkbox("Inhib Respawn Time", &M.Inhibs.Master);
+
+
+				}
+
+				
 
 
 
@@ -381,6 +441,9 @@ int Direct3D9Render::Render()
 			}
 			if (ImGui::BeginTabItem("Evade"))
 			{
+
+				draw->ImageFromMemory(draw->textureKEKW, 0, 0, "", 99, 256, 256, true);
+
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Orbwalker"))
@@ -390,10 +453,14 @@ int Direct3D9Render::Render()
 			if (ImGui::BeginTabItem("Misc"))
 			{
 				ImGui::Separator();
-				ImGui::Checkbox("Auto Smite \tSlot:", &M.AutoSmite.Master);
+				ImGui::Columns(2, 0, false);
+				ImGui::Checkbox("Auto Smite", &M.AutoSmite.Master);
+				ImGui::NextColumn();
+				ImGui::Text("Slot: ");
 				ImGui::SameLine();
 				ImGui::RadioButton("D", &M.AutoSmite.Slot, 0); ImGui::SameLine();
 				ImGui::RadioButton("F", &M.AutoSmite.Slot, 1);
+				ImGui::Columns(1);
 
 				ImGui::Separator();
 
@@ -405,35 +472,38 @@ int Direct3D9Render::Render()
 			if (ImGui::BeginTabItem("Config"))
 			{
 				ImGui::Separator();
-				static char bufcfg[32] = "cfg";
+				static char bufcfg[32] = "default";
 				ImGui::InputText("File name", bufcfg, IM_ARRAYSIZE(bufcfg));
 				ImGui::Columns(3, 0, false);
 
 				char value_l[32] = { '\0' };
 				if (ImGui::Button("Save", ImVec2(100.f, 40.f)))
 				{
-					bool exists = false;
-					for (int i = 0; i < M.Configs; i++) // loop through config list size
+					if (bufcfg[0] != '\0' && bufcfg[0] != ' ') // if is not empty
 					{
-						std::string configName = "fileName" + std::to_string(i);
-						GetPrivateProfileStringA("Config", configName.c_str(), "", value_l, 32, ".\\cfg.ini"); //get every config saved
-						std::string returned = value_l;
-						if (returned == bufcfg) //check if config already exists
+						bool exists = false;
+						for (int i = 0; i < M.Configs; i++) // loop through config list size
 						{
-							exists = true; 
-							Config->Save(bufcfg); //save to it 
-							break;
+							std::string configName = "fileName" + std::to_string(i);
+							GetPrivateProfileStringA("Config", configName.c_str(), "", value_l, 32, ".\\configs\\default.ini"); //get every config saved
+							std::string returned = value_l;
+							if (returned == bufcfg) //check if config already exists
+							{
+								exists = true;
+								Config->Save(bufcfg); //save to it 
+								break;
+							}
 						}
-					}
-					if (!exists) // if already exists dont write new configname to file
-					{
-						std::string configName = "fileName" + std::to_string(M.Configs++);
-						WritePrivateProfileStringA("Config", configName.c_str(), bufcfg, ".\\cfg.ini");
-						Config->Save(bufcfg);
+						if (!exists) // if already exists dont write new configname to file
+						{
+							std::string configName = "fileName" + std::to_string(M.Configs++);
+							WritePrivateProfileStringA("Config", configName.c_str(), bufcfg, ".\\configs\\default.ini");
+							Config->Save(bufcfg);
+						}
 					}
 				}
 				ImGui::NextColumn();
-				if (ImGui::Button("Load", ImVec2(100.f, 40.f)))
+				if (ImGui::Button("Load", ImVec2(100.f, 40.f))) //todo looking for already existing config in files and adding it to the list
 					Config->Load(bufcfg);
 				ImGui::NextColumn();
 				if (ImGui::Button("Default", ImVec2(100.f, 40.f)))
@@ -444,10 +514,11 @@ int Direct3D9Render::Render()
 				for (int i = 0; i < M.Configs; i++) // print every config
 				{
 					std::string configName = "fileName" + std::to_string(i);
-					GetPrivateProfileStringA("Config", configName.c_str(), "", value_l, 32, ".\\cfg.ini");
+					GetPrivateProfileStringA("Config", configName.c_str(), "", value_l, 32, ".\\configs\\default.ini");
 					std::string returned = value_l;
+					ImGui::Columns(2, 0, false);
 					ImGui::Text(returned.c_str());
-					ImGui::SameLine();
+					ImGui::NextColumn();
 					std::string savebuttonName = "Save to##" + returned;
 					if (ImGui::Button(savebuttonName.c_str()))
 						Config->Save(returned);
@@ -455,6 +526,7 @@ int Direct3D9Render::Render()
 					std::string loadbuttonName = "Load##" + returned;
 					if (ImGui::Button(loadbuttonName.c_str()))
 						Config->Load(returned);
+					ImGui::Columns(1);
 					ImGui::Separator();
 					
 				}
@@ -478,37 +550,23 @@ int Direct3D9Render::Render()
 		clog.Draw("Console Log", &M.ConsoleOpen);
 	}
 
-	//draw->Image("Smite.png", 0, 0, "", 99, 32, 32, false);
 
 	// Rendering
-	ImGui::EndFrame();
+	
 	g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
 	g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
 	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
 	if (g_pd3dDevice->BeginScene() >= 0)
 	{
-		ImGui::Render();
-		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-
-		//turret loop
-		if (M.AARange.Turrets)
-		{
-			for (auto obj : init->turretlist)
-			{
-				if(M.AARange.Turrets)
-					vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0] * 255, M.AARange.Color[1] * 255, M.AARange.Color[2] * 255, M.AARange.Color[3] * 255),
-						false, RGBA(M.AARange.LocalColor[0] * 255, M.AARange.LocalColor[1] * 255, M.AARange.LocalColor[2] * 255, M.AARange.LocalColor[3] * 255));
-			}
-		}
-
+		
 		//hero loop
 		if (M.Cooldowns.Master || M.AARange.Master || M.Tracers.Master)
 		{
 			for (auto obj : init->herolist)
 			{
 				if (M.Cooldowns.Master)
-					vis->CooldownTimers(obj, 1);
+					vis->CooldownTimers(obj, 0);
 
 				if (M.AARange.Master)
 					vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0] * 255, M.AARange.Color[1] * 255, M.AARange.Color[2] * 255, M.AARange.Color[3] * 255),
@@ -517,6 +575,7 @@ int Direct3D9Render::Render()
 				if (M.Tracers.Master)
 					vis->DrawTracers(obj, M.Tracers.Thickness / 10.f);
 
+				
 				//float dist = obj.GetDistToMe(Local);
 				//clog.AddLog("%s , %f", obj.GetName(), dist);
 				//float dmg = Local.GetTotalDamage(&obj);
@@ -524,6 +583,20 @@ int Direct3D9Render::Render()
 				//std::string str = obj.GetName() + " , " + std::to_string(dmg);
 				//draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
 
+			}
+		}
+		ImGui::EndFrame();
+		ImGui::Render();
+		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+
+		//turret loop
+		if (M.AARange.Turrets)
+		{
+			for (auto obj : init->turretlist)
+			{
+				if (M.AARange.Turrets)
+					vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0] * 255, M.AARange.Color[1] * 255, M.AARange.Color[2] * 255, M.AARange.Color[3] * 255),
+						false, RGBA(M.AARange.LocalColor[0] * 255, M.AARange.LocalColor[1] * 255, M.AARange.LocalColor[2] * 255, M.AARange.LocalColor[3] * 255));
 			}
 		}
 
@@ -562,34 +635,43 @@ int Direct3D9Render::Render()
 
 			}
 		}
-		extern std::list<CObject>missileList;
-		for (auto a : missileList)
-		{
-			
-			/*ImVec2 RealPos = Direct3D9.WorldToScreen(xd.GetPosition());
-			std::string str = xd.GetName() + " , " + std::to_string(xd.Address());
-			if (IsXD(xd.Address(), 0x1000))
-				draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);*/
+
+		//for (auto xdd : objList)
+		//{
+		//	CObject a(xdd);
+		//	ImVec2 RealPos = Direct3D9.WorldToScreen(a.GetPosition());
+		//	std::string str = a.GetName() + " , " + std::to_string(a.Address());
+		//	if (IsFunc(a.Address(), 0x8000))
+		//		draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+		//}
+
+		//extern std::list<CObject>missileList;
+		//for (auto a : missileList)
+		//{
+		//	
+	
 
 
-			Vector3 StartPos = a.GetMissileStartPos();
-			Vector3 EndPos = a.GetMissileEndPos();
-			//clog.AddLog("%s", obj.GetName().c_str());
-			ImVec2 RealStartPos = WorldToScreen(StartPos);
-			ImVec2 RealEndPos = WorldToScreen(EndPos);
+		//	Vector3 StartPos = a.GetMissileStartPos();
+		//	Vector3 EndPos = a.GetMissileEndPos();
+		//	//clog.AddLog("%s", obj.GetName().c_str());
+		//	ImVec2 RealStartPos = WorldToScreen(StartPos);
+		//	ImVec2 RealEndPos = WorldToScreen(EndPos);
 
-			if (RealStartPos.x == 0 && RealEndPos.y == 0)
-				continue;
+		//	if (RealStartPos.x == 0 && RealEndPos.y == 0)
+		//		continue;
 
-			if (!((RealStartPos.x <= SCREENWIDTH * 1.2) && (RealStartPos.x >= SCREENWIDTH / 2 * (-1)) && (RealStartPos.y <= SCREENHEIGHT * 1.5) && (RealStartPos.y >= SCREENHEIGHT / 2 * (-1))))
-				continue;
+		//	if (!((RealStartPos.x <= SCREENWIDTH * 1.2) && (RealStartPos.x >= SCREENWIDTH / 2 * (-1)) && (RealStartPos.y <= SCREENHEIGHT * 1.5) && (RealStartPos.y >= SCREENHEIGHT / 2 * (-1))))
+		//		continue;
 
-			draw->Line(RealStartPos.x, RealStartPos.y, RealEndPos.x, RealEndPos.y, RGBA(255, 255, 255));
-		
+		//	draw->Line(RealStartPos.x, RealStartPos.y, RealEndPos.x, RealEndPos.y, RGBA(255, 255, 255));
+		//
 
-		}
+		//}
 
 
+
+		//-------------------------------------------unused
 	/*	DWORD dwMissileList = Memory.Read<DWORD>(ClientAddress + 0x1C7BB5C);
 
 		DWORD MinionArray = Memory.Read<DWORD>(dwMissileList + 0x84);
@@ -653,8 +735,10 @@ int Direct3D9Render::Render()
 		//	}
 		//}
 		
-		//drawings test
 
+
+
+		//drawings test
 		//draw->BoxFilled(200, 500, 100, 100, RGBA(255, 0, 0));
 		//draw->BoxBordered(500, 500, 100, 100,RGBA(255, 0, 0));
 		//draw->BoxOutlined(800, 500, 100, 100, RGBA(255, 0, 0));
@@ -760,10 +844,9 @@ ImVec2 Direct3D9Render::WorldToScreen(Vector3 pos)
 void Direct3D9Render::MenuInit()
 {
 
-
 	ImGuiIO& io = ImGui::GetIO();
-	io.IniFilename = "imgui.ini";
-	io.IniSavingRate = 10.f;
+	io.IniFilename = ".\\configs\\imgui.ini";
+	io.IniSavingRate = 7.f;
 	io.ConfigWindowsResizeFromEdges = 0;
 
 	ImGuiStyle& style = ImGui::GetStyle();

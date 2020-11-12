@@ -1,8 +1,96 @@
 #include "Draw.h"
 
 
+void Draw::InitTextures()
+{
+	LPDIRECT3DTEXTURE9 my_texture = NULL;
+	HRESULT res;
+
+	//todo cleanup this
+	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_barrier, sizeof(g_barrier), &my_texture);
+	if (res != S_OK)
+		return;
+	IM_ASSERT(my_texture != NULL);
+	textureBarrier = my_texture;
+
+	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_clarity, sizeof(g_clarity), &my_texture);
+	if (res != S_OK)
+		return;
+	IM_ASSERT(my_texture != NULL);
+	textureClarity = my_texture;
+
+	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_cleanse, sizeof(g_cleanse), &my_texture);
+	if (res != S_OK)
+		return;
+	IM_ASSERT(my_texture != NULL);
+	textureCleanse = my_texture;
+
+	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_exhaust, sizeof(g_exhaust), &my_texture);
+	if (res != S_OK)
+		return;
+	IM_ASSERT(my_texture != NULL);
+	textureExhaust = my_texture;
+
+	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_flash, sizeof(g_flash), &my_texture);
+	if (res != S_OK)
+		return;
+	IM_ASSERT(my_texture != NULL);
+	textureFlash = my_texture;
+
+	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_ghost, sizeof(g_ghost), &my_texture);
+	if (res != S_OK)
+		return;
+	IM_ASSERT(my_texture != NULL);
+	textureGhost = my_texture;
+
+	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_heal, sizeof(g_heal), &my_texture);
+	if (res != S_OK)
+		return;
+	IM_ASSERT(my_texture != NULL);
+	textureHeal = my_texture;
+
+	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_ignite, sizeof(g_ignite), &my_texture);
+	if (res != S_OK)
+		return;
+	IM_ASSERT(my_texture != NULL);
+	textureIgnite = my_texture;
+
+	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_smite, sizeof(g_smite), &my_texture);
+	if (res != S_OK)
+		return;
+	IM_ASSERT(my_texture != NULL);
+	textureSmite = my_texture;
+
+	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_teleport, sizeof(g_teleport), &my_texture);
+	if (res != S_OK)
+		return;
+	IM_ASSERT(my_texture != NULL);
+	textureTeleport = my_texture;
+
+	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_kekw, sizeof(g_kekw), &my_texture);
+	if (res != S_OK)
+		return;
+	IM_ASSERT(my_texture != NULL);
+	textureKEKW = my_texture;
+
+}
+
+void Draw::ImageFromMemory(LPDIRECT3DTEXTURE9 texturename, int x, int y, std::string text, int index, int in_width, int in_height, bool inWindow)
+{
+
+	// Retrieve texture info
+	D3DSURFACE_DESC my_texture_desc;
+	HRESULT res = texturename->GetLevelDesc(0, &my_texture_desc);
+	IM_ASSERT(res == 0);
 
 
+	//todo drawing with text inw indow without window etc
+	ImGui::Image(texturename, ImVec2((float)in_width, (float)in_height));
+}
+
+
+//not needed since now every texture is loaded from memory
+/* 
 LPDIRECT3DTEXTURE9 Draw::LoadTextureFromFile(const char* filename, LPDIRECT3DTEXTURE9* out_texture, int* out_width, int* out_height, LPDIRECT3DDEVICE9 xD)
 {
 	// Load texture from disk
@@ -21,10 +109,9 @@ LPDIRECT3DTEXTURE9 Draw::LoadTextureFromFile(const char* filename, LPDIRECT3DTEX
 }
 
 
-
 void Draw::Image(std::string _filename, int x, int y, std::string text, int index, int in_width, int in_height, bool inWindow)
 {
-
+	_filename = ".\\images\\" + _filename;
 	bool has_saved_img_Ptr = false;
 	image img_texture;
 	for (image a : image_list) {
@@ -40,7 +127,11 @@ void Draw::Image(std::string _filename, int x, int y, std::string text, int inde
 		img_texture.height = in_height;
 		img_texture.width = in_width;
 		img_texture.loc = ImVec2(img_texture.loc.x, img_texture.loc.y);
-		LoadTextureFromFile(_filename.c_str(), &img_texture.texture, &in_width, &in_height, g_pd3dDevice);
+		if (!(LoadTextureFromFile(_filename.c_str(), &img_texture.texture, &in_width, &in_height, g_pd3dDevice)))
+		{
+			ImGui::Text("%s not found", _filename.c_str());
+			return;
+		}
 
 		image_list.push_back(img_texture);
 
@@ -62,13 +153,17 @@ void Draw::Image(std::string _filename, int x, int y, std::string text, int inde
 	//ImGui::Text("file name = %s", img_texture.filename);
 
 
-	//todo draw over image
-
 	ImGui::Image((void*)img_texture.texture, ImVec2(in_width, in_height));
 	if (!text.empty())
 	{
 		//DrawString("testtesttesttesttest", x, y, RGBA(255, 255, 255), fontTahoma);
-		ImGui::Text(text.c_str());
+		//ImGui::Text(text.c_str());]
+		ImFont* newFont = ImGui::GetFont();
+		newFont->Scale = 2;
+		ImGui::PushFont(newFont);
+		ImGui::GetForegroundDrawList()->AddText(ImVec2(x + in_width / 5, y + in_height / 10), IM_COL32(1,0,0,255), text.c_str());
+		newFont->Scale = 1;
+		ImGui::PopFont();
 	}
 
 	if (!inWindow)
@@ -76,7 +171,7 @@ void Draw::Image(std::string _filename, int x, int y, std::string text, int inde
 		ImGui::End();
 	}
 }
-
+*/
 
 void Draw::Line(int x, int y, int x2, int y2, RGBA rgb, float thickness)
 {
@@ -296,3 +391,6 @@ void Draw::CircleRange(Vector3 Pos, float points, float r, RGBA color, float thi
 
 	Line(First.x, First.y, Last.x, Last.y, color, thickness);
 }
+
+
+Draw* draw = new Draw();

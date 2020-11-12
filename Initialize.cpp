@@ -19,7 +19,7 @@ void Initialize::AddObjects() //todo move this out of directx.cpp
 
 		CObject obj(Memory.Read<DWORD>(HeroArray + i));
 		herolist.emplace_back(obj);
-		clog.AddLog("%s : %x %s %s ", obj.GetName().c_str(), obj.Address(), obj.SummonerSpell1().c_str(), obj.SummonerSpell2());
+		clog.AddLog("%s : %x %s %s ", obj.GetName().c_str(), obj.Address(), obj.SummonerSpell1().c_str(), obj.SummonerSpell2().c_str());
 	}
 	if (herolist.size() < 10)
 	{
@@ -57,7 +57,7 @@ void Initialize::AddObjects() //todo move this out of directx.cpp
 		clog.AddLog("[error] Added %i/6 inhibitors", inhiblist.size());
 	}
 
-	DWORD dwMissileList = Memory.Read<DWORD>(ClientAddress + 0x1C7BB5C);
+	DWORD dwMissileList = Memory.Read<DWORD>(ClientAddress + 0x350B4F8);
 
 	clog.AddLog("inhib %x", dwInhibList);
 	clog.AddLog("missile %x", dwMissileList);

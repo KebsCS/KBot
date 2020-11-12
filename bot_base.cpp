@@ -87,6 +87,8 @@ DWORD GetNext(DWORD objManager, DWORD a2)
     return Memory.Read<DWORD>(v5);
 }
 
+
+
 std::list<CObject>missileList;
 
 std::vector<DWORD> GetObjectList()
@@ -140,6 +142,7 @@ std::vector<DWORD> GetObjectList()
 
 std::list<CObject>minionList;
 
+//for wards
 void MinionListLoop()
 {
     DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oMinionList);
@@ -152,24 +155,8 @@ void MinionListLoop()
         {
             CObject obj(Memory.Read<DWORD>(MinionArray + i));
 
-          //  if (obj.Address() == Local.Address())
-          //      continue;
-          /*  if (!obj.IsVisible())
-                continue;
-            if (obj.GetHealth() > 1.f || obj.GetHealth() < -1.f)
-                continue;
-            Vector3 StartPos = obj.GetMissileStartPos();
-            if (StartPos.X == 0 || StartPos.Z == 0 || StartPos.Y == 0)
-                continue;
-            Vector3 EndPos = obj.GetMissileEndPos();
-            if (EndPos.X == 0 || EndPos.Z == 0 || StartPos.Y == 0)
-                continue;
-            if (obj.GetDistToMe(Local) > 1000)
-                continue;*/
            // clog.AddLog("%s %x %i", obj.GetName().c_str(), obj.Address(), obj.GetAlive());
             
-            //clog.AddLog("%s ", obj.GetName().c_str());
-
             currobjList.emplace_back(obj);
 
         }
@@ -180,6 +167,7 @@ void MinionListLoop()
 
 std::vector<DWORD>objList;
 
+//object manager loop
 void ObjListLoop()
 {
     while (true)
@@ -400,7 +388,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     if (!RegisterClassEx(&wc))
     {
-       // clog.AddLog("[error] Window Registration Failed");
+        // clog.AddLog("[error] Window Registration Failed");
         MessageBox(0, L" Window Registration Failed", 0, 0);
         ::UnregisterClass(wc.lpszClassName, wc.hInstance);
         return 0;
@@ -409,7 +397,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     if (FindWindowA(0, XorStr("League of Legends (TM) Client")))
     {
-       // clog.AddLog("Window Found");
+        // clog.AddLog("Window Found");
 
         hWnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_LAYERED, overlayClassName, overlayClassName, WS_POPUP, 1, 1, SCREENWIDTH, SCREENHEIGHT, 0, 0, 0, 0);
         SetLayeredWindowAttributes(hWnd, 0, 0, LWA_ALPHA);
@@ -421,14 +409,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
     else
     {
-       // clog.AddLog("[error] Window Creation Failed");
+        // clog.AddLog("[error] Window Creation Failed");
         MessageBox(0, L"Game not found", L"Window creation failed", 0);
         ::UnregisterClass(wc.lpszClassName, wc.hInstance);
         return 0;
     }
 
 
-   
+
     Sleep(1000);
 
     // Initialize Direct3D
@@ -444,7 +432,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ::UpdateWindow(hWnd);
 
     Config->Setup();
-    Config->Load("cfg");
+    Config->Load("default");
     clog.AddLog("[startup] Config loaded");
 
 
@@ -452,40 +440,38 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     clog.AddLog("ClientAddress: %x", ClientAddress);
 
 
-    float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
-    Sleep(1000);
     CreateThread(0, 0, (LPTHREAD_START_ROUTINE)MinionListLoop, 0, 0, 0);
-   // CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0);
+    //CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0);
     Sleep(1000);
 
-    if (GameTime > 0) // if in game
-    {
-        
-        clog.AddLog("OBJManager: %x", OBJManager);
-        clog.AddLog("LocalPlayer: %x", LocalPlayer);
-        clog.AddLog("Name: %s", Local.GetName().c_str());
-        clog.AddLog("IsVisible: %d", Local.IsVisible());
-        clog.AddLog("GetTeam: %d", Local.GetTeam());
-        clog.AddLog("HP: %f", Local.GetHealth());
-        clog.AddLog("MaxHP: %f", Local.GetMaxHealth());
-        clog.AddLog("Mana: %f", Local.GetMana());
-        clog.AddLog("MaxMana: %f", Local.GetMaxMana());
-        clog.AddLog("Armor: %f", Local.GetArmor());
-        clog.AddLog("MR: %f", Local.GetMR());
-        clog.AddLog("MS: %f", Local.GetMS());
-        clog.AddLog("BaseAD: %f", Local.GetBaseAD());
-        clog.AddLog("BonusAD: %f", Local.GetBonusAD());
-        clog.AddLog("AP: %f", Local.GetAP());
-        clog.AddLog("AARange: %f", Local.GetAARange());
-        clog.AddLog("ChampName: %s", Local.GetChampName().c_str());
-        clog.AddLog("SummonerSpell1: %s", Local.SummonerSpell1().c_str());
-        clog.AddLog("SummonerSpell2: %s", Local.SummonerSpell2().c_str());
-        clog.AddLog("KeystoneName: %s", Local.KeystoneName().c_str());
-        clog.AddLog("GetLevel: %i", Local.GetLevel());
+
+    //todo move this into a fund that can be called with a console log command
+    clog.AddLog("OBJManager: %x", OBJManager);
+    clog.AddLog("LocalPlayer: %x", LocalPlayer);
+    clog.AddLog("Name: %s", Local.GetName().c_str());
+    clog.AddLog("IsVisible: %d", Local.IsVisible());
+    clog.AddLog("GetTeam: %d", Local.GetTeam());
+    clog.AddLog("HP: %f", Local.GetHealth());
+    clog.AddLog("MaxHP: %f", Local.GetMaxHealth());
+    clog.AddLog("Mana: %f", Local.GetMana());
+    clog.AddLog("MaxMana: %f", Local.GetMaxMana());
+    clog.AddLog("Armor: %f", Local.GetArmor());
+    clog.AddLog("MR: %f", Local.GetMR());
+    clog.AddLog("MS: %f", Local.GetMS());
+    clog.AddLog("BaseAD: %f", Local.GetBaseAD());
+    clog.AddLog("BonusAD: %f", Local.GetBonusAD());
+    clog.AddLog("AP: %f", Local.GetAP());
+    clog.AddLog("AARange: %f", Local.GetAARange());
+    clog.AddLog("Lethality: %f", Local.GetLethality());
+    clog.AddLog("Crit: %f", Local.GetCrit());
+    clog.AddLog("ChampName: %s", Local.GetChampName().c_str());
+    clog.AddLog("SummonerSpell1: %s", Local.SummonerSpell1().c_str());
+    clog.AddLog("SummonerSpell2: %s", Local.SummonerSpell2().c_str());
+    clog.AddLog("KeystoneName: %s", Local.KeystoneName().c_str());
+    clog.AddLog("GetLevel: %i", Local.GetLevel());
 
 
-    }
 
 
     //message Loop
@@ -526,7 +512,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             }
             while (GetAsyncKeyState(VK_INSERT) & 0x8000) { Sleep(1); }
         }
-        if (GetAsyncKeyState(VK_F11) & 0x8000) //exit button
+        else if (GetAsyncKeyState(VK_F11) & 0x8000) //exit button
         {
             break;
         }
@@ -538,7 +524,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         Sleep(M.AntiLag );
     }
 
-    Config->Save("cfg");
+    Config->Save("default");
     Direct3D9.Shutdown();
     ::DestroyWindow(hWnd);
     ::UnregisterClass(wc.lpszClassName, wc.hInstance);

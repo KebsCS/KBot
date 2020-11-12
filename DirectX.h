@@ -92,17 +92,7 @@ public:
 };
 extern Direct3D9Render Direct3D9;
 
-class image {
 
-public:
-	std::string filename;
-	LPDIRECT3DTEXTURE9 texture;
-	int width = 64;
-	int height = 64;
-	ImVec2 loc;
-};
-
-static std::list<image> image_list;
 
 
 // Demonstrate creating a simple console window, with scrolling, filtering, completion and history.
@@ -381,13 +371,13 @@ struct ConsoleLog
         {
             IgnoreStopPrint = true;
             AddLog("Saved config");
-            Config->Save("cfg");
+            Config->Save("default");
         }
         else if (Stricmp(command_line, "LOADCFG") == 0)
         {
             IgnoreStopPrint = true;
             AddLog("Loaded config");
-            Config->Load("cfg");
+            Config->Load("default");
         }
         else
         {

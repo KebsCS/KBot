@@ -8,7 +8,8 @@
 class Visuals
 {
 private:
-
+	//std::string getSpellImg(std::string name);
+	LPDIRECT3DTEXTURE9 getSpellImg(std::string name);
 public:
 
 	void CooldownTimers(CObject obj, int type);
