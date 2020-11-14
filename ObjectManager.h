@@ -7,7 +7,6 @@
 #include "offsets.h"
 #include "Definitions.h"
 
-
 static KInterface Memory(R"(\\.\kbotl)");
 
 static DWORD ClientAddress = Memory.GetClientModule();
@@ -16,6 +15,24 @@ static DWORD ClientAddress = Memory.GetClientModule();
 class CObject
 {
 private:
+
+
+    int IsFunc(DWORD param_1, int param_2)
+    {
+        if (!param_1)
+            return 0;
+
+        int uVar2;
+        int puVar3;
+        int uStack4;
+
+        uStack4 = Memory.Read<int>(param_1 + 0x5c + (Memory.Read<byte>(param_1 + 0x58)) * 4);
+        puVar3 = param_1 + 0x54;
+        uVar2 = Memory.Read<int>(puVar3);
+        uStack4 ^= ~uVar2;
+
+        return  ((param_2 & uStack4) != 0);
+    }
 
     DWORD base;
     bool alive;
@@ -70,6 +87,14 @@ public:
     {
         return Memory.Read<float>(base + 0x1208, sizeof(float));
     }
+    float GetBonusAS()
+    {
+        return Memory.Read<float>(base + 0x1284, sizeof(float));
+    }
+    bool IsAttacking()
+    {
+        return Memory.Read<int>(base + 0x2740) > 0; // changes when player is attacking/casting spell
+    }
     float GetTotalAD()
     {
         return GetBaseAD() + GetBonusAD();
@@ -115,7 +140,7 @@ public:
     }
     bool IsDead()
     {
-        return this->GetHealth() <= 0.01f;
+        return this->GetHealth() < 0.01f;
     }
     float GetGold()
     {
@@ -229,9 +254,100 @@ public:
         this->alive = true;
         this->base = base;
     }
+    int GetNetworkID()
+    {
+        return Memory.Read<int>(base + oObjNetworkID);
+    }
     DWORD Address()
     {
         return base;
+    }
+    CObject() {}
+
+
+        //	GameObject = (1 << 0),  //0x1
+        //	NeutralCamp = (1 << 1),  //0x2
+        //	DeadObject = (1 << 4),  //0x10
+        //	InvalidObject = (1 << 5),  //0x20
+        //	AIBaseCommon = (1 << 7),  //0x80
+        //	AttackableUnit = (1 << 9),  //0x200
+        //	AI = (1 << 10), //0x400
+        //	Minion = (1 << 11), //0x800
+        //	Hero = (1 << 12), //0x1000
+        //	Turret = (1 << 13), //0x2000
+        //	Unknown0 = (1 << 14), //0x4000
+        //	Missile = (1 << 15), //0x8000
+        //	Unknown1 = (1 << 16), //0x10000
+        //	Building = (1 << 17), //0x20000
+        //	Unknown2 = (1 << 18), //0x40000
+
+    bool IsGameObject()
+    {
+        return IsFunc(base, 0x1);
+    }
+    bool IsNeutralCamp()
+    {
+        return IsFunc(base, 0x2);
+    }
+    bool IsDeadObject()
+    {
+        return IsFunc(base, 0x10);
+    }
+    bool IsInvalidObject()
+    {
+        return IsFunc(base, 0x20);
+    }
+    bool IsAIBaseCommon()
+    {
+        return IsFunc(base, 0x80);
+    }
+    bool IsAI()
+    {
+        return IsFunc(base, 0x400);
+    }
+    bool IsMinion()
+    {
+        return IsFunc(base, 0x800);
+    }
+    bool IsHero()
+    {
+        return IsFunc(base, 0x1000);
+    }
+    bool IsTurret()
+    {
+        return IsFunc(base, 0x2000);
+    }
+    bool IsUnknown0()
+    {
+        return IsFunc(base, 0x4000);
+    }
+    bool IsMissile()
+    {
+        return IsFunc(base, 0x8000);
+    }
+    bool IsUnknown1()
+    {
+        return IsFunc(base, 0x10000);
+    }
+    bool IsBuilding()
+    {
+        return IsFunc(base, 0x20000);
+    }
+    bool IsUnknown2()
+    {
+        return IsFunc(base, 0x40000);
+    }
+
+    static int GetUnderMouseObject() //todo apparently a pointer to pointer
+    {
+        int address = Memory.Read<DWORD>(ClientAddress + oUnderMouseObject);
+        CObject under_mouse_object;
+
+        if (address > 0)
+            under_mouse_object = Memory.Read<DWORD>(address);
+
+
+        return address;
     }
 
    
@@ -239,7 +355,7 @@ public:
 };
 
 
-const static DWORD LocalPlayer = Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD));
+const DWORD LocalPlayer = Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD));
 static CObject Local(LocalPlayer);
 
 

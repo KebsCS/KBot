@@ -1,8 +1,7 @@
-#include "DirectX.h"
 
-#include "KInterface.h"
-#include "offsets.h"
+
 #include "ObjectManager.h"
+#include "Orbwalker.h"
 
 LPCWSTR overlayClassName = L"ovrl"; // overlay window name
 
@@ -91,11 +90,13 @@ DWORD GetNext(DWORD objManager, DWORD a2)
 
 std::list<CObject>missileList;
 
-std::vector<DWORD> GetObjectList()
+std::vector<DWORD> GetObjectList() //todo toby's method of storing missile addresses
 {
 
     std::vector<DWORD> list;
     auto obj = GetFirst(OBJManager);
+
+    std::list<CObject>currmissileList;
 
     while (obj)
     {
@@ -104,45 +105,24 @@ std::vector<DWORD> GetObjectList()
         if (obj)
         {
             CObject xd(obj);
-            if (xd.Address() != Local.Address())
-            {
-                if (xd.GetTeam() == 100 || xd.GetTeam() == 200 || xd.GetTeam() == 300)
-                {
-                    if (xd.IsVisible())
-                    {
-                        if (!(xd.GetHealth() > 1.f || xd.GetHealth() < -1.f))
-                        {
-                            Vector3 StartPos = xd.GetMissileStartPos();
-                            if (!(StartPos.X == 0 || StartPos.Z == 0 || StartPos.Y == 0))
-                            {
-                                Vector3 EndPos = xd.GetMissileEndPos();
-                                if (!(EndPos.X == 0 || EndPos.Z == 0 || StartPos.Y == 0))
-                                {
-                                    if (xd.GetDistToMe(Local) < 1500.f)
-                                    {
-                                        missileList.emplace_back(xd);
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
+          
+            if (xd.IsMissile())
+                currmissileList.emplace_back(xd);
         
             // clog.AddLog("%x", obj);
             list.push_back(obj);
         }
 
         obj = GetNext(OBJManager, obj);
+        Sleep(1);
     }
-
+    missileList = currmissileList;
     return list;
 }
 
 std::list<CObject>minionList;
 
-//for wards
+
 void MinionListLoop()
 {
     DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oMinionList);
@@ -174,7 +154,7 @@ void ObjListLoop()
     {
         objList = GetObjectList();
 
-        Sleep(10);
+        Sleep(1);
     }
 }
 
@@ -366,6 +346,21 @@ void ObjListLoop()
 //    return sub_336C00(Memory.Read<DWORD>(v1) + 1678, (int)(v1 + 1070)) * v6;
 //}
 
+
+void OrbwalkThread()
+{
+
+    while(true)
+    {
+        if (GetAsyncKeyState(M.Orbwalker.HoldKey) & 0x8000) 
+        {
+            orbwalk->Move();
+        }
+        Sleep(10);
+    }
+
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 
@@ -442,11 +437,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
     CreateThread(0, 0, (LPTHREAD_START_ROUTINE)MinionListLoop, 0, 0, 0);
-    //CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0);
+    CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0);
+    //CreateThread(0, 0, (LPTHREAD_START_ROUTINE)OrbwalkThread, 0, 0, 0); todo not working
     Sleep(1000);
 
 
-    //todo move this into a fund that can be called with a console log command
+
     clog.AddLog("OBJManager: %x", OBJManager);
     clog.AddLog("LocalPlayer: %x", LocalPlayer);
     clog.AddLog("Name: %s", Local.GetName().c_str());
@@ -489,7 +485,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if (M.ExitBot)
             break;
 
-        if (GetAsyncKeyState(VK_INSERT) & 0x8000) //open menu
+        if (GetAsyncKeyState(M.Misc.MenuKey) & 0x8000) //open menu
         {
             long winlong = GetWindowLong(hWnd, GWL_EXSTYLE);
             if (!M.MenuOpen)
@@ -510,18 +506,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 //clog.AddLog("Menu Closed");
 
             }
-            while (GetAsyncKeyState(VK_INSERT) & 0x8000) { Sleep(1); }
+            while (GetAsyncKeyState(M.Misc.MenuKey) & 0x8000) { Sleep(1); }
         }
         else if (GetAsyncKeyState(VK_F11) & 0x8000) //exit button
         {
             break;
         }
+       
         //GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
     
         //clog.AddLog("%i", GetObjectList().size());
-        
+       // CObject undermouseObj(CObject::GetUnderMouseObject());
+        //int xd = CObject::GetUnderMouseObject();
+       // DWORD address = Memory.Read<DWORD>(ClientAddress + oUnderMouseObject);
+      //  clog.AddLog("under mouse: %x", address); todo
 
-        Sleep(M.AntiLag );
+        Sleep(M.Misc.AntiLag );
     }
 
     Config->Save("default");

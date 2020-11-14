@@ -119,6 +119,24 @@ bool Mouse::MouseMoveSLD(int x, int y)
 	return true;
 }
 
+bool Mouse::MouseMoveInstant(int x, int y)
+{
+	Sleep(1);
+	POINT curMouse;
+	bool getMouse = GetCursorPos(&curMouse);
+	if (!getMouse)
+		return false;
+
+	INPUT Input = { 0 };
+	::ZeroMemory(&Input, sizeof(INPUT));
+	Input.type = INPUT_MOUSE;
+	Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK;
+	Input.mi.dx = SENDINPUTX(x);
+	Input.mi.dy = SENDINPUTY(y);
+	::SendInput(1, &Input, sizeof(INPUT));
+	Sleep(1);
+}
+
 //STRAIGHT LINE DISTANCE mouse move - recieves pixel coordinates. change mouse position to those coords
 bool Mouse::MouseMoveSLD(POINT coord)
 {
@@ -201,12 +219,14 @@ void Mouse::MouseMiddleUp()
 void Mouse::RightClick()
 {
 	MouseRightDown();
+	Sleep(10);
 	MouseRightUp();
 }
 
 void Mouse::LeftClick()
 {
 	MouseLeftDown();
+	Sleep(10);
 	MouseLeftUp();
 }
 
@@ -349,3 +369,6 @@ double Mouse::GetExecutionTime()
 
 	return(endCount.QuadPart - startCount.QuadPart) * 1000.0 / frequency.QuadPart;
 }
+
+
+Mouse* mouse = new Mouse();

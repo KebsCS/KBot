@@ -181,15 +181,7 @@ public:
 		{
 			strReturn = StrRead(Read<int>(address, sizeof(int)));
 		}
-		//if ((max >= 16 && max > 0) || (max2 > 0 && max2 < 256)) //if invalid 
-		//{
-		//	strReturn = StrRead(Read<int>(address, sizeof(int))); // read pointer to the string
 
-		//}
-		//else
-		//{
-		//	strReturn = StrRead(address);
-		//}
 		return strReturn;
 
 	}

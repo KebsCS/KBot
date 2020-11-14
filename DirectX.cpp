@@ -1,7 +1,3 @@
-#include "DirectX.h"
-
-
-#include "Draw.h"
 #include "Visuals.h"
 
 
@@ -18,7 +14,7 @@ ID3DXFont* pFont;
 Visuals *vis;
 
 extern std::list<CObject>minionList;
-
+extern std::list<CObject>missileList;
 extern std::vector<DWORD> objList;
 DirectX::XMMATRIX Direct3D9Render::ReadMatrix(DWORD address)
 {
@@ -114,7 +110,8 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 	if (FAILED(D3DXCreateLine(g_pd3dDevice, &g_Line)))
 	{
 		MessageBox(0, L" D3DXCreateLine Failed", 0, 0);
-
+		if (g_pd3dDevice) { g_pd3dDevice->Release(); g_pd3dDevice = NULL; }
+		if (g_pD3D) { g_pD3D->Release(); g_pD3D = NULL; }
 		return false;
 	}
 
@@ -127,7 +124,9 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 	
 	Renderimgui(hWnd);
 
-	draw->InitTextures();
+	if (draw->InitTextures())
+		clog.AddLog("[startup] Initialized textures");
+	else clog.AddLog("[error] Failed to initialize textures");
 
 	float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
@@ -135,9 +134,10 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 	{
 		Sleep(1);
 	}
-	Sleep(2000);
 
 	init->AddObjects();
+
+	Sleep(1000);
 	
 	return true;
 }
@@ -156,177 +156,7 @@ static void HelpMarker(const char* desc)
 		ImGui::EndTooltip();
 	}
 }
-//
-//
-//bool sub_2E2450(DWORD obj, int flag)
-//{
-//	DWORD v2; // edi
-//	DWORD v3; // edx
-//	DWORD v4; // esi
-//	DWORD v5; // ecx
-//	DWORD v6; // eax
-//	DWORD v7; // al
-//	DWORD v8; // eax
-//	DWORD v9; // edx
-//	DWORD v10; // cl
-//	int v12; // [esp+8h] [ebp-4h]
-//
-//	v2 = obj;
-//	v3 = 0;
-//	v4 = Memory.Read<int>(obj + 324);
-//	int xd1 = Memory.Read<int>(obj + (88 * 4));
-//	int xd2 = Memory.Read<int>(obj + ((4 * xd1 + 92) * 4));
-//	v12 = Memory.Read<DWORD>(xd2);
-//	if (v4)
-//	{
-//		v5 = obj + 84;
-//	//	do
-//		//{
-//			v6 = Memory.Read<DWORD>(v5);
-//			v5 += 4;
-//			//*(&v12 + v3) ^= ~v6;
-//			++v3;
-//		//} while (v3 < v4);
-//	}
-//	v7 = Memory.Read<int>(v2 + 328);
-//	if (v7)
-//	{
-//		v8 = 4 - v7;
-//		if (v8 < 4)
-//		{
-//			v9 = Memory.Read<int>(v2 + ((	v8 + 84) * 4));
-//			do
-//			{
-//				v10 = v9++;
-//				BYTE xd = Memory.Read<BYTE>(v12 + v8);
-//				xd ^= ~v10;
-//			} while (v8 < 4);
-//		}
-//	}
-//	return (v12 & flag) != 0;
-//}
-//
-////bool xd = true;
-////float xdtimer = 0;
-//
-//bool IsXD(DWORD addy, int flag)
-//{
-//
-//	auto v12 = Memory.Read<int>(addy + 92);
-//	auto v5 = addy + 84;
-//	auto v6 = Memory.Read<int>(v5);
-//	v12 ^= ~v6;
-//
-//	//auto v7 = Memory.Read<int>(addy + 328);
-//
-//	//if (v7)
-//	//{
-//	//	//This probably does not work, i did it blindly because i didn't find a case where v7 was true.
-//	//	auto v8 = 4 - v7;
-//	//	if (v8 < 4)
-//	//	{
-//	//		auto v9 = addy + v8 + 84;
-//	//		auto v9xor = Memory.Read<DWORD>(v9);
-//	//		v12 ^= (int)~(v9xor);
-//	//	}
-//	//}
-//
-//	return (v12 & flag) != 0;
-//
-//}
-//
-//bool IsDecrypt(int addy, int flag)
-//{
-//	auto v3 = 0;
-//	auto v4 = Memory.Read<byte>(addy + 81);
-//	auto v12 = Memory.Read<int>(addy + 92);
-//
-//	int key = 0;
-//	if (v4)
-//	{
-//		auto v5 = addy + 84;
-//		while (v3 < v4)
-//		{
-//			if (v3 > 1)
-//			{
-//				// Console.WriteLine("XD");
-//			}
-//			auto v6 = Memory.Read<int>(v5);
-//			v5 += 4;
-//			v12 ^= ~(v6);
-//			++v3;
-//		}
-//	}
-//
-//	auto v7 = Memory.Read<byte>(addy + 82);
-//
-//	if (v7)
-//	{
-//		//This probably does not work, i did it blindly because i didn't find a case where v7 was true.
-//		auto v8 = 4 - v7;
-//		if (v8 < 4)
-//		{
-//			auto v9 = addy + v8 + 84;
-//			auto v9xor = Memory.Read<DWORD>(v9);
-//			v12 ^= (int)~(v9xor);
-//		}
-//	}
-//	return (v12 & flag) != 0;
-//}
 
-//
-//bool IsFunc(DWORD obj, int a2)
-//{
-//	DWORD v2; // edi
-//	DWORD v3; // edx
-//	DWORD v4; // esi
-//	int v5; // ecx
-//	int v6; // eax
-//	int v7; // al
-//	DWORD v8; // eax
-//	DWORD v9; // edx
-//	int v10; // cl
-//	int v12; // [esp+8h] [ebp-4h]
-//
-//	v2 = obj;
-//	v3 = 0;
-//	v4 = Memory.Read<int>(obj + 324);
-//	DWORD test = Memory.Read<DWORD>(obj);
-//	int tt = Memory.Read<int>(obj + 352);
-//	int abc = 4 * (4 * tt);
-//	int joy = abc + 368;
-//	v12 = Memory.Read<int>(test + joy);
-//	if (v4)
-//	{
-//		v5 = Memory.Read<int>(obj + 84);
-//		do
-//		{
-//			v6 = Memory.Read<DWORD>(v5);
-//			++v5;
-//			auto ppp = Memory.Read<DWORD>(v12 + v3);
-//			ppp ^= ~v6;
-//			++v3;
-//		} while (v3 < v4);
-//	}
-//	v7 = Memory.Read<int>(v2 + 328);
-//	if (v7)
-//	{
-//		v8 = 4 - v7;
-//		if (v8 < 4)
-//		{
-//			int temp1 = (v8 + 84) * 4;
-//			v9 = Memory.Read<int>(v2 + temp1);
-//			do
-//			{
-//				v10 = Memory.Read<DWORD>(v9++);
-//				BYTE temp2 = Memory.Read<BYTE>(v12);
-//				auto xd = Memory.Read<DWORD>(temp2 + v8++);
-//				xd ^= ~v10;
-//			} while (v8 < 4);
-//		}
-//	}
-//	return (v12 & a2) != 0;
-//}
 
 int Direct3D9Render::Render()
 {
@@ -397,7 +227,7 @@ int Direct3D9Render::Render()
 
 					ImGui::Checkbox("Tracers\t", &M.Tracers.Master);
 					ImGui::SameLine();
-					ImGui::SliderInt("##thick", &M.Tracers.Thickness, 10, 60, "Thickness: %d ");
+					ImGui::SliderFloat("##TracersThickness", &M.Tracers.Thickness, 0.1f, 10.f, "Thickness: %lg", 1.f);
 					ImGui::Separator();
 
 					ImGui::Checkbox("Cooldowns", &M.Cooldowns.Master);
@@ -435,8 +265,6 @@ int Direct3D9Render::Render()
 
 				
 
-
-
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Evade"))
@@ -448,24 +276,42 @@ int Direct3D9Render::Render()
 			}
 			if (ImGui::BeginTabItem("Orbwalker"))
 			{
+				ImGui::Combo("Hold Key", &M.Orbwalker.HoldKey, keyNames, ARRAYSIZE(keyNames));
+				draw->ImageFromMemory(draw->textureSks, 0, 0, "", 99, 256*1.25, 256*1.25, true);
+
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Misc"))
 			{
-				ImGui::Separator();
-				ImGui::Columns(2, 0, false);
-				ImGui::Checkbox("Auto Smite", &M.AutoSmite.Master);
-				ImGui::NextColumn();
-				ImGui::Text("Slot: ");
-				ImGui::SameLine();
-				ImGui::RadioButton("D", &M.AutoSmite.Slot, 0); ImGui::SameLine();
-				ImGui::RadioButton("F", &M.AutoSmite.Slot, 1);
-				ImGui::Columns(1);
+				if (ImGui::CollapsingHeader("Auto Smite", collapsing_header_flags))
+				{
+					ImGui::Columns(2, 0, false);
+					ImGui::Checkbox("Enable ##AutoSmite", &M.AutoSmite.Master);
+					
+
+					ImGui::NextColumn();
+					ImGui::Text("Slot:");
+					ImGui::SameLine();
+					ImGui::RadioButton("D", &M.AutoSmite.Slot, 0); ImGui::SameLine();
+					ImGui::RadioButton("F", &M.AutoSmite.Slot, 1);
+					ImGui::Columns(1);
+					ImGui::Text("Mode:\t");
+					ImGui::SameLine();
+					ImGui::RadioButton("Instant", &M.AutoSmite.Mode, 0); ImGui::SameLine();
+					ImGui::RadioButton("Legit", &M.AutoSmite.Mode, 1); ImGui::SameLine();
+					ImGui::RadioButton("Extra legit", &M.AutoSmite.Mode, 2);
+					
+					ImGui::SliderFloat("##AutoSmiteMouseSpeed", &M.AutoSmite.MouseSpeed, 0.1f, 1.f, "Mouse Speed: %lg", 1.f);
+
+				}
 
 				ImGui::Separator();
 
-				ImGui::SliderInt("AntiLag", &M.AntiLag, 0, 50);
+				ImGui::SliderInt("AntiLag", &M.Misc.AntiLag, 0, 50);
 				ImGui::SameLine(); HelpMarker("Higher for slower PCs");
+
+				ImGui::Separator();
+				ImGui::Combo("Menu Key", &M.Misc.MenuKey, keyNames, ARRAYSIZE(keyNames));
 
 				ImGui::EndTabItem();
 			}
@@ -560,6 +406,10 @@ int Direct3D9Render::Render()
 	if (g_pd3dDevice->BeginScene() >= 0)
 	{
 		
+		if (M.AARange.Local)
+			vis->DrawAARanges(Local, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0] * 255, M.AARange.Color[1] * 255, M.AARange.Color[2] * 255, M.AARange.Color[3] * 255),
+				M.AARange.Local, RGBA(M.AARange.LocalColor[0] * 255, M.AARange.LocalColor[1] * 255, M.AARange.LocalColor[2] * 255, M.AARange.LocalColor[3] * 255));
+
 		//hero loop
 		if (M.Cooldowns.Master || M.AARange.Master || M.Tracers.Master)
 		{
@@ -570,10 +420,11 @@ int Direct3D9Render::Render()
 
 				if (M.AARange.Master)
 					vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0] * 255, M.AARange.Color[1] * 255, M.AARange.Color[2] * 255, M.AARange.Color[3] * 255),
-						M.AARange.Local, RGBA(M.AARange.LocalColor[0] * 255, M.AARange.LocalColor[1] * 255, M.AARange.LocalColor[2] * 255, M.AARange.LocalColor[3] * 255));
+						false, RGBA(M.AARange.LocalColor[0] * 255, M.AARange.LocalColor[1] * 255, M.AARange.LocalColor[2] * 255, M.AARange.LocalColor[3] * 255));
+				
 
 				if (M.Tracers.Master)
-					vis->DrawTracers(obj, M.Tracers.Thickness / 10.f);
+					vis->DrawTracers(obj, M.Tracers.Thickness);
 
 				
 				//float dist = obj.GetDistToMe(Local);
@@ -610,7 +461,7 @@ int Direct3D9Render::Render()
 					vis->WardsRange(obj);
 
 				if (M.AutoSmite.Master)
-					vis->AutoSmite(obj, M.AutoSmite.Slot);
+					vis->AutoSmite(obj, M.AutoSmite.Slot, M.AutoSmite.Mode, M.AutoSmite.MouseSpeed);
 
 				if (M.LastHit.Master)
 					vis->LastHit(obj, RGBA(M.LastHit.Color[0] * 255, M.LastHit.Color[1] * 255, M.LastHit.Color[2] * 255, M.LastHit.Color[3] * 255));
@@ -636,64 +487,40 @@ int Direct3D9Render::Render()
 			}
 		}
 
-		//for (auto xdd : objList)
-		//{
-		//	CObject a(xdd);
-		//	ImVec2 RealPos = Direct3D9.WorldToScreen(a.GetPosition());
-		//	std::string str = a.GetName() + " , " + std::to_string(a.Address());
-		//	if (IsFunc(a.Address(), 0x8000))
-		//		draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
-		//}
-
-		//extern std::list<CObject>missileList;
-		//for (auto a : missileList)
-		//{
-		//	
-	
-
-
-		//	Vector3 StartPos = a.GetMissileStartPos();
-		//	Vector3 EndPos = a.GetMissileEndPos();
-		//	//clog.AddLog("%s", obj.GetName().c_str());
-		//	ImVec2 RealStartPos = WorldToScreen(StartPos);
-		//	ImVec2 RealEndPos = WorldToScreen(EndPos);
-
-		//	if (RealStartPos.x == 0 && RealEndPos.y == 0)
-		//		continue;
-
-		//	if (!((RealStartPos.x <= SCREENWIDTH * 1.2) && (RealStartPos.x >= SCREENWIDTH / 2 * (-1)) && (RealStartPos.y <= SCREENHEIGHT * 1.5) && (RealStartPos.y >= SCREENHEIGHT / 2 * (-1))))
-		//		continue;
-
-		//	draw->Line(RealStartPos.x, RealStartPos.y, RealEndPos.x, RealEndPos.y, RGBA(255, 255, 255));
-		//
-
-		//}
-
-
-
-		//-------------------------------------------unused
-	/*	DWORD dwMissileList = Memory.Read<DWORD>(ClientAddress + 0x1C7BB5C);
-
-		DWORD MinionArray = Memory.Read<DWORD>(dwMissileList + 0x84);
-		int MinionArrayLength = Memory.Read<int>(dwMissileList + 0x88);
-		for (int i = 0; i < MinionArrayLength * 4; i += 4)
+		
+		if (!missileList.empty())
 		{
-			CObject obj(Memory.Read<DWORD>(MinionArray + i));
-			clog.AddLog("%s", obj.GetName().c_str());
-		}*/
+			for (auto xdd : missileList)
+			{
+				CObject a(xdd);
+				ImVec2 RealPos = Direct3D9.WorldToScreen(a.GetPosition());
+				std::string str = a.GetName() + " , " + std::to_string(a.Address());
+				//clog.AddLog("%i , %s", (IsFunc(a.Address(), 0x1000)) ,a.GetName().c_str());
+				//if(a.IsBuilding())
+				if (RealPos.x == 0 && RealPos.y == 0)
+					continue;
+
+				Vector3 StartPos = a.GetMissileStartPos();
+				Vector3 EndPos = a.GetMissileEndPos();
+				//clog.AddLog("%s", obj.GetName().c_str());
+				ImVec2 RealStartPos = WorldToScreen(StartPos);
+				ImVec2 RealEndPos = WorldToScreen(EndPos);
+
+				if (RealStartPos.x == 0 && RealStartPos.y == 0)
+					continue;
+
+				if (RealEndPos.x == 0 && RealEndPos.y == 0)
+					continue;
 
 
-		//for (auto obj : objList)
-		//{
-		//	if (IsDecrypt(obj.Address(), 0x1000))
-		//	{
-		//		//clog.AddLog("%s , %i ", obj.GetName().c_str(), obj.Address());
-		//		ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
-		//		std::string str = obj.GetName() + " , " + std::to_string(obj.Address());
-		//		draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
-		//	
-		//	}
-		//}
+				draw->Line(RealStartPos.x, RealStartPos.y, RealEndPos.x, RealEndPos.y, RGBA(255, 255, 255));
+
+
+				draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+				//clog.AddLog("%i", IsFunc(a.Address(), 0x1000));
+			}
+		}
+
 		//float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 		//if (xd)
 		//{
@@ -702,40 +529,7 @@ int Direct3D9Render::Render()
 
 		//}
 		//draw->String(std::to_string(xdtimer - GameTime), 100, 100, centered, RGBA(255, 255, 255),fontTahoma);
-
-
-
-		//DWORD dwMissileList = Memory.Read<DWORD>(ClientAddress + 0x1C7BB5C);
-		//DWORD MissileArray = Memory.Read<DWORD>(dwMissileList + 0x04);
-		//int MissileArrayLength = Memory.Read<int>(dwMissileList + 0x08);
-		//for (int i = 0; i < MissileArrayLength * 4; i += 4)
-		//{
-
-		//	CObject obj(Memory.Read<DWORD>(MissileArray + i));
-		//	//clog.AddLog("%s, %i", obj.GetName().c_str() , Memory.Read<int>(obj.Address() + 0xCC));
-		//}
-
-
-		//if (!objList.empty())
-		//{
-		//	for (auto obj : objList)
-		//	{
-		//		//CObject obj(Memory.Read<DWORD>(ObjectArray + (0x4 * i), sizeof(DWORD)));
-		//		Vector3 StartPos = obj.GetMissileStartPos();
-		//		Vector3 EndPos = obj.GetMissileEndPos();
-		//		std::string sName = obj.GetName();
-		//		if (sName.empty())
-		//			continue;
-		//		if (sName.find("SRU_") != std::string::npos)
-		//			continue;
-		//		ImVec2 RealStartPos = WorldToScreen(StartPos);
-		//		ImVec2 RealEndPos = WorldToScreen(EndPos);
-		//		draw->Line(RealStartPos.x, RealStartPos.y, RealEndPos.x, RealEndPos.y, RGBA(255, 255, 255));
-		//		clog.AddLog("%s , %x , %f", sName.c_str(), obj.Address(), obj.GetHealth());
-		//	}
-		//}
 		
-
 
 
 		//drawings test

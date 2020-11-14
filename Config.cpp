@@ -7,7 +7,13 @@ void CConfig::Setup()
 
 	SetupValue(M.MenuOpen, 1, "Main", "MenuOpen");
 	SetupValue(M.ConsoleOpen, 1, "Main", "ConsoleOpen");
-	SetupValue(M.AntiLag, 1, "Main", "AntiLag");
+
+
+	SetupValue(M.Misc.AntiLag, 1, "Misc", "AntiLag");
+	SetupValue(M.Misc.MenuKey, VK_INSERT, "Misc", "MenuKey");
+
+
+	SetupValue(M.Orbwalker.HoldKey, 0, "Orbwalker", "HoldKey");
 
 	SetupValue(M.AARange.Master, 0, "AARange", "Master");
 	SetupValue(M.AARange.Local, 0, "AARange", "Local");
@@ -27,7 +33,7 @@ void CConfig::Setup()
 
 
 	SetupValue(M.Tracers.Master, 0, "Tracers", "Master");
-	SetupValue(M.Tracers.Thickness, 10, "Tracers", "Thickness");
+	SetupValue(M.Tracers.Thickness, 1.f, "Tracers", "Thickness");
 
 
 	SetupValue(M.Cooldowns.Master, 0, "Cooldowns", "Master");
@@ -40,6 +46,9 @@ void CConfig::Setup()
 
 	SetupValue(M.AutoSmite.Master, 0, "AutoSmite", "Master");
 	SetupValue(M.AutoSmite.Slot, 1, "AutoSmite", "Slot");
+	SetupValue(M.AutoSmite.Mode, 1, "AutoSmite", "Mode");
+	SetupValue(M.AutoSmite.MouseSpeed, 1.f, "AutoSmite", "MouseSpeed");
+
 
 	SetupValue(M.Wards.Master, 0, "Wards", "Master");
 

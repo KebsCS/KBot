@@ -38,7 +38,7 @@ Wed Nov 11 13:53:07 2020
 #define oD3DRenderer 0x35389E0	//A1 ? ? ? ? 89 54 24 18
 #define oZoomClass 0x3504AFC	//A3 ? ? ? ? 83 FA 10 72 32
 #define oNetClient 0x351446C	//8B 0D ? ? ? ? 85 C9 74 07 8B 01 6A 01 FF 50 08 8B
-#define oUnderMouseObject 0x0	//8B 0D ? ? ? ? 89 0D ? ? ? ? 3B 44 24 30
+#define oUnderMouseObject 0x1C100F0      // 8B 0D ? ? ? ? 89 0D
 #define oGameInfo 0x35064AC	//A1 ? ? ? ? 83 78 08 02 0F 94 C0
 //#define oViewMatrix 0x68	//8D 4A ? 51 81 C2 ? ? ? ? 52
 //#define oProjection 0xA8	//8D 4A ? 51 81 C2 ? ? ? ? 52
@@ -67,9 +67,9 @@ Wed Nov 11 13:53:07 2020
 //28C9344
 
 
-#define oIsTargetable 0x1D4070 
+#define oIsTargetable 0x1281714 
 
-
+#define oObjNetworkID 0xCC //
 #define mHP 0xDC4
 #define mMaxHP 0xDD4
 #define mHPMaxPenalty 0xDE4

@@ -2,14 +2,10 @@
 
 #include "DirectX.h"
 
-void Initialize::AddObjects() //todo move this out of directx.cpp
+void Initialize::AddObjects() 
 {
-	//todo looping through static object lists (turrets,heroes) and population their lists instead of 1
-	//ObjList.clear();
-	/*herolist.clear();
-	turretlist.clear();
-	inhiblist.clear();
-*/
+
+	std::string str;
 
 	DWORD dwHeroList = Memory.Read<DWORD>(ClientAddress + oHeroList);
 	DWORD HeroArray = Memory.Read<DWORD>(dwHeroList + 0x04);
@@ -22,9 +18,9 @@ void Initialize::AddObjects() //todo move this out of directx.cpp
 		clog.AddLog("%s : %x %s %s ", obj.GetName().c_str(), obj.Address(), obj.SummonerSpell1().c_str(), obj.SummonerSpell2().c_str());
 	}
 	if (herolist.size() < 10)
-	{
-		clog.AddLog("[error] Added %i/10 heroes", herolist.size());
-	}
+		str = "error";
+	else str = "startup";
+	clog.AddLog("[%s] Added %i/10 heroes", str.c_str(), herolist.size());
 
 	DWORD dwTurretList = Memory.Read<DWORD>(ClientAddress + oTurretList);
 	DWORD TurretArray = Memory.Read<DWORD>(dwTurretList + 0x04);
@@ -34,12 +30,13 @@ void Initialize::AddObjects() //todo move this out of directx.cpp
 
 		CObject obj(Memory.Read<DWORD>(TurretArray + i));
 		turretlist.emplace_back(obj);
-		clog.AddLog("%s", obj.GetName().c_str());
+		//clog.AddLog("%s : %x", obj.GetName().c_str(), obj.Address());
 	}
+
 	if (turretlist.size() < 22)
-	{
-		clog.AddLog("[error] Added %i/22 turrets", turretlist.size());
-	}
+		str = "error";
+	else str = "startup";
+	clog.AddLog("[%s] Added %i/22 turrets", str.c_str(), turretlist.size());
 
 
 	DWORD dwInhibList = Memory.Read<DWORD>(ClientAddress + oInhibitorList);
@@ -50,17 +47,18 @@ void Initialize::AddObjects() //todo move this out of directx.cpp
 
 		CObject obj(Memory.Read<DWORD>(InhibArray + i));
 		inhiblist.emplace_back(obj);
-		clog.AddLog("%s", obj.GetName().c_str());
+		//clog.AddLog("%s : %x", obj.GetName().c_str(), obj.Address());
 	}
 	if (inhiblist.size() < 6)
-	{
-		clog.AddLog("[error] Added %i/6 inhibitors", inhiblist.size());
-	}
+		str = "error";
+	else str = "startup";
+	clog.AddLog("[%s] Added %i/6 inhibitors", str.c_str(), inhiblist.size());
+	
 
-	DWORD dwMissileList = Memory.Read<DWORD>(ClientAddress + 0x350B4F8);
+	//DWORD dwMissileList = Memory.Read<DWORD>(ClientAddress + 0x350B4F8);
 
-	clog.AddLog("inhib %x", dwInhibList);
-	clog.AddLog("missile %x", dwMissileList);
+	//clog.AddLog("inhib %x", dwInhibList);
+	//clog.AddLog("missile %x", dwMissileList);
 
 	//DWORD Obj = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
 

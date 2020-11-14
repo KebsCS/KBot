@@ -41,6 +41,7 @@ public:
 	{
 		Setup();
 	}
+	~CConfig() = default;
 
 	//sets up initial values
 	void Setup();

@@ -40,6 +40,9 @@ public:
 	//STRAIGHT LINE DISTANCE mouse move - recieves pixel coordinates. change mouse position to those coords
 	bool MouseMoveSLD(int x, int y);
 
+	//instantly moves mouse
+	bool MouseMoveInstant(int x, int y);
+
 	//same as above, just takes in a point
 	bool MouseMoveSLD(POINT coord);
 
@@ -107,4 +110,7 @@ public:
 	double GetExecutionTime();
 
 };
+
+extern Mouse* mouse;
+
 #endif

@@ -26,6 +26,7 @@ void Keyboard::SpecialKeyUp(int vk)
 	::SendInput(1, &Input, sizeof(Input));
 }
 
+//https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 //https://www.asciitable.com
 void Keyboard::GenerateKey(int vk, BOOL bExtended, bool shift)
 {
@@ -136,7 +137,7 @@ void Keyboard::GenerateKeyScancode(int vk, bool shift)
 
 	::SendInput(1, &Input, sizeof(Input));
 
-	Sleep(AVERAGE_REACTION_TIME);
+	Sleep(AVERAGE_REACTION_TIME*1.25);
 
 	/* Generate a "key up" */
 	ZeroMemory(&kb, sizeof(KEYBDINPUT));

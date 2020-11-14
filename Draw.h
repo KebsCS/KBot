@@ -38,9 +38,11 @@ public:
 	LPDIRECT3DTEXTURE9 textureTeleport = NULL;
 
 	LPDIRECT3DTEXTURE9 textureKEKW = NULL;
+	LPDIRECT3DTEXTURE9 textureSks = NULL;
+
 
 	//initializes textures from bytes in memory
-	void InitTextures();
+	bool InitTextures();
 
 	//not needed since now every texture is loaded from memory
 	//void Image(std::string _filename, int x, int y, std::string text = "", int index = 0, int in_width = 64, int in_height = 64, bool inWindow = false);

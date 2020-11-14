@@ -1,78 +1,97 @@
 #include "Draw.h"
 
 
-void Draw::InitTextures()
+bool Draw::InitTextures()
 {
 	LPDIRECT3DTEXTURE9 my_texture = NULL;
 	HRESULT res;
 
-	//todo cleanup this
+	//todo cleanup this 
 	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_barrier, sizeof(g_barrier), &my_texture);
 	if (res != S_OK)
-		return;
-	IM_ASSERT(my_texture != NULL);
+		return false;
+	if (my_texture == NULL)
+		return false;
 	textureBarrier = my_texture;
 
 	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_clarity, sizeof(g_clarity), &my_texture);
 	if (res != S_OK)
-		return;
-	IM_ASSERT(my_texture != NULL);
+		return false;
+	if (my_texture == NULL)
+		return false;
 	textureClarity = my_texture;
 
 	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_cleanse, sizeof(g_cleanse), &my_texture);
 	if (res != S_OK)
-		return;
-	IM_ASSERT(my_texture != NULL);
+		return false;
+	if (my_texture == NULL)
+		return false;
 	textureCleanse = my_texture;
 
 	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_exhaust, sizeof(g_exhaust), &my_texture);
 	if (res != S_OK)
-		return;
-	IM_ASSERT(my_texture != NULL);
+		return false;
+	if (my_texture == NULL)
+		return false;
 	textureExhaust = my_texture;
 
 	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_flash, sizeof(g_flash), &my_texture);
 	if (res != S_OK)
-		return;
-	IM_ASSERT(my_texture != NULL);
+		return false;
+	if (my_texture == NULL)
+		return false;
 	textureFlash = my_texture;
 
 	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_ghost, sizeof(g_ghost), &my_texture);
 	if (res != S_OK)
-		return;
-	IM_ASSERT(my_texture != NULL);
+		return false;
+	if (my_texture == NULL)
+		return false;
 	textureGhost = my_texture;
 
 	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_heal, sizeof(g_heal), &my_texture);
 	if (res != S_OK)
-		return;
-	IM_ASSERT(my_texture != NULL);
+		return false;
+	if (my_texture == NULL)
+		return false;
 	textureHeal = my_texture;
 
 	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_ignite, sizeof(g_ignite), &my_texture);
 	if (res != S_OK)
-		return;
-	IM_ASSERT(my_texture != NULL);
+		return false;
+	if (my_texture == NULL)
+		return false;
 	textureIgnite = my_texture;
 
 	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_smite, sizeof(g_smite), &my_texture);
 	if (res != S_OK)
-		return;
-	IM_ASSERT(my_texture != NULL);
+		return false;
+	if (my_texture == NULL)
+		return false;
 	textureSmite = my_texture;
 
 	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_teleport, sizeof(g_teleport), &my_texture);
 	if (res != S_OK)
-		return;
-	IM_ASSERT(my_texture != NULL);
+		return false;
+	if (my_texture == NULL)
+		return false;
 	textureTeleport = my_texture;
 
 	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_kekw, sizeof(g_kekw), &my_texture);
 	if (res != S_OK)
-		return;
-	IM_ASSERT(my_texture != NULL);
+		return false;
+	if (my_texture == NULL)
+		return false;
 	textureKEKW = my_texture;
 
+	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_sks, sizeof(g_sks), &my_texture);
+	if (res != S_OK)
+		return false;
+	if (my_texture == NULL)
+		return false;
+	textureSks = my_texture;
+
+	return true;
 }
 
 void Draw::ImageFromMemory(LPDIRECT3DTEXTURE9 texturename, int x, int y, std::string text, int index, int in_width, int in_height, bool inWindow)
