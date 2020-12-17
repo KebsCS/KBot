@@ -1,7 +1,8 @@
 
 
 #include "ObjectManager.h"
-#include "Orbwalker.h"
+//#include "Orbwalker.h"
+#include "DirectX.h"
 
 LPCWSTR overlayClassName = L"ovrl"; // overlay window name
 
@@ -49,18 +50,19 @@ DWORD GetFirst(DWORD objManager)
     int v1; // eax
     int v2; // edx
 
-    v1 = Memory.Read<int>(objManager + 20);
-    v2 = Memory.Read<int>(objManager + 24);
+    v1 = Memory.Read<int>(objManager + 0x14);
+    v2 = Memory.Read<int>(objManager + 0x18);
     if (v1 == v2)
         return 0;
-    while (Memory.Read<BYTE>(v1) & 1 || !Memory.Read<DWORD>(v1))
+    while (Memory.Read<BYTE>(v1) & 1 || !Memory.Read<DWORD>(v1)) // never enters loop
     {
         v1 += 4;
         if (v1 == v2)
             return 0;
     }
-    return Memory.Read<DWORD>(v1);
+    return Memory.Read<DWORD>(v1); // returns first address in objlist
 }
+
 
 static DWORD OBJManager = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
 DWORD GetNext(DWORD objManager, DWORD a2)
@@ -70,12 +72,12 @@ DWORD GetNext(DWORD objManager, DWORD a2)
     uint16_t v4; // esi
     int v5; // eax
 
-    v2 = Memory.Read<int>(objManager + 20);
-    v3 = Memory.Read<uint16_t>(a2 + 32) + 1;
-    v4 = (Memory.Read<int>(objManager + 24) - v2) >> 2;
+    v2 = Memory.Read<int>(objManager + 0x14);
+    v3 = Memory.Read<uint16_t>(a2 + 0x20) + 1; // loops from first to last object index - 1 to a1a
+    v4 = 0xbb8;//(Memory.Read<int>(objManager + 0x18) - v2) >> 2; // always bb8 (max possible ammount of objects maybe?)
     if (v3 >= v4)
         return 0;
-    v5 = v2 + 4 * v3;
+    v5 = v2 + 4 * v3; // every obj address before pointer
     while (Memory.Read<BYTE>(v5) & 1 || !Memory.Read<DWORD>(v5))
     {
         ++v3;
@@ -83,20 +85,25 @@ DWORD GetNext(DWORD objManager, DWORD a2)
         if (v3 >= v4)
             return 0;
     }
-    return Memory.Read<DWORD>(v5);
+    DWORD temp = Memory.Read<DWORD>(v5);
+   // CObject xd(temp);
+  //  clog.AddLog("%x , %x , %s", v5, temp, xd.GetName().c_str());
+    return temp; // object address pointer
 }
 
 
+std::vector<CObject>minionList;
 
-std::list<CObject>missileList;
 
-std::vector<DWORD> GetObjectList() //todo toby's method of storing missile addresses
+std::vector<CObject>missileList;
+
+std::vector<DWORD> GetObjectList()
 {
 
     std::vector<DWORD> list;
     auto obj = GetFirst(OBJManager);
 
-    std::list<CObject>currmissileList;
+    std::vector<CObject>currmissileList;
 
     while (obj)
     {
@@ -104,23 +111,46 @@ std::vector<DWORD> GetObjectList() //todo toby's method of storing missile addre
 
         if (obj)
         {
-            CObject xd(obj);
-          
-            if (xd.IsMissile())
-                currmissileList.emplace_back(xd);
+            CObject currobj(obj);
+            bool addMissile = true;
+
+            auto itminion = std::find(minionList.begin(), minionList.end(), currobj);
+            if (itminion != minionList.end())
+                addMissile = false;
+
+            if (addMissile)
+            {
+                auto ithero = std::find(init->herolist.begin(), init->herolist.end(), currobj);
+                if (ithero != init->herolist.end())
+                    addMissile = false;
+            }
+
+            if (addMissile)
+            {
+                auto ittest = std::find(init->objlisttest.begin(), init->objlisttest.end(), currobj);
+                if (ittest != init->objlisttest.end())
+                    addMissile = false;
+            }
+
+            if (addMissile)
+                if (!currobj.IsMissile())//&& !xd.IsTroy())
+                    addMissile = false;
+            if(addMissile)
+                currmissileList.emplace_back(currobj);
         
             // clog.AddLog("%x", obj);
             list.push_back(obj);
         }
 
         obj = GetNext(OBJManager, obj);
-        Sleep(1);
+        
     }
-    missileList = currmissileList;
+    if(!currmissileList.empty())
+        missileList = currmissileList;
     return list;
 }
 
-std::list<CObject>minionList;
+
 
 
 void MinionListLoop()
@@ -128,7 +158,7 @@ void MinionListLoop()
     DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oMinionList);
     while (true)
     {
-        std::list<CObject>currobjList;
+        std::vector<CObject>currobjList;
         DWORD MinionArray = Memory.Read<DWORD>(MinionList + 0x4);
         int MinionArrayLength = Memory.Read<int>(MinionList + 0x8);
         for (int i = 0; i < MinionArrayLength * 4; i += 4)
@@ -140,8 +170,9 @@ void MinionListLoop()
             currobjList.emplace_back(obj);
 
         }
-        minionList = currobjList;
-        Sleep(1000);
+        if(!currobjList.empty())
+            minionList = currobjList;
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 }
 
@@ -150,11 +181,13 @@ std::vector<DWORD>objList;
 //object manager loop
 void ObjListLoop()
 {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     while (true)
     {
+
         objList = GetObjectList();
 
-        Sleep(1);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
 
@@ -347,16 +380,107 @@ void ObjListLoop()
 //}
 
 
+
+//bool FUN_0155b3b0(float param_1)
+//
+//{   
+//    if (((Memory.Read<int>(param_1) < Memory.Read<int>(param_1 + 12) || Memory.Read<int>(param_1) == Memory.Read<int>(param_1 + 12)) &&
+//        (Memory.Read<int>(param_1 + 4) < Memory.Read<int>(param_1 + 16) || Memory.Read<int>(param_1 + 4) == Memory.Read<int>(param_1 + 16))) &&
+//        (Memory.Read<int>(param_1+ 8) < Memory.Read<int>(param_1+20) || Memory.Read<int>(param_1 +8) == Memory.Read<int>(param_1+20))) {
+//        return 0;
+//    }
+//    return 1;
+//}
+
+//bool FUN_0155b3b0(float obj)
+//{
+//    return Memory.Read<int>(obj) > Memory.Read<int>(obj+12) || Memory.Read<int>(obj+4) > Memory.Read<int>(obj+16) || Memory.Read<int>(obj+8) > Memory.Read<int>(obj +20);
+//}
+
+
+
+//undefined __fastcall FUN_0155b3b0(float* param_1)
+//
+//{
+//    if (((*param_1 < param_1[3] || *param_1 == param_1[3]) &&
+//        (param_1[1] < param_1[4] || param_1[1] == param_1[4])) &&
+//        (param_1[2] < param_1[5] || param_1[2] == param_1[5])) {
+//        return 0;
+//    }
+//    return 1;
+//}
+//
+
+//
+//DWORD getDwordFromBytes(byte* b)
+//{
+//    return (b[3]) | (b[2] << 8) | (b[1] << 16) | (b[0] << 24);
+//}
+//
+//float GetBoundingRadius(DWORD param_1)
+//{
+//    float pfVar1;
+//    bool cVar2;
+//    DWORD iVar3;
+//    float fVar4;
+//    uint_fast64_t uStack36;
+//    float fStack28;
+//    DWORD uStack16;
+//    float fStack4;
+//    
+//    if (Memory.Read<int>(param_1 + 12024) != 0) {
+//        uStack16 = 0xc989b7;
+//        iVar3 = Memory.Read<DWORD>((Memory.Read<int>(param_1) + 0xe4)); 
+//        uStack16 = 0xc989be;
+//        fVar4 = 65.0f;
+//        fStack4 = (float)fVar4;
+//    }
+//    pfVar1 = (float)(param_1 + 0x3c);
+//    cVar2 = FUN_0155b3b0(pfVar1);
+//    if (cVar2 == 0) {
+//        float temp1 = Memory.Read<float>(param_1 + 256) - Memory.Read<float>(param_1 + 244);
+//        BYTE btemp1[4];
+//        memcpy(&btemp1, (unsigned char*)(&temp1), 4);
+//
+//        float temp2 = Memory.Read<float>(param_1 + 252) - Memory.Read<float>(param_1 + 240);
+//        BYTE btemp2[4];
+//        memcpy(&btemp2, (unsigned char*)(&temp2), 4);
+//
+//
+//        DWORD d1 = getDwordFromBytes(btemp1);
+//        uint_fast64_t ret = d1 * 0x100000000;
+//        ret += getDwordFromBytes(btemp2);
+//        uStack36 = ret;
+//        fStack28 = Memory.Read<float>(param_1 + 260) - Memory.Read<float>(param_1 + 248);
+//    }
+//    else {
+//        uStack36 = ClientAddress + 0x3539B78;
+//        fStack28 = ClientAddress + 0x3539B80;
+//    }
+//    fStack4 = fStack28;
+//    FUN_0155b3b0(pfVar1);
+//    return Memory.Read<float>(uStack36);
+//}
+
+
+
+
+
+
+
 void OrbwalkThread()
 {
 
     while(true)
     {
-        if (GetAsyncKeyState(M.Orbwalker.HoldKey) & 0x8000) 
+        if (M.Orbwalker.Master)
         {
-            orbwalk->Move();
+            if (PressedKey(M.Orbwalker.HoldKey))
+            {
+                //orbwalk->Move();
+            }
         }
-        Sleep(10);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
 }
@@ -410,18 +534,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 0;
     }
 
-
-
-    Sleep(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     // Initialize Direct3D
-    //Direct3D9.DirectXInit(hWnd);
     if (!Direct3D9.DirectXInit(hWnd))
     {
         Direct3D9.Shutdown();
         ::UnregisterClass(wc.lpszClassName, wc.hInstance);
         return 0;
     }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     ::ShowWindow(hWnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hWnd);
@@ -430,45 +553,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     Config->Load("default");
     clog.AddLog("[startup] Config loaded");
 
-
-    clog.AddLog("ProcessId: %d", Memory.ProcessID);
-    clog.AddLog("ClientAddress: %x", ClientAddress);
-
-
-
+    //rewrite this to work properly and use new verion C++ threads
     CreateThread(0, 0, (LPTHREAD_START_ROUTINE)MinionListLoop, 0, 0, 0);
-    CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0);
-    //CreateThread(0, 0, (LPTHREAD_START_ROUTINE)OrbwalkThread, 0, 0, 0); todo not working
-    Sleep(1000);
+   // CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0); //todo loop obj only when needed, not in different thread
+    //CreateThread(0, 0, (LPTHREAD_START_ROUTINE)OrbwalkThread, 0, 0, 0); 
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-
-
-    clog.AddLog("OBJManager: %x", OBJManager);
-    clog.AddLog("LocalPlayer: %x", LocalPlayer);
-    clog.AddLog("Name: %s", Local.GetName().c_str());
-    clog.AddLog("IsVisible: %d", Local.IsVisible());
-    clog.AddLog("GetTeam: %d", Local.GetTeam());
-    clog.AddLog("HP: %f", Local.GetHealth());
-    clog.AddLog("MaxHP: %f", Local.GetMaxHealth());
-    clog.AddLog("Mana: %f", Local.GetMana());
-    clog.AddLog("MaxMana: %f", Local.GetMaxMana());
-    clog.AddLog("Armor: %f", Local.GetArmor());
-    clog.AddLog("MR: %f", Local.GetMR());
-    clog.AddLog("MS: %f", Local.GetMS());
-    clog.AddLog("BaseAD: %f", Local.GetBaseAD());
-    clog.AddLog("BonusAD: %f", Local.GetBonusAD());
-    clog.AddLog("AP: %f", Local.GetAP());
-    clog.AddLog("AARange: %f", Local.GetAARange());
-    clog.AddLog("Lethality: %f", Local.GetLethality());
-    clog.AddLog("Crit: %f", Local.GetCrit());
-    clog.AddLog("ChampName: %s", Local.GetChampName().c_str());
-    clog.AddLog("SummonerSpell1: %s", Local.SummonerSpell1().c_str());
-    clog.AddLog("SummonerSpell2: %s", Local.SummonerSpell2().c_str());
-    clog.AddLog("KeystoneName: %s", Local.KeystoneName().c_str());
-    clog.AddLog("GetLevel: %i", Local.GetLevel());
-
-
-
+    init->StartupInfo();
 
     //message Loop
     ZeroMemory(&Msg, sizeof(Msg));
@@ -485,7 +576,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if (M.ExitBot)
             break;
 
-        if (GetAsyncKeyState(M.Misc.MenuKey) & 0x8000) //open menu
+        if (PressedKey(M.Misc.MenuKey)) //open menu
         {
             long winlong = GetWindowLong(hWnd, GWL_EXSTYLE);
             if (!M.MenuOpen)
@@ -506,22 +597,43 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 //clog.AddLog("Menu Closed");
 
             }
-            while (GetAsyncKeyState(M.Misc.MenuKey) & 0x8000) { Sleep(1); }
+            while (PressedKey(M.Misc.MenuKey)) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); }
         }
-        else if (GetAsyncKeyState(VK_F11) & 0x8000) //exit button
+        else if (PressedKey(VK_F11)) //exit button
         {
             break;
         }
+
+        
+       // clog.AddLog("%d , %d", mouse->GetPos().x, mouse->GetPos().y);
+
+        //todo twisted fate cards bound seperatly+visual indicator
        
-        //GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+        //GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float)); //todo gametime as global variable that can be accesed by any func
     
         //clog.AddLog("%i", GetObjectList().size());
        // CObject undermouseObj(CObject::GetUnderMouseObject());
         //int xd = CObject::GetUnderMouseObject();
        // DWORD address = Memory.Read<DWORD>(ClientAddress + oUnderMouseObject);
-      //  clog.AddLog("under mouse: %x", address); todo
+      //  clog.AddLog("under mouse: %x", address); 
+        
+        //clog.AddLog("%lg", GetBoundingRadius(Local.Address()));
+        //int i = 0;
+        //DWORD buffmgr = (LocalPlayer + 0x2174);
+        //for (DWORD pBuffPtr = Memory.Read<DWORD>(buffmgr +0x10); pBuffPtr != Memory.Read<DWORD>(buffmgr + 0x14); pBuffPtr = Memory.Read<DWORD>(pBuffPtr + 0x8 *i))
+        //{
+        //    auto pBuff = Memory.Read<DWORD>(pBuffPtr);
+        //    i++;
+        //    if (!pBuff) continue;
+        //    //if (!pBuff->IsValid()) continue;
+        //    //if (pBuff->IsAlive()) {
+        //    std::string buffname = Memory.ReadString(pBuff + 0x08);
+        //    clog.AddLog("%s", buffname);
+        //  //  }
 
-        Sleep(M.Misc.AntiLag );
+        ////}
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(M.Misc.AntiLag));
     }
 
     Config->Save("default");

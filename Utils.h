@@ -11,7 +11,6 @@
 class Utils
 {
 private:
-	PixelHandler pix;
 
 public:
 
@@ -38,12 +37,13 @@ public:
 	bool CheckLocation(Pixel pix1, Pixel pix2, Pixel pix3);
 
 	//retruns an Area struct with screen size
-	Area GetDesktopArea();
+	Area GetDesktopArea() const;
 
 	//retruns an Area struct with foreground window size
-	Area GetWindowArea();
+	Area GetForegroundWindowArea() const;
 
 };
+
 
 #endif
 

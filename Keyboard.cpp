@@ -88,7 +88,7 @@ void Keyboard::GenerateKey(int vk, BOOL bExtended, bool shift)
 	
 	::SendInput(1, &Input, sizeof(Input));
 
-	Sleep(FAST_REACTION_TIME);
+	std::this_thread::sleep_for(std::chrono::milliseconds(FAST_REACTION_TIME));
 
 	/* Generate a "key up" */
 	ZeroMemory(&kb, sizeof(KEYBDINPUT));
@@ -137,7 +137,7 @@ void Keyboard::GenerateKeyScancode(int vk, bool shift)
 
 	::SendInput(1, &Input, sizeof(Input));
 
-	Sleep(AVERAGE_REACTION_TIME*1.25);
+	std::this_thread::sleep_for(std::chrono::milliseconds(RandomInt(50, 70)));
 
 	/* Generate a "key up" */
 	ZeroMemory(&kb, sizeof(KEYBDINPUT));
@@ -166,7 +166,7 @@ void Keyboard::Type(std::string phrase)
 {
 	bool Uppercase = false;
 	char letter;
-	int length = phrase.length();
+	size_t length = phrase.length();
 	for (int i = 0; i < length; i++)
 	{
 		if ((phrase[i] >= 65) && (phrase[i] <= 90)) //if in the uppercase range
@@ -177,7 +177,7 @@ void Keyboard::Type(std::string phrase)
 		letter = phrase[i];
 
 		GenerateKey(toupper(letter), false, Uppercase);
-		Sleep(50 + (rand() % 50));
+		std::this_thread::sleep_for(std::chrono::milliseconds(RandomInt(50,100)));
 	}
 	//LOG("Typed:", phrase);
 	return;
@@ -209,7 +209,7 @@ void Keyboard::Arrow(int arrow)
 void Keyboard::HitSpecialKey(int vk)
 {
 	SpecialKeyDown(vk);
-	Sleep(FAST_REACTION_TIME);
+	std::this_thread::sleep_for(std::chrono::milliseconds(FAST_REACTION_TIME));
 	SpecialKeyUp(vk);
 	//LOG("Pressed ", vk);
 	return;
@@ -234,3 +234,5 @@ double Keyboard::GetExecutionTime()
 
 	return(endCount.QuadPart - startCount.QuadPart) * 1000.0 / frequency.QuadPart;
 }
+
+Keyboard* keyboard = new Keyboard();

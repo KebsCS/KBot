@@ -1,11 +1,80 @@
 #include "Initialize.h"
 
 #include "DirectX.h"
+#include "API.h"
 
-void Initialize::AddObjects() 
+void Initialize::Start()
+{
+	float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+
+	while (GameTime < 1) // pause if not in game
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+	}
+
+
+	AddObjects();
+	CreateChampArray();
+	
+
+	//std::string strAPI = api->GET("https://127.0.0.1", "/liveclientdata/allgamedata", 2999);
+	
+}
+
+void Initialize::StartupInfo()
 {
 
-	std::string str;
+	clog.AddLog("ProcessId: %d", Memory.ProcessID);
+	clog.AddLog("ClientAddress: %x", ClientAddress);
+	clog.AddLog("OBJManager: %x", Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD)));
+
+	clog.AddLog("LocalPlayer: %x", LocalPlayer);
+	clog.AddLog("Name: %s", Local.GetName().c_str());
+	clog.AddLog("NetworkID: %d", Local.GetNetworkID());
+	clog.AddLog("IsVisible: %d", Local.IsVisible());
+	clog.AddLog("GetTeam: %d", Local.GetTeam());
+	clog.AddLog("HP: %f", Local.GetHealth());
+	clog.AddLog("MaxHP: %f", Local.GetMaxHealth());
+	clog.AddLog("Mana: %f", Local.GetMana());
+	clog.AddLog("MaxMana: %f", Local.GetMaxMana());
+	clog.AddLog("Armor: %f", Local.GetArmor());
+	clog.AddLog("MR: %f", Local.GetMR());
+	clog.AddLog("MS: %f", Local.GetMS());
+	clog.AddLog("BaseAD: %f", Local.GetBaseAD());
+	clog.AddLog("BonusAD: %f", Local.GetBonusAD());
+	clog.AddLog("AP: %f", Local.GetAP());
+	clog.AddLog("AARange: %f", Local.GetAARange());
+	clog.AddLog("Lethality: %f", Local.GetLethality());
+	clog.AddLog("Crit: %f", Local.GetCrit());
+	clog.AddLog("ChampName: %s", Local.GetChampName().c_str());
+	clog.AddLog("SummonerSpell1: %s", Local.SummonerSpell1().c_str());
+	clog.AddLog("SummonerSpell2: %s", Local.SummonerSpell2().c_str());
+	clog.AddLog("KeystoneName: %s", Local.KeystoneName().c_str());
+	clog.AddLog("GetLevel: %i", Local.GetLevel());
+}
+
+void Initialize::AddObjects()
+{
+
+
+	MakeHeroList();
+	MakeTurretList();
+	MakeInhibList();
+	MakeStructureList();
+
+	MakeTestList();
+
+	//todo make champ class or smth
+	M.Champion = Local.GetChampName();
+	if (M.Champion == "Talon")
+	{
+		M.Talon.Master = true;
+	}
+}
+
+
+void Initialize::MakeHeroList()
+{
 
 	DWORD dwHeroList = Memory.Read<DWORD>(ClientAddress + oHeroList);
 	DWORD HeroArray = Memory.Read<DWORD>(dwHeroList + 0x04);
@@ -17,10 +86,18 @@ void Initialize::AddObjects()
 		herolist.emplace_back(obj);
 		clog.AddLog("%s : %x %s %s ", obj.GetName().c_str(), obj.Address(), obj.SummonerSpell1().c_str(), obj.SummonerSpell2().c_str());
 	}
+
+	std::string str;
 	if (herolist.size() < 10)
 		str = "error";
 	else str = "startup";
 	clog.AddLog("[%s] Added %i/10 heroes", str.c_str(), herolist.size());
+
+}
+
+
+void Initialize::MakeTurretList()
+{
 
 	DWORD dwTurretList = Memory.Read<DWORD>(ClientAddress + oTurretList);
 	DWORD TurretArray = Memory.Read<DWORD>(dwTurretList + 0x04);
@@ -32,11 +109,16 @@ void Initialize::AddObjects()
 		turretlist.emplace_back(obj);
 		//clog.AddLog("%s : %x", obj.GetName().c_str(), obj.Address());
 	}
-
+	std::string str;
 	if (turretlist.size() < 22)
 		str = "error";
 	else str = "startup";
 	clog.AddLog("[%s] Added %i/22 turrets", str.c_str(), turretlist.size());
+
+}
+
+void Initialize::MakeInhibList()
+{
 
 
 	DWORD dwInhibList = Memory.Read<DWORD>(ClientAddress + oInhibitorList);
@@ -49,11 +131,49 @@ void Initialize::AddObjects()
 		inhiblist.emplace_back(obj);
 		//clog.AddLog("%s : %x", obj.GetName().c_str(), obj.Address());
 	}
+	std::string str;
 	if (inhiblist.size() < 6)
 		str = "error";
 	else str = "startup";
 	clog.AddLog("[%s] Added %i/6 inhibitors", str.c_str(), inhiblist.size());
-	
+
+}
+
+
+void Initialize::MakeStructureList()
+{
+
+	DWORD dwStructureList = Memory.Read<DWORD>(ClientAddress + oStructureList);
+	DWORD StructureArray = Memory.Read<DWORD>(dwStructureList + 0x04);
+	int StructureArrayLength = Memory.Read<int>(dwStructureList + 0x08);
+	for (int i = 0; i < StructureArrayLength * 4; i += 4)
+	{
+		CObject obj(Memory.Read<DWORD>(StructureArray + i));
+		structurelist.emplace_back(obj);
+		//clog.AddLog("%s : %x", obj.GetName().c_str(), obj.Address());
+	}
+
+}
+
+void Initialize::MakeTestList()
+{
+
+
+	//DWORD testList = Memory.Read<DWORD>(ClientAddress + 0x28BCCC0); //0x28BCC98
+	//clog.AddLog("TestList: %x", testList);
+	//DWORD testarray = Memory.Read<DWORD>(testList + 0x04);
+	//int testlength = Memory.Read<int>(testList + 0x08);
+	//for (int i = 0; i < testlength * 4; i += 4)
+	//{
+	//	CObject obj(Memory.Read<DWORD>(testarray + i));
+
+	//	objlisttest.emplace_back(obj);
+	//	//clog.AddLog("%s : %x", obj.GetName().c_str(), obj.Address());
+
+	//}
+
+
+
 
 	//DWORD dwMissileList = Memory.Read<DWORD>(ClientAddress + 0x350B4F8);
 
@@ -83,7 +203,7 @@ void Initialize::AddObjects()
 	//			clog.AddLog("[startup] Added hero: %s", objName.c_str());
 	//			herolist.emplace_back(obj);
 	//			continue;
-	//		}//todo grab this from turret list bcs one turret is multiply defined here
+	//		}
 	//	/*	if (objName.find("Turret_") != std::string::npos)
 	//		{
 	//			clog.AddLog("[startup] Added turret: %s", objName.c_str());
@@ -103,7 +223,128 @@ void Initialize::AddObjects()
 	//		}
 	//	}
 	//}
+}
+
+void Initialize::CreateChampArray()
+{
+	//todo cleanup
+
+	//own team = r  
+	//enemy team = b
+	std::vector<CObject>r(5);
+	std::vector<CObject>b(5);
+	int ir = 0, ib = 0;
+	for (auto hero : herolist)
+	{
+		if (hero.GetTeam() == Local.GetTeam())
+			r[ir++] = hero;
+		else
+			b[ib++] = hero;
+
+	}
+
+	//pseudo sorting
+
+	std::vector<std::string>scoreboardnames(10);
+	//put in place based on summoner spells
+	//if (herolist.size() == 10)
+	//{
+	//	ir = 0;
+	//	for (auto a : r)
+	//	{
+
+	//		//if has smite
+	//		if ((a.SummonerSpell1() == "summonersmite" || a.SummonerSpell2() == "summonersmite") && scoreboardnames[2].empty())
+	//		{
+	//			scoreboardnames[2] = a.GetChampName();
+	//			r[ir++] = 0;
+	//			continue;
+	//		}
+	//		//teleport
+	//		if ((a.SummonerSpell1() == "summonerteleport" || a.SummonerSpell2() == "summonerteleport") && scoreboardnames[0].empty())
+	//		{
+	//			scoreboardnames[0] = a.GetChampName();
+	//			r[ir++] = 0;
+	//			continue;
+	//		}
+	//		//heal
+	//		if ((a.SummonerSpell1() == "summonerheal" || a.SummonerSpell2() == "summonerheal") && scoreboardnames[6].empty())
+	//		{
+	//			scoreboardnames[6] = a.GetChampName();
+	//			r[ir++] = 0;
+	//			continue;
+	//		}
+	//		ir++;
+
+	//	}
+	//	ib = 0;
+	//	for (auto a : b)
+	//	{
+	//		//if has smite
+	//		if ((a.SummonerSpell1() == "summonersmite" || a.SummonerSpell2() == "summonersmite") && scoreboardnames[3].empty())
+	//		{
+	//			scoreboardnames[3] = a.GetChampName();
+	//			b[ib++] = 0;
+	//			continue;
+	//		}
+	//		//teleport
+	//		if ((a.SummonerSpell1() == "summonerteleport" || a.SummonerSpell2() == "summonerteleport") && scoreboardnames[1].empty())
+	//		{
+	//			scoreboardnames[1] = a.GetChampName();
+	//			b[ib++] = 0;
+	//			continue;
+	//		}
+	//		//heal
+	//		if ((a.SummonerSpell1() == "summonerheal" || a.SummonerSpell2() == "summonerheal") && scoreboardnames[7].empty())
+	//		{
+	//			scoreboardnames[7] = a.GetChampName();
+	//			b[ib++] = 0;
+	//			continue;
+	//		}
+	//		ib++;
+
+	//	}
+	//}
+
+	//put in place whats left
+	for (auto a : r)
+	{
+		if (a == 0)
+			continue;
+		for (int i = 0; i < 10; i += 2)
+		{
+			if (scoreboardnames[i].empty())
+			{
+				scoreboardnames[i] = a.GetChampName();
+				break;
+			}
+
+		}
+	}
+
+	for (auto a : b)
+	{
+		if (a == 0)
+			continue;
+		for (int i = 1; i < 10; i += 2)
+		{
+			if (scoreboardnames[i].empty())
+			{
+				scoreboardnames[i] = a.GetChampName();
+				break;
+			}
+
+		}
+	}
+
+	//put to global 
+	for (int i = 0; i < 10; i++)
+	{
+		M.ScoreboardNames[i] = scoreboardnames[i];
+	}
 
 }
+
+
 Initialize* init = new Initialize();
 

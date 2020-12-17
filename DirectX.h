@@ -5,8 +5,8 @@
 
 #include <Windows.h>
 #include <iomanip>
-#include <list>
 #include <string>
+
 
 #include "imgui.h"
 #include "imgui_impl_dx9.h"
@@ -141,7 +141,7 @@ static void ShowObjectMenu(bool* p_open)
 
             ImGui::Text("Name: %s", selectedObj.GetName().c_str());
             ImGui::Text("NetworkID: %d", selectedObj.GetNetworkID());
-            ImGui::Text("IsAttacking: %d", selectedObj.IsAttacking());
+            //ImGui::Text("IsAttacking: %d", selectedObj.IsAttacking());
             ImGui::Text("IsVisible: %d", selectedObj.IsVisible());
             ImGui::Text("GetTeam: %d", selectedObj.GetTeam());
             ImGui::Text("HP: %f", selectedObj.GetHealth());
@@ -454,10 +454,10 @@ struct ConsoleLog
         {
             IgnoreStopPrint = true;
             AddLog("Reinitializing objects");
-            init->herolist.clear();
-            init->turretlist.clear();
-            init->inhiblist.clear();
-            init->AddObjects();
+            if (!init->herolist.empty()) init->herolist.clear();
+            if (!init->turretlist.empty()) init->turretlist.clear();
+            if (!init->inhiblist.empty()) init->inhiblist.clear();
+            init->Start();
         }
         else if (Stricmp(command_line, "SAVECFG") == 0)
         {

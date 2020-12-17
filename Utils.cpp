@@ -46,13 +46,13 @@ name1.Set(color,x,y)
 bool Utils::CheckLocation(Pixel pix1, Pixel pix2, Pixel pix3)
 {
 	bool result = true;
-	result &= pix.VerifyRoughPixel(pix1);
-	result &= pix.VerifyRoughPixel(pix2);
-	result &= pix.VerifyRoughPixel(pix3);
+	result &= pixel->VerifyRoughPixel(pix1);
+	result &= pixel->VerifyRoughPixel(pix2);
+	result &= pixel->VerifyRoughPixel(pix3);
 	return result;
 }
 
-Area Utils::GetDesktopArea()
+Area Utils::GetDesktopArea() const
 {
 	RECT desktop;
 	const HWND hDesktop = GetDesktopWindow();
@@ -62,7 +62,7 @@ Area Utils::GetDesktopArea()
 }
 
 
-Area Utils::GetWindowArea()
+Area Utils::GetForegroundWindowArea() const
 {
 	RECT desktop;
 	const HWND hDesktop = GetForegroundWindow();

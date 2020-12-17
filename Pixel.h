@@ -74,13 +74,6 @@ public:
 	//returns execution time im milliseconds
 	double GetExecutionTime();
 
-	//returns hex from rgb
-	unsigned int RGBtoHEX(int r, int g, int b);
-
-	//returns hex from rgba
-	unsigned int RGBtoHEX(int r, int g, int b, int a);
-
-
 	//todo
 	bool SearchforImage(LPCWSTR path, int x1, int y1, int x2, int y2);
 
@@ -97,5 +90,7 @@ public:
 
 	void SetScreenPixel(POINT coord, int r, int g, int b);
 };
+
+extern PixelHandler* pixel;
 
 #endif

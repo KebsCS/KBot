@@ -436,8 +436,8 @@ unsigned int PixelHandler::DEBUG()
 		GetCursorPos(&curMouse);
 		color = GetPixelColor(curMouse.x, curMouse.y);
 		RGBA colorRGB(color);
-		//std::cout << "Color: 0x" << std::hex << color << std::dec << " (" << colorRGB.R << " " << colorRGB.G << " " << colorRGB.B << " " << colorRGB.A << ") found at (" << curMouse.x << ", " << curMouse.y << ")\n";
-		if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
+		//clog.AddLog("")
+		if (PressedKey(VK_LBUTTON))
 		{
 			std::fstream hFile("debug.txt", std::ios::out | std::ios::app);
 			if (hFile.is_open())
@@ -445,7 +445,7 @@ unsigned int PixelHandler::DEBUG()
 				hFile << "Color: 0x" << std::hex << color << std::dec << " (" << colorRGB.R << " " << colorRGB.G << " " << colorRGB.B << " " << colorRGB.A << ") found at (" << curMouse.x << ", " << curMouse.y << ")\n";
 				hFile.close();
 			}
-			while (GetAsyncKeyState(VK_LBUTTON) & 0x8000) {}
+			while (PressedKey(VK_LBUTTON)) { std::this_thread::sleep_for(std::chrono::milliseconds(1));; }
 		}
 	}
 }
@@ -458,18 +458,6 @@ double PixelHandler::GetExecutionTime()
 	return(endCount.QuadPart - startCount.QuadPart) * 1000.0 / frequency.QuadPart;
 }
 
-
-unsigned int PixelHandler::RGBtoHEX(int r, int g, int b)
-{
-	return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
-}
-
-
-unsigned int PixelHandler::RGBtoHEX(int r, int g, int b, int a)
-{
-	return ((r & 0xff) << 24) + ((g & 0xff) << 16) + ((b & 0xff) << 8) + (a & 0xff);
-
-}
 
 
 bool PixelHandler::SearchforImage(LPCWSTR path, int x1, int y1, int x2, int y2)
@@ -543,7 +531,7 @@ void PixelHandler::SetScreenPixel(int x, int y, int r, int g, int b)
 {
 	HWND hWnd = GetDesktopWindow();
 	HDC hdc = GetDC(hWnd);
-	SetPixel(hdc, x, y, RGBtoHEX(b, g, r));
+	SetPixel(hdc, x, y, RGBA(r, g, b).HEX());
 	ReleaseDC(hWnd, hdc);
 }
 
@@ -552,3 +540,5 @@ void PixelHandler::SetScreenPixel(POINT coord, int r, int g, int b)
 	SetScreenPixel(coord.x, coord.y, r, g, b);
 }
 
+
+PixelHandler* pixel = new PixelHandler();

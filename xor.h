@@ -1,5 +1,10 @@
 // for fun xor string encryption
 #pragma once 
+
+#ifndef _XOR_H_
+#define _XOR_H_
+
+
 #include <string>
 #include <array>
 #include <cstdarg>
@@ -147,3 +152,5 @@ static bool w_strcmp(const char* str1, const char* str2)
 #endif*/
 
 END_NAMESPACE
+
+#endif // !_XOR_H_

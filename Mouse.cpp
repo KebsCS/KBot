@@ -121,7 +121,6 @@ bool Mouse::MouseMoveSLD(int x, int y)
 
 bool Mouse::MouseMoveInstant(int x, int y)
 {
-	Sleep(1);
 	POINT curMouse;
 	bool getMouse = GetCursorPos(&curMouse);
 	if (!getMouse)
@@ -134,7 +133,7 @@ bool Mouse::MouseMoveInstant(int x, int y)
 	Input.mi.dx = SENDINPUTX(x);
 	Input.mi.dy = SENDINPUTY(y);
 	::SendInput(1, &Input, sizeof(INPUT));
-	Sleep(1);
+	return true;
 }
 
 //STRAIGHT LINE DISTANCE mouse move - recieves pixel coordinates. change mouse position to those coords
@@ -219,14 +218,14 @@ void Mouse::MouseMiddleUp()
 void Mouse::RightClick()
 {
 	MouseRightDown();
-	Sleep(10);
+	std::this_thread::sleep_for(std::chrono::milliseconds(FAST_REACTION_TIME));
 	MouseRightUp();
 }
 
 void Mouse::LeftClick()
 {
 	MouseLeftDown();
-	Sleep(10);
+	std::this_thread::sleep_for(std::chrono::milliseconds(FAST_REACTION_TIME));
 	MouseLeftUp();
 }
 
@@ -236,7 +235,7 @@ void Mouse::LeftClickHold(int t)
 	MouseLeftDown();
 
 	//LOG("Holding LMB for", t, "ms");
-	Sleep(t);
+	std::this_thread::sleep_for(std::chrono::milliseconds(t));
 
 	MouseLeftUp();
 }
@@ -251,11 +250,11 @@ void Mouse::RightClickWithKey(int vk)
 	Input.ki.wScan = MapVirtualKey(vk, 0);
 	::SendInput(1, &Input, sizeof(Input));
 
-	Sleep(VERYFAST_REACTION_TIME);
+	std::this_thread::sleep_for(std::chrono::milliseconds(VERYFAST_REACTION_TIME));
 
 	RightClick();
 
-	Sleep(VERYFAST_REACTION_TIME);
+	std::this_thread::sleep_for(std::chrono::milliseconds(VERYFAST_REACTION_TIME));
 
 	// Release key
 	Input.type = INPUT_KEYBOARD;
@@ -275,11 +274,11 @@ void Mouse::LeftClickKWithKey(int vk)
 	Input.ki.wScan = MapVirtualKey(vk, 0);
 	::SendInput(1, &Input, sizeof(Input));
 
-	Sleep(VERYFAST_REACTION_TIME);
+	std::this_thread::sleep_for(std::chrono::milliseconds(VERYFAST_REACTION_TIME));
 
 	LeftClick();
 
-	Sleep(VERYFAST_REACTION_TIME);
+	std::this_thread::sleep_for(std::chrono::milliseconds(VERYFAST_REACTION_TIME));
 
 	// Release key
 	Input.type = INPUT_KEYBOARD;
@@ -304,7 +303,7 @@ void Mouse::Scroll(int ammount)
 }
 
 
-POINT Mouse::GetPos()
+POINT Mouse::GetPos() const
 {
 	POINT curMouse;
 	GetCursorPos(&curMouse);
@@ -330,14 +329,14 @@ void Mouse::DragAndDrop(int x1, int y1, int x2, int y2, bool SLD)
 		MouseMoveSLD(x1, y1);
 	else
 		MouseMove(x1, y1);
-	Sleep(FAST_REACTION_TIME * 5);
+	std::this_thread::sleep_for(std::chrono::milliseconds(FAST_REACTION_TIME * 5));
 	MouseLeftDown();
-	Sleep(FAST_REACTION_TIME);
+	std::this_thread::sleep_for(std::chrono::milliseconds(FAST_REACTION_TIME));
 	if (SLD)
 		MouseMoveSLD(x2, y2);
 	else
 		MouseMove(x2, y2);
-	Sleep(FAST_REACTION_TIME);
+	std::this_thread::sleep_for(std::chrono::milliseconds(FAST_REACTION_TIME));
 	MouseLeftUp();
 	//LOG("Dropped on", x2, y2);
 
@@ -348,7 +347,7 @@ void Mouse::DragAndDrop(POINT start, POINT end, bool SLD)
 	DragAndDrop(start.x, start.y, end.x, end.y, SLD);
 }
 
-void Mouse::StoreCurrentPos()
+void Mouse::StoreCurrentPos() 
 {
 	POINT current = GetPos();
 	PrevX = current.x;
@@ -356,11 +355,17 @@ void Mouse::StoreCurrentPos()
 	//LOG("Stored mose position", current.x, current.y);
 }
 
-void Mouse::ClearStoredPos()
+void Mouse::ClearStoredPos() 
 {
 	PrevX = 0;
 	PrevY = 0;
 	//LOG("Cleared stored mouse position");
+}
+
+POINT Mouse::GetStoredPos() const
+{
+	POINT ret = { PrevX, PrevY };
+	return ret;
 }
 
 double Mouse::GetExecutionTime()

@@ -33,93 +33,101 @@ private:
 
         return  ((param_2 & uStack4) != 0);
     }
+    
+   
+
 
     DWORD base;
-    bool alive;
-    float timer;
+  //  bool alive;
+  //  float timer;
+    
 public:
+    //bool IsTroy()
+    //{
+    //    return 0;//;IsTroyFunc(base);
+    //}
 
     int GetTeam()
     {
-        return Memory.Read<int>(base + 0x4C);
+        return Memory.Read<int>(base + oObjTeam);
     }
     bool IsVisible()
     {
-        return Memory.Read<bool>(base + 0x0270, sizeof(bool));
+        return Memory.Read<bool>(base + oObjVisibility, sizeof(bool));
     }
     std::string GetName()
     {
-        return Memory.ReadString(base + 0x006C);
+        return Memory.ReadString(base + oObjName);
     }
     float GetHealth()
     {
-        return Memory.Read<float>(base + mHP, sizeof(float));
+        return Memory.Read<float>(base + oObjHealth, sizeof(float));
     }
     float GetMaxHealth()
     {
-        return Memory.Read<float>(base + mMaxHP, sizeof(float));
+        return Memory.Read<float>(base + oObjMaxHealth, sizeof(float));
     }
     float GetMana()
     {
-        return Memory.Read<float>(base + 0x298, sizeof(float));
+        return Memory.Read<float>(base + oObjMana, sizeof(float));
     }
     float GetMaxMana()
     {
-        return Memory.Read<float>(base + 0x2A8, sizeof(float));
+        return Memory.Read<float>(base + oObjMaxMana, sizeof(float));
     }
     float GetArmor()
     {
-        return Memory.Read<float>(base + 0x12B0, sizeof(float));
+        return Memory.Read<float>(base + oObjArmor, sizeof(float));
     }
     float GetMR()
     {
-        return Memory.Read<float>(base + 0x12B8, sizeof(float));
+        return Memory.Read<float>(base + oObjMagicRes, sizeof(float));
     }
     float GetMS()
     {
-        return Memory.Read<float>(base + 0x12C8, sizeof(float));
+        return Memory.Read<float>(base + oObjMoveSpeed, sizeof(float));
     }
     float GetBaseAD()
     {
-        return Memory.Read<float>(base + 0x1288, sizeof(float));
+        return Memory.Read<float>(base + oObjBaseAtk, sizeof(float));
     }
     float GetBonusAD()
     {
-        return Memory.Read<float>(base + 0x1208, sizeof(float));
+        return Memory.Read<float>(base + oObjBonusAtk, sizeof(float));
     }
     float GetBonusAS()
     {
         return Memory.Read<float>(base + 0x1284, sizeof(float));
     }
-    bool IsAttacking()
-    {
-        return Memory.Read<int>(base + 0x2740) > 0; // changes when player is attacking/casting spell
-    }
+    //bool IsAttacking()
+    //{
+    //    return Memory.Read<int>(base + 0x2740) > 0; // changes when player is attacking/casting spell
+    //}
     float GetTotalAD()
     {
         return GetBaseAD() + GetBonusAD();
     }
     float GetAP()
     {
-        return Memory.Read<float>(base + 0x1218, sizeof(float));
+        return Memory.Read<float>(base + oObjAbilityPower, sizeof(float));
     }
     float GetAARange()
     {
-        return Memory.Read<float>(base + oObjAttackRange, sizeof(float));
+        return Memory.Read<float>(base + oObjAtkRange, sizeof(float));
     }
     Vector3 GetPosition()
     {
-        return Vector3(Memory.Read<float>(base + 0x220, sizeof(float)),
-            Memory.Read<float>(base + 0x220 + 0x4, sizeof(float)),
-            Memory.Read<float>(base + 0x220 + 0x8, sizeof(float)));
+        return Vector3(Memory.Read<float>(base + oObjPos, sizeof(float)),
+            Memory.Read<float>(base + oObjPos + 0x4, sizeof(float)),
+            Memory.Read<float>(base + oObjPos + 0x8, sizeof(float)));
     }
     DWORD GetSpellByID(int id)
     {
-        return Memory.Read<DWORD>(base + (0x2720 + 0x478) + (0x4 * id), sizeof(DWORD));
+        return Memory.Read<DWORD>(base + (oObjSpellBook + /*0x440*/ 0x478) + (0x4 * id), sizeof(DWORD));
     }
     std::string GetChampName()
     {
-        return Memory.ReadString(base + 0x2F84); //0x3340
+        return Memory.ReadString(base + oObjChampionName); //0x3340
     }
     std::string SummonerSpell1()
     {
@@ -136,19 +144,34 @@ public:
 
     int GetLevel()
     {
-        return Memory.Read<int>(base + 0x3694, sizeof(int)); //0x36BC - skillpoints avaiable
+        return Memory.Read<int>(base + oObjLevel, sizeof(int)); 
     }
     bool IsDead()
     {
         return this->GetHealth() < 0.01f;
     }
-    float GetGold()
+    bool IsRecalling()
+    {
+        //6 = recall 16= teleport
+        return Memory.Read<bool>(base + oRecallState, sizeof(bool)) > 0 ? 1 : 0;
+    }
+    float GetEXP()
+    {
+        return Memory.Read<float>(base + oObjEXP, sizeof(float));
+    }
+   /* float GetGold()
     {
         return Memory.Read<float>(base + mGoldTotal, sizeof(float));
-    }
+    }*/
     float GetLethality()
     {
-        return Memory.Read<float>(base + 0x11CC, sizeof(float));
+        return Memory.Read<float>(base + oObjFloatLethality, sizeof(float));
+    }
+
+    //1.0 is 0 armor pen 25% armor pen is 0.75
+    float GetFlatAmorPen()
+    {
+        return Memory.Read<float>(base + oObjPercentArmorPen, sizeof(float));
     }
     float GetTotalDamage(CObject* target)
     {
@@ -181,15 +204,16 @@ public:
         else
             return this->GetAP() * (2 - (100 / (100 - target.GetMR())));
     }
+    //0.0 to 1.0
     float GetCrit()
     {
-        return Memory.Read<float>(base + 0x12AC, sizeof(float)); //0x1848
+        return Memory.Read<float>(base + oObjCritChance, sizeof(float)); 
     }
 
     // Return the Distance to your player
-    float GetDistToMe(CObject me)
+    float GetDistTo(CObject obj)
     {
-        return this->GetPosition().DistTo(me.GetPosition());
+        return this->GetPosition().DistTo(obj.GetPosition());
     }
 
     bool IsLasthitable(CObject me)
@@ -207,7 +231,7 @@ public:
                 return 1;
             else if (name == "JammerDevice")
                 return 2;
-            else if (maxHP == 1.f && this->GetHealth() == 1.f && name.find("Plant") == std::string::npos)
+            else if (maxHP == 1.f && this->GetHealth() == 1.f && name.find("Plant") == std::string::npos && name.find("Shen") == std::string::npos)
                 return 3;
             else return 0;
         }
@@ -231,7 +255,7 @@ public:
         startPos.Y += 100;
         return startPos;
     }
-    bool GetAlive()
+   /* bool GetAlive() const
     {
         return this->alive;
     }
@@ -239,120 +263,129 @@ public:
     {
         this->alive = state;
     }
-    float GetTimer()
+    float GetTimer() const 
     {
         return this->timer;
     }
     void SetTimer(float value)
     {
         this->timer = value;
-    }
+    }*/
 
-    CObject(DWORD base)
+    CObject(DWORD addr) 
+        :base{ addr }//, alive{ true }, timer{ 0 }
     {
-        this->timer = 0;
-        this->alive = true;
-        this->base = base;
+
     }
     int GetNetworkID()
     {
         return Memory.Read<int>(base + oObjNetworkID);
     }
-    DWORD Address()
+    DWORD Address() const
     {
         return base;
     }
-    CObject() {}
+    CObject() 
+        :base{ 0 }//, alive{ true }, timer{ 0 }
+    {
+    }
+
+    inline bool operator == (const CObject& A) const
+    {
+        if (base == A.base)
+            return true;
+        else return false;
+    }
 
 
-        //	GameObject = (1 << 0),  //0x1
-        //	NeutralCamp = (1 << 1),  //0x2
-        //	DeadObject = (1 << 4),  //0x10
-        //	InvalidObject = (1 << 5),  //0x20
-        //	AIBaseCommon = (1 << 7),  //0x80
-        //	AttackableUnit = (1 << 9),  //0x200
-        //	AI = (1 << 10), //0x400
-        //	Minion = (1 << 11), //0x800
-        //	Hero = (1 << 12), //0x1000
-        //	Turret = (1 << 13), //0x2000
-        //	Unknown0 = (1 << 14), //0x4000
-        //	Missile = (1 << 15), //0x8000
-        //	Unknown1 = (1 << 16), //0x10000
-        //	Building = (1 << 17), //0x20000
-        //	Unknown2 = (1 << 18), //0x40000
+    inline bool operator == (const DWORD& A) const
+    {
+        if (base == A)
+            return true;
+        else return false;
+    }
+
+    inline bool operator != (const DWORD& A) const
+    {
+        if (base != A)
+            return true;
+        else return false;
+    }
 
     bool IsGameObject()
     {
-        return IsFunc(base, 0x1);
+        return IsFunc(base, ObjectType::GameObject);
     }
     bool IsNeutralCamp()
     {
-        return IsFunc(base, 0x2);
+        return IsFunc(base, ObjectType::NeutralCamp);
     }
     bool IsDeadObject()
     {
-        return IsFunc(base, 0x10);
+        return IsFunc(base, ObjectType::DeadObject);
     }
     bool IsInvalidObject()
     {
-        return IsFunc(base, 0x20);
+        return IsFunc(base, ObjectType::InvalidObject);
     }
     bool IsAIBaseCommon()
     {
-        return IsFunc(base, 0x80);
+        return IsFunc(base, ObjectType::AIBaseCommon);
     }
     bool IsAI()
     {
-        return IsFunc(base, 0x400);
+        return IsFunc(base, ObjectType::AI);
     }
     bool IsMinion()
     {
-        return IsFunc(base, 0x800);
+        return IsFunc(base, ObjectType::Minion);
     }
     bool IsHero()
     {
-        return IsFunc(base, 0x1000);
+        return IsFunc(base, ObjectType::Hero);
     }
     bool IsTurret()
     {
-        return IsFunc(base, 0x2000);
+        return IsFunc(base, ObjectType::Turret);
     }
     bool IsUnknown0()
     {
-        return IsFunc(base, 0x4000);
+        return IsFunc(base, ObjectType::Unknown0);
     }
     bool IsMissile()
     {
-        return IsFunc(base, 0x8000);
+        return IsFunc(base, ObjectType::Missile);
     }
     bool IsUnknown1()
     {
-        return IsFunc(base, 0x10000);
+        return IsFunc(base, ObjectType::Unknown1);
     }
     bool IsBuilding()
     {
-        return IsFunc(base, 0x20000);
+        return IsFunc(base, ObjectType::Building);
     }
     bool IsUnknown2()
     {
-        return IsFunc(base, 0x40000);
+        return IsFunc(base, ObjectType::Unknown2);
     }
 
-    static int GetUnderMouseObject() //todo apparently a pointer to pointer
-    {
-        int address = Memory.Read<DWORD>(ClientAddress + oUnderMouseObject);
-        CObject under_mouse_object;
+    //static int GetUnderMouseObject() //todo apparently a pointer to pointer
+    //{
+    //    int address = Memory.Read<DWORD>(ClientAddress + oUnderMouseObject);
+    //    CObject under_mouse_object;
 
-        if (address > 0)
-            under_mouse_object = Memory.Read<DWORD>(address);
+    //    if (address > 0)
+    //        under_mouse_object = Memory.Read<DWORD>(address);
 
 
-        return address;
-    }
+    //    return address;
+    //}
 
    
 
 };
+
+
 
 
 const DWORD LocalPlayer = Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD));

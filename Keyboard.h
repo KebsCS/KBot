@@ -63,4 +63,7 @@ public:
 
 };
 
+extern Keyboard* keyboard;
+
+
 #endif // !_KEYBOARD_H_

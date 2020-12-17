@@ -12,7 +12,7 @@ void CConfig::Setup()
 	SetupValue(M.Misc.AntiLag, 1, "Misc", "AntiLag");
 	SetupValue(M.Misc.MenuKey, VK_INSERT, "Misc", "MenuKey");
 
-
+	SetupValue(M.Orbwalker.Master, 0, "Orbwalker", "Master");
 	SetupValue(M.Orbwalker.HoldKey, 0, "Orbwalker", "HoldKey");
 
 	SetupValue(M.AARange.Master, 0, "AARange", "Master");
@@ -37,6 +37,9 @@ void CConfig::Setup()
 
 
 	SetupValue(M.Cooldowns.Master, 0, "Cooldowns", "Master");
+	SetupValue(M.Cooldowns.Type[0], 0, "Cooldowns", "Type0");
+	SetupValue(M.Cooldowns.Type[1], 0, "Cooldowns", "Type1");
+	SetupValue(M.Cooldowns.Type[2], 0, "Cooldowns", "Type2");
 
 	SetupValue(M.LastHit.Master, 0, "LastHit", "Master");
 	SetupValue(M.LastHit.Color[0], 0.f, "LastHit", "ColorR");
@@ -54,6 +57,7 @@ void CConfig::Setup()
 
 	SetupValue(M.Inhibs.Master, 0, "Inhibs", "Master");
 
+	SetupValue(M.Talon.Jumps, 0, "Talon", "Jumps");
 
 }
 

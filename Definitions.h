@@ -6,6 +6,11 @@
 #pragma warning(disable:4996)
 
 #include <cmath>
+#include <vector>
+#include <map>
+#include <thread>
+#include <chrono>
+
 
 #include "xor.h"
 
@@ -17,7 +22,7 @@
 #define XorStr
 #endif
 
-// default size
+// default screen size
 #define SCREENWIDTH ::GetSystemMetrics(SM_CXSCREEN)
 #define SCREENHEIGHT ::GetSystemMetrics(SM_CYSCREEN)
 
@@ -25,12 +30,19 @@
 #define M_PI 3.14159265358979323846	// pi
 #define M_PI_F ((float)(M_PI))	// Shouldn't collide with anything.
 
+
+//rand() isnt really random, todo
+//use bind(uniform_int_distribution<>{min,man},default_random_engine{})
+//from <random>
+
 #define RandomInt(min, max) (rand() % (max - min + 1) + min) // inclusive random int (e.g 0 to 100)
 
 #define INRANGE(x,a,b)    (x >= a && x <= b) //if a<=x<=b
 
-#define SENDINPUTX(a) (a * 65536 / (SCREENWIDTH)+1) //used to calculate coordinates using SendInput
-#define SENDINPUTY(a) (a * 65536 / (SCREENHEIGHT)+1) //used to calculate coordinates using SendInput
+//calculate x coordinates for SendInput mouse movement
+#define SENDINPUTX(x) (x * 65536 / (SCREENWIDTH)+1) 
+//calculate y coordinates for SendInput mouse movement
+#define SENDINPUTY(y) (y * 65536 / (SCREENHEIGHT)+1) 
 
 #ifndef RAD2DEG
 #define RAD2DEG( x  )  ( (float)(x) * (float)(180.f / M_PI_F) ) // Radians to degrees
@@ -40,7 +52,7 @@
 #define DEG2RAD( x  )  ( (float)(x) * (float)(M_PI_F / 180.f) ) // degrees to radians
 #endif
 
-
+#define PressedKey( x ) ( GetAsyncKeyState (x) & 0x8000 )
 
 #define HUMANIZER
 
@@ -55,12 +67,18 @@
 #else
 #define VERYFAST_REACTION_TIME 5
 #define FAST_REACTION_TIME 10
+#define AVERAGE_REACTION_TIME 50
 #define MEDIUM_REACTION_TIME 100
 #define SLOW_REACTION_TIME 1000
 
 #endif
 
-enum text_alignment { lefted, centered, righted };
+enum text_alignment : int 
+{ 
+	lefted = 0, 
+	centered = 1, 
+	righted = 2 
+};
 
 enum Arrow_Keys : int
 {
@@ -72,14 +90,14 @@ enum Arrow_Keys : int
 
 };
 
-enum WardType
+enum WardType : int
 {
 	NormalWard = 1,
 	ControlWard = 2,
 	BlueWard = 3,
 };
 
-enum SpellSlotID
+enum SpellSlotID : int
 {
 	Q = 0,
 	W = 1,
@@ -98,33 +116,67 @@ enum SpellSlotID
 	Passive = 63, 
 };
 
-struct fPoint
+
+
+enum ObjectType : int
 {
-	float x;
-	float y;
+	//x << y = x*pow(2,y)
+	//x >> y = x/pow(2,y)
+	GameObject = (1 << 0),  //0x1
+	NeutralCamp = (1 << 1),  //0x2
+	DeadObject = (1 << 4),  //0x10
+	InvalidObject = (1 << 5),  //0x20
+	AIBaseCommon = (1 << 7),  //0x80
+	AttackableUnit = (1 << 9),  //0x200
+	AI = (1 << 10), //0x400
+	Minion = (1 << 11), //0x800
+	Hero = (1 << 12), //0x1000
+	Turret = (1 << 13), //0x2000
+	Unknown0 = (1 << 14), //0x4000
+	Missile = (1 << 15), //0x8000
+	Unknown1 = (1 << 16), //0x10000
+	Building = (1 << 17), //0x20000
+	Unknown2 = (1 << 18), //0x40000
 };
 
 struct RGBA
 {
 	int R, G, B, A;
-	RGBA()
+	inline RGBA()
 	{
-		R = G = B = A = 0;
+		R = G = B = A = 255;
 	}
-	RGBA(int r, int g, int b, int a=255)
+	inline RGBA(const int r, const int g, const int b, const int a=255)
 	{
 		R = r;
 		G = g;
 		B = b;
 		A = a;
 	}
-	RGBA(unsigned int hex) // HEX to RGB
+	inline RGBA(const float r, const float g, const float b, const float a = 1.f)
+	{
+		R = r * 255;
+		G = g * 255;
+		B = b * 255;
+		A = a * 255;
+	}
+	inline RGBA(const unsigned hex) // HEX to RGB
 	{
 		R = ((hex >> 24) & 0xFF);
 		G = ((hex >> 16) & 0xFF);
 		B = ((hex >> 8) & 0xFF);
 		A = ((hex) & 0xFF);
 	}
+	inline unsigned HEX() const // RGB to HEX
+	{
+		return ((R & 0xff) << 24) + ((G & 0xff) << 16) + ((B & 0xff) << 8) + (A & 0xff);
+	}
+	inline bool operator==(RGBA& rgba) const
+	{
+		if (R == rgba.R && G == rgba.G && B == rgba.B && A == rgba.A)
+			return true;
+	}
+
 };
 
 struct Area
@@ -289,7 +341,269 @@ struct Vector4
 	}
 };
 
-enum DirectInputKeys
+//https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+const char* const keyNames[] =
+{
+"",
+"Left mouse button",
+"Right mouse button",
+"Control-break processing",
+"Middle mouse button",
+"X1 mouse button",
+"X2 mouse button",
+"",//"Undefined",
+"BACKSPACE key",
+"TAB key",
+"",//"Reserved",
+"",
+"CLEAR key",
+"ENTER key",
+"",//"Undefined",
+"",
+"SHIFT key",
+"CTRL key",
+"ALT key",
+"PAUSE key",
+"CAPS LOCK key",
+"",//"IME Kana mode","",//"IME Hanguel mode (maintained for compatibility; use VK_HANGUL)","",//"IME Hangul mode",
+"",//"IME On",
+"",//"IME Junja mode",
+"",//"IME final mode",
+"",//"IME Hanja mode","",//"IME Kanji mode",
+"",//IME Off",
+"ESC key",
+"",//"IME convert",
+"",//"IME nonconvert",
+"",//"IME accept",
+"",//"IME mode change request",
+"SPACEBAR",
+"PAGE UP key",
+"PAGE DOWN key",
+"END key",
+"HOME key",
+"LEFT ARROW key",
+"UP ARROW key",
+"RIGHT ARROW key",
+"DOWN ARROW key",
+"SELECT key",
+"PRINT key",
+"EXECUTE key",
+"PRINT SCREEN key",
+"INS key",
+"DEL key",
+"HELP key",
+"0 key",
+"1 key",
+"2 key",
+"3 key",
+"4 key",
+"5 key",
+"6 key",
+"7 key",
+"8 key",
+"9 key",
+"",//"Undefined",
+"",
+"",
+"",
+"",
+"",
+"",
+"A key",
+"B key",
+"C key",
+"D key",
+"E key",
+"F key",
+"G key",
+"H key",
+"I key",
+"J key",
+"K key",
+"L key",
+"M key",
+"N key",
+"O key",
+"P key",
+"Q key",
+"R key",
+"S key",
+"T key",
+"U key",
+"V key",
+"W key",
+"X key",
+"Y key",
+"Z key",
+"Left Windows key",
+"Right Windows key",
+"Applications key",
+"",//"Reserved",
+"Computer Sleep key",
+"Numeric keypad 0 key",
+"Numeric keypad 1 key",
+"Numeric keypad 2 key",
+"Numeric keypad 3 key",
+"Numeric keypad 4 key",
+"Numeric keypad 5 key",
+"Numeric keypad 6 key",
+"Numeric keypad 7 key",
+"Numeric keypad 8 key",
+"Numeric keypad 9 key",
+"Multiply key",
+"Add key",
+"Separator key",
+"Subtract key",
+"Decimal key",
+"Divide key",
+"F1 key",
+"F2 key",
+"F3 key",
+"F4 key",
+"F5 key",
+"F6 key",
+"F7 key",
+"F8 key",
+"F9 key",
+"F10 key",
+"F11 key",
+"F12 key",
+"F13 key",
+"F14 key",
+"F15 key",
+"F16 key",
+"F17 key",
+"F18 key",
+"F19 key",
+"F20 key",
+"F21 key",
+"F22 key",
+"F23 key",
+"F24 key",
+"",//"Unassigned",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"NUM LOCK key",
+"SCROLL LOCK key",
+"OEM specific",
+"",
+"",
+"",
+"",
+"", //"Unassigned",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"Left SHIFT key",
+"Right SHIFT key",
+"Left CONTROL key",
+"Right CONTROL key",
+"Left MENU key",
+"Right MENU key",
+"Browser Back key",
+"Browser Forward key",
+"Browser Refresh key",
+"Browser Stop key",
+"Browser Search key",
+"Browser Favorites key",
+"Browser Start and Home key",
+"Volume Mute key",
+"Volume Down key",
+"Volume Up key",
+"Next Track key",
+"Previous Track key",
+"Stop Media key",
+"Play/Pause Media key",
+"Start Mail key",
+"Select Media key",
+"Start Application 1 key",
+"Start Application 2 key",
+"",//"Reserved",
+"",
+";:",//"Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ';:' key",
+"+",//"For any country/region, the '+' key",
+",",//"For any country/region, the ',' key",
+"-",//"For any country/region, the '-' key",
+".",//"For any country/region, the '.' key",
+"/?",//"Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '/?' key",
+"`~",//"Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '`~' key",
+"",//"Reserved",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",//"Unassigned",
+"",
+"",
+"[{",//"Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '[{' key",
+"\\|",//"Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '\\|' key",
+"]}",//"Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ']}' key",
+"\'\"",//"Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the 'single-quote/double-quote' key",
+"",//"Used for miscellaneous characters; it can vary by keyboard.",
+"",//"Reserved",
+"",//"OEM specific",
+"",//"Either the angle bracket key or the backslash key on the RT 102-key keyboard",
+"",//"OEM specific",
+"",
+"",//"IME PROCESS key",
+"",//"OEM specific",
+"",//"Used to pass Unicode characters as if they were keystrokes. The VK_PACKET key is the low word of a 32-bit Virtual Key value used for non-keyboard input methods.",
+"",//"Unassigned",
+"",//"OEM specific",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"Attn key",
+"CrSel key",
+"ExSel key",
+"Erase EOF key",
+"Play key",
+"Zoom key",
+"Reserved",
+"PA1 key",
+"Clear key",
+
+};
+
+
+enum DirectInputKeys : int
 {
 	DIK_ESCAPE = 0x01,
 	DIK_1 = 0x02,
@@ -437,5 +751,24 @@ enum DirectInputKeys
 	DIK_MEDIASELECT = 0xED    /* Media Select */
 };
 
+
+const std::vector<std::string>ChampNames = {
+	"Aatrox", "Ahri", "Akali", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios"
+	"Ashe", "Aurelion Sol", "AurelionSol","Azir", "Bard", "Blitzcrank", "Brand", "Braum", "Caitlyn",
+	"Camille", "Cassiopeia", "Cho'Gath", "Chogath", "Corki", "Darius", "Diana", "Dr. Mundo", "Drmundo", "Draven",
+	"Ekko", "Elise", "Evelynn", "Ezreal", "FiddleSticks", "Fiora", "Fizz", "Galio",
+	"Gangplank", "Garen", "Gnar", "Gragas", "Graves", "Hecarim", "Heimerdinger", "Illaoi", "Irelia",
+	"Ivern", "Janna", "Jarvan IV","JarvanIV", "Jax", "Jayce", "Jhin", "Jinx", "Kai'sa", "Kaisa", "Kalista", "Karma",
+	"Karthus", "Kassadin", "Katarina", "Kayle", "Kayn", "Kennen", "Kha'zix", "Kindred", "Kled", "Kog'maw", "KogMaw",
+	"LeBlanc", "Lee Sin", "Leona", "Lillia", "Lissandra", "Lucian", "Lulu", "Lux", "Malphite", "Malzahar", "Maokai",
+	"Master Yi", "MasterYi", "Miss Fortune", "MissFortune", "Mordekaiser", "Morgana", "Nami", "Nasus", "Nautilus", "Neeko",
+	"Nidalee", "Nocturne", "Nunu" , "Nunu & Willump", "Olaf", "Orianna", "Ornn", "Pantheon", "Poppy", "Pyke", "Qiyana", "Quinn",
+	"Rakan", "Rammus", "Rek'Sai", "RekSai", "Renekton", "Rengar", "Riven", "Rumble", "Ryze", "Samira", "Sejuani", "Senna", "Seraphine", "Sett", "Shaco",
+	"Shen", "Shyvana", "Singed", "Sion", "Sivir", "Skarner", "Sona", "Soraka", "Swain", "Sylas", "Syndra", "Tahm Kench", "TahmKench",
+	"Taliyah", "Talon", "Taric", "Teemo", "Thresh", "Tristana", "Trundle", "Tryndamere", "Twisted Fate", "TwistedFate", "Twitch",
+	"Udyr", "Urgot", "Varus", "Vayne", "Veigar", "Vel'Koz", "Velkoz","Vi", "Viktor", "Vladimir", "Volibear",
+	"Warwick", "Wukong", "Xayah", "Xerath", "Xin Zhao", "XinZhao","Yasuo", "Yone", "Yorick", "Yuumi", "Zac", "Zed", "Ziggs", "Zilean", "Zoe", "Zyra",
+	"MonkeyKing", "Mega Gnar", "MegaGnar", "Target Dummy", "TargetDummy"
+};
 
 #endif // !_DEFINITIONS_H_
