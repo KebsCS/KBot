@@ -329,7 +329,7 @@ void Visuals::DrawAARanges(CObject obj, int points, float thickness, RGBA color,
 	{
 
 		Vector3 Position = Local.GetPosition();
-		draw->CircleRange(Position, points, Local.GetAARange(), localcolor, thickness);
+		draw->CircleRange(Position, points, Local.GetAARange() + Local.GetBoundingRadius(), localcolor, thickness);
 		return;
 
 	}
@@ -345,7 +345,7 @@ void Visuals::DrawAARanges(CObject obj, int points, float thickness, RGBA color,
 	{
 
 		Vector3 Position = obj.GetPosition();
-		draw->CircleRange(Position, points, 750, color, thickness);
+		draw->CircleRange(Position, points, 750+130, color, thickness);
 
 		return;
 	}
@@ -354,7 +354,7 @@ void Visuals::DrawAARanges(CObject obj, int points, float thickness, RGBA color,
 	{
 		Vector3 Position = obj.GetPosition();
 
-		draw->CircleRange(Position, points, obj.GetAARange(), color, thickness);
+		draw->CircleRange(Position, points, obj.GetAARange() + obj.GetBoundingRadius(), color, thickness);
 	}
 }
 
@@ -375,6 +375,9 @@ void Visuals::DrawTracers(CObject obj, float thickness)
 
 
 	if (RealPos.x == 0.f && RealPos.y == 0.f)
+		return;
+
+	if (LocalRealPos.x == 0.f && LocalRealPos.y == 0.f)
 		return;
 
 	float distance = sqrtf((LocalRealPos.x - RealPos.x) * (LocalRealPos.x - RealPos.x) + (LocalRealPos.y - RealPos.y) * (LocalRealPos.y - RealPos.y));
@@ -400,15 +403,13 @@ void Visuals::DrawTracers(CObject obj, float thickness)
 
 	RGBA color(r, g, b);
 
-	if (LocalRealPos.x != 0.f && LocalRealPos.y != 0.f)
-		draw->Line(LocalRealPos.x, LocalRealPos.y, RealPos.x, RealPos.y, color, thickness);
+	
+	draw->Line(LocalRealPos.x, LocalRealPos.y, RealPos.x, RealPos.y, color, thickness);
 
 	
 
 }
 
-
-Keyboard key;
 
 //todo reverse bounding radius and check it within smite range
 //https://www.unknowncheats.me/forum/league-of-legends/327917-incoming-damage-minions.html
@@ -442,9 +443,9 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 	}
 	else return;
 
-	float SmiteCooldownExpire = Memory.Read<float>(SmiteSlot + 0x28, sizeof(float));
-	int SmiteStacks = Memory.Read<int>(SmiteSlot + 0x58);
-	float SmiteDamage = Memory.Read<float>(SmiteSlot + 0x90);
+	float SmiteCooldownExpire = Memory.Read<float>(SmiteSlot + oSpellSlotRemainingCD, sizeof(float));
+	int SmiteStacks = Memory.Read<int>(SmiteSlot + oSpellSlotRemainingCharge);
+	float SmiteDamage = Memory.Read<float>(SmiteSlot + oSpellSlotDamage);
 
 	if (!SmiteStacks)
 		return;
@@ -473,7 +474,7 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 
 	if (obj.GetHealth() <= SmiteDamage)
 	{
-
+		clog.AddLog("a");
 	
 		BlockInput(1);	
 
@@ -490,7 +491,7 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 				mouse->MouseMoveSLD(RealPos.x, RealPos.y);
 			else
 				mouse->MouseMove(RealPos.x, RealPos.y);
-			key.GenerateKeyScancode(SpellKey, false);
+			keyboard->GenerateKeyScancode(SpellKey, false);
 
 			POINT LastMousePos = mouse->GetStoredPos();
 
@@ -587,16 +588,18 @@ void Visuals::InhibTimers(CObject obj)
 
 
 
-	if (obj.GetTeam() == Local.GetTeam())
-		return;
+	//if (obj.GetTeam() == Local.GetTeam())
+	//	return;
 	if (obj.IsDead())
 	{
 		ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
 
+		if (RealPos.x == 0.f && RealPos.y == 0.f)
+			return;
+
 		if ((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1)))
 		{
 			float RespawnTimer = Memory.Read<float>(obj.Address() + oInhiRemainingRespawnTime);
-			ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
 			draw->String(std::to_string((int)RespawnTimer), RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
 		}
 	}
@@ -644,9 +647,90 @@ void Visuals::WardsRange(CObject obj)
 		draw->String("Blue Ward", RealPos.x, RealPos.y, centered, BlueWardColor, Direct3D9.fontTahomaSmall);
 		draw->CircleRange(Pos, 14, 500, BlueWardColor);
 	}
-	//draw->String(obj.GetName(), RealPos.x, RealPos.y+20, centered, RGBA(255,255,255), Direct3D9.fontTahomaSmall);
+	//todo plants sometimes show up as blue ward
+	draw->String(obj.GetName(), RealPos.x, RealPos.y+30, centered, RGBA(255,255,255), Direct3D9.fontTahomaSmall);
 
 
-	//todo wards timer is its mana, so print its lifetime
+
+
+}
+
+
+std::map<DWORD, float>lastEXP;
+int wait = 0;
+std::string Expstr;
+std::string currentChampName;
+void Visuals::GankAlerter(CObject obj)
+{
+	wait++;
+
+
+	if (obj.GetTeam() == Local.GetTeam())
+		return;
+
+	float temp = lastEXP[obj.Address()];
+
+	if (obj.GetEXP() != lastEXP[obj.Address()])
+	{
+		//Expstr = std::to_string(obj.GetEXP() - lastEXP[obj.Address()]);
+
+		if (INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 2, 115.0, 117.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 3, 115.0, 117.0))
+			clog.AddLog("[error] someone near %s - cannon", obj.GetChampName().c_str());
+
+		if (INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 2, 37.0, 39.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 3, 37.0, 39.0))
+			clog.AddLog("[error] someone near %s - caster", obj.GetChampName().c_str());
+
+		if (INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 2, 74.0, 77.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 3, 74.0, 77.0))
+			clog.AddLog("[error] someone near %s - melee", obj.GetChampName().c_str());
+
+		if (INRANGE((obj.GetEXP() - temp) * 2, 115.0, 117.0)
+			|| INRANGE((obj.GetEXP() - temp) * 2, 37.0, 39.0)
+			|| INRANGE((obj.GetEXP() - temp) * 2, 74.0, 77.0))
+		{
+			//ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+			//draw->String("2 PEOPLE NEARBY!", RealPos.x, RealPos.y, centered, RGBA(255, 50, 50), fontTahoma);
+			Expstr = "SOMEONE NEAR " + obj.GetChampName();
+			currentChampName = obj.GetChampName();
+		}
+
+
+		if (INRANGE((obj.GetEXP() - temp) * 3, 115.0, 117.0)
+			|| INRANGE((obj.GetEXP() - temp) * 3, 37.0, 39.0)
+			|| INRANGE((obj.GetEXP() - temp) * 3, 74.0, 77.0))
+		{
+			/*ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+			draw->String("3 PEOPLE NEARBY!", RealPos.x, RealPos.y, centered, RGBA(255, 50, 50), fontTahoma);*/
+			Expstr = "2 PEOPLE NEAR " + obj.GetChampName();
+			currentChampName = obj.GetChampName();
+		}
+
+		
+		if (!Expstr.empty())
+		{
+
+			bool Open = true;
+			std::string wndName = "##gankalert" + obj.GetChampName();
+			const auto flags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs;
+
+		
+			clog.AddLog("%s got %s xp ", obj.GetChampName().c_str(), std::to_string(obj.GetEXP() - lastEXP[obj.Address()]).c_str());
+		}
+		if (wait > 1000)
+			wait = 0;
+		lastEXP[obj.Address()] = obj.GetEXP();
+		
+	}
+	if (wait < 1000)
+	{
+		if (!Expstr.empty() && obj.GetChampName() == currentChampName)
+		{
+			//todo better drawings
+			ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+			draw->String(Expstr, RealPos.x, RealPos.y, centered, RGBA(255, 50, 50), Direct3D9.fontTahoma);
+
+		}
+	}
+
+
 
 }

@@ -68,10 +68,10 @@ DirectX::XMMATRIX Direct3D9Render::GetProjectionMatrix()
 	return ReadMatrix(ClientAddress + oViewMatrix +0x40);
 }
 
-DirectX::XMMATRIX Direct3D9Render::GetViewProjectionMatrix()
+void Direct3D9Render::GetViewProjectionMatrix()
 {
 
-	return DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+	M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
 }
 
 
@@ -189,20 +189,88 @@ static void HelpMarker(const char* desc)
 //	return a1 == ClientAddress + 0x3508318;
 //}
 
-std::map<DWORD, float>lastEXP;
-int wait = 0;
-std::string Expstr;
-std::string currentChampName;
-int Direct3D9Render::Render()
+
+void Direct3D9Render::TalonRaptorJump()
 {
 
+	Vector3 raptorJumpSpot = Vector3(6724.0, 48.527, 4908.0);
+
+
+	if (Local.GetPosition().DistTo(raptorJumpSpot) < 1000)
+	{
+		ImVec2 raptorJump = WorldToScreen(raptorJumpSpot);
+		if (raptorJump.x != 0 && raptorJump.y != 0)
+		{
+			draw->Circle(raptorJump.x, raptorJump.y, 75, RGBA(255, 255, 255));
+
+			if (Local.GetPosition().DistTo(raptorJumpSpot) < 400)
+			{
+
+				ImVec2 raptorJumpFinal = WorldToScreen(Vector3(6190, 51.772114, 5634));
+				if (raptorJumpFinal.x != 0 && raptorJumpFinal.y != 0)
+				{
+					draw->Circle(raptorJumpFinal.x, raptorJumpFinal.y, 30, RGBA(255, 255, 0));
+					draw->Line(raptorJumpFinal.x, raptorJumpFinal.y, raptorJump.x, raptorJump.y, RGBA(255, 255, 0));
+
+					if (Local.GetPosition().DistTo(raptorJumpSpot) < 155 && PressedKey(VK_LSHIFT))
+					{
+
+						mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
+						mouse->RightClick();
+
+
+						std::this_thread::sleep_for(std::chrono::milliseconds(200));
+						M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+
+						raptorJump = WorldToScreen(raptorJumpSpot);
+						mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
+						mouse->RightClick();
+
+						ImVec2 raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
+						mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
+						mouse->RightClick();
+
+						std::this_thread::sleep_for(std::chrono::milliseconds(400));
+						M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+
+						raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
+						mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
+						mouse->RightClick();
+
+						raptorJump = WorldToScreen(raptorJumpSpot);
+						mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
+
+						mouse->RightClick();
+
+						std::this_thread::sleep_for(std::chrono::milliseconds(400));
+						M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+
+						ImVec2 raptorJumpDestination = WorldToScreen(Vector3(6324.0, 51.765816, 5808.0));
+						mouse->MouseMoveInstant(raptorJumpDestination.x, raptorJumpDestination.y);
+						keyboard->GenerateKeyScancode(DIK_E, false);
+						mouse->MouseMoveInstant(raptorJumpFinal.x, raptorJumpFinal.y);
+					}
+				}
+			}
+		}
+
+	}
+
+}
+
+
+int Direct3D9Render::Render()
+{
+	//read vieprojwmatrix for w2s
+	std::thread ViewmatrixThread(&Direct3D9Render::GetViewProjectionMatrix, this); 
+	//M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
 
 	// Start the Dear ImGui frame
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-
+	
 	if (M.MenuOpen)
 	{
 		
@@ -270,6 +338,8 @@ int Direct3D9Render::Render()
 					ImGui::Selectable("Text on champ", &M.Cooldowns.Type[0]);
 					ImGui::Selectable("Image on champ", &M.Cooldowns.Type[1]);
 					ImGui::Selectable("Scoreboard", &M.Cooldowns.Type[2]);
+
+					ImGui::Checkbox("Gank Alerter", &M.GankAlerter.Master);
 					
 				}
 				
@@ -314,7 +384,7 @@ int Direct3D9Render::Render()
 			}
 			if (ImGui::BeginTabItem("Orbwalker"))
 			{
-				ImGui::Checkbox("Enable ##Orbwalker", &M.Orbwalker.Master);
+				ImGui::Checkbox("Enable - just a placeholder ##Orbwalker", &M.Orbwalker.Master);
 				ImGui::Combo("Hold Key", &M.Orbwalker.HoldKey, keyNames, ARRAYSIZE(keyNames));
 				draw->ImageFromMemory(draw->textureSks, 0, 0, "", 99, 256*1.25, 256*1.25, true);
 
@@ -503,13 +573,15 @@ int Direct3D9Render::Render()
 	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
 	if (g_pd3dDevice->BeginScene() >= 0)
 	{
-		
+		ViewmatrixThread.join(); // wait for it to execute
+
+
 		if (M.AARange.Local)
 			vis->DrawAARanges(Local, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
 				M.AARange.Local, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]));
 
 		//hero loop
-		if (M.Cooldowns.Master || M.AARange.Master || M.Tracers.Master)
+		if (M.Cooldowns.Master || M.AARange.Master || M.Tracers.Master || M.GankAlerter.Master)
 		{
 			for (auto obj : init->herolist)
 			{
@@ -525,64 +597,11 @@ int Direct3D9Render::Render()
 					vis->DrawTracers(obj, M.Tracers.Thickness);
 
 				
-				{
-					wait++;
-					float temp = lastEXP[obj.Address()];
-					
-					if (obj.GetEXP() != lastEXP[obj.Address()])
-					{
-						//Expstr = std::to_string(obj.GetEXP() - lastEXP[obj.Address()]);
-						
-						if (INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 2, 115.0, 117.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 3, 115.0, 117.0))
-							clog.AddLog("[error] someone near %s - cannon", obj.GetChampName().c_str());
-
-						if (INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 2, 37.0, 39.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 3, 37.0, 39.0))
-							clog.AddLog("[error] someone near %s - caster", obj.GetChampName().c_str());
-
-						if (INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 2, 74.0, 77.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 3, 74.0, 77.0))
-							clog.AddLog("[error] someone near %s - melee", obj.GetChampName().c_str());
-
-						if (INRANGE((obj.GetEXP() - temp) * 2, 115.0, 117.0)
-							|| INRANGE((obj.GetEXP() - temp) * 2, 37.0, 39.0)
-							|| INRANGE((obj.GetEXP() - temp) * 2, 74.0, 77.0))
-						{
-							//ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
-							//draw->String("2 PEOPLE NEARBY!", RealPos.x, RealPos.y, centered, RGBA(255, 50, 50), fontTahoma);
-							Expstr = "2 PEOPLE NEAR " + obj.GetChampName();
-						}
+				if (M.GankAlerter.Master)
+					vis->GankAlerter(obj);
 
 
-						if (INRANGE((obj.GetEXP() - temp) * 3, 115.0, 117.0)
-							|| INRANGE((obj.GetEXP() - temp) * 3, 37.0, 39.0)
-							|| INRANGE((obj.GetEXP() - temp) * 3, 74.0, 77.0))
-						{
-							/*ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
-							draw->String("3 PEOPLE NEARBY!", RealPos.x, RealPos.y, centered, RGBA(255, 50, 50), fontTahoma);*/
-							Expstr = "3 PEOPLE NEAR " + obj.GetChampName();
-						}
-
-						lastEXP[obj.Address()] = obj.GetEXP();
-						if (!Expstr.empty())
-						{
-							clog.AddLog("%s got %s xp ", obj.GetChampName().c_str(), Expstr.c_str()); 
-						}
-						if(wait>1000)
-							wait = 0;
-					}
-					if (wait < 1000)
-					{
-						if (!Expstr.empty())
-						{
-							//todo better drawings
-							ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
-							draw->String(Expstr, SCREENWIDTH / 2, SCREENHEIGHT - 150, centered, RGBA(255, 50, 50), fontTahoma);
-
-						}
-					}
-					
-					
-				
-				}
+				//clog.AddLog("%s %i", obj.GetChampName().c_str(), obj.GetNetworkID());
 
 				//float dist = obj.GetDistToMe(Local);
 				//clog.AddLog("%s , %f", obj.GetName(), dist);
@@ -692,98 +711,59 @@ int Direct3D9Render::Render()
 		{
 			if (M.Talon.Jumps)
 			{
-				Vector3 raptorJumpSpot = Vector3(6724.0, 48.527, 4908.0);
-
-				ImVec2 raptorJump = ImVec2(0, 0);
-
-
-				if (Local.GetPosition().DistTo(raptorJumpSpot) < 1000)
-				{
-					raptorJump = WorldToScreen(raptorJumpSpot);
-					draw->Circle(raptorJump.x, raptorJump.y, 75, RGBA(255, 255, 255));
-					if (Local.GetPosition().DistTo(raptorJumpSpot) < 400)
-					{
-
-						ImVec2 raptorJumpFinal = WorldToScreen(Vector3(6190, 51.772114, 5634));
-						draw->Circle(raptorJumpFinal.x, raptorJumpFinal.y, 30, RGBA(255, 255, 0));
-						draw->Line(raptorJumpFinal.x, raptorJumpFinal.y, raptorJump.x, raptorJump.y, RGBA(255, 255, 0));
-
-						if (Local.GetPosition().DistTo(raptorJumpSpot) < 155 && PressedKey(VK_LSHIFT))
-						{
-
-							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
-							mouse->RightClick();
-							std::this_thread::sleep_for(std::chrono::milliseconds(200));
-							raptorJump = WorldToScreen(raptorJumpSpot);
-							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
-							mouse->RightClick();
-
-							ImVec2 raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
-							mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
-							mouse->RightClick();
-
-							std::this_thread::sleep_for(std::chrono::milliseconds(400));
-							raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
-							mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
-							mouse->RightClick();
-
-							raptorJump = WorldToScreen(raptorJumpSpot);
-							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
-							mouse->RightClick();
-							std::this_thread::sleep_for(std::chrono::milliseconds(400));
-							ImVec2 raptorJumpDestination = WorldToScreen(Vector3(6324.0, 51.765816, 5808.0));
-							mouse->MouseMoveInstant(raptorJumpDestination.x, raptorJumpDestination.y);
-							keyboard->GenerateKeyScancode(DIK_E, false);
-							mouse->MouseMoveInstant(raptorJumpFinal.x, raptorJumpFinal.y);
-						}
-					}
-
-				}
+				//todo dont run when havent finished last time
+				std::thread TalonRaptorJumpThread(&Direct3D9Render::TalonRaptorJump, this);
 
 				Vector3 drakeJumpSpot = Vector3(8688, 50.623039, 5196);
-				ImVec2 drakeJump = ImVec2(0, 0);
 				if (Local.GetPosition().DistTo(drakeJumpSpot) < 1000)
 				{
-					drakeJump = WorldToScreen(drakeJumpSpot);
-					draw->Circle(drakeJump.x, drakeJump.y, 75, RGBA(255, 255, 255));
-					if (Local.GetPosition().DistTo(drakeJumpSpot) < 400)
+					ImVec2 drakeJump = WorldToScreen(drakeJumpSpot);
+					if (drakeJump.x != 0 && drakeJump.y != 0)
 					{
-						ImVec2 drakeJumpFinal = WorldToScreen(Vector3(9372, -71.240601, 4642));
-						draw->Circle(drakeJumpFinal.x, drakeJumpFinal.y, 30, RGBA(255, 255, 0));
-						draw->Line(drakeJumpFinal.x, drakeJumpFinal.y, drakeJump.x, drakeJump.y, RGBA(255, 255, 0));
-
-						if (Local.GetPosition().DistTo(drakeJumpSpot) < 155 && PressedKey(VK_LSHIFT))
+						draw->Circle(drakeJump.x, drakeJump.y, 75, RGBA(255, 255, 255));
+						if (Local.GetPosition().DistTo(drakeJumpSpot) < 400)
 						{
+							ImVec2 drakeJumpFinal = WorldToScreen(Vector3(9372, -71.240601, 4642));
+							if (drakeJumpFinal.x != 0 && drakeJumpFinal.y != 0)
+							{
+								draw->Circle(drakeJumpFinal.x, drakeJumpFinal.y, 30, RGBA(255, 255, 0));
+								draw->Line(drakeJumpFinal.x, drakeJumpFinal.y, drakeJump.x, drakeJump.y, RGBA(255, 255, 0));
 
-							mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
-							mouse->RightClick();
-							std::this_thread::sleep_for(std::chrono::milliseconds(200));
-							mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
-							mouse->RightClick();
+								if (Local.GetPosition().DistTo(drakeJumpSpot) < 155 && PressedKey(VK_LSHIFT))
+								{
 
-
-							ImVec2 drakeJumpCorrection = WorldToScreen(Vector3(8600, 48.448730, 5214));
-							mouse->MouseMoveInstant(drakeJumpCorrection.x, drakeJumpCorrection.y);
-							mouse->RightClick();
-
-							std::this_thread::sleep_for(std::chrono::milliseconds(400));
-							drakeJumpCorrection = WorldToScreen(Vector3(8600, 48.448730, 5214));
-							mouse->MouseMoveInstant(drakeJumpCorrection.x, drakeJumpCorrection.y);
-							mouse->RightClick();
+									mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
+									mouse->RightClick();
+									std::this_thread::sleep_for(std::chrono::milliseconds(200));
+									mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
+									mouse->RightClick();
 
 
-							drakeJump = WorldToScreen(drakeJumpSpot);
-							mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
-							mouse->RightClick();
-							std::this_thread::sleep_for(std::chrono::milliseconds(400));
-							ImVec2 drakeJumpDestination = ImVec2(1920, 1080);// WorldToScreen(Vector3(9700, -71.240601, 4716));
+									ImVec2 drakeJumpCorrection = WorldToScreen(Vector3(8600, 48.448730, 5214));
+									mouse->MouseMoveInstant(drakeJumpCorrection.x, drakeJumpCorrection.y);
+									mouse->RightClick();
 
-							mouse->MouseMoveInstant(drakeJumpDestination.x, drakeJumpDestination.y);
-							keyboard->GenerateKeyScancode(DIK_E, false);
-							mouse->MouseMoveInstant(drakeJumpFinal.x, drakeJumpFinal.y);
+									std::this_thread::sleep_for(std::chrono::milliseconds(400));
+									drakeJumpCorrection = WorldToScreen(Vector3(8600, 48.448730, 5214));
+									mouse->MouseMoveInstant(drakeJumpCorrection.x, drakeJumpCorrection.y);
+									mouse->RightClick();
+
+
+									drakeJump = WorldToScreen(drakeJumpSpot);
+									mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
+									mouse->RightClick();
+									std::this_thread::sleep_for(std::chrono::milliseconds(400));
+									ImVec2 drakeJumpDestination = ImVec2(1920, 1080);// WorldToScreen(Vector3(9700, -71.240601, 4716));
+
+									mouse->MouseMoveInstant(drakeJumpDestination.x, drakeJumpDestination.y);
+									keyboard->GenerateKeyScancode(DIK_E, false);
+									mouse->MouseMoveInstant(drakeJumpFinal.x, drakeJumpFinal.y);
+								}
+							}
 						}
 					}
 				}
+				TalonRaptorJumpThread.join();
 			}
 		}
 	/*	
@@ -824,6 +804,7 @@ int Direct3D9Render::Render()
 		//draw->StringBoxed("asdfsdgSVX123!_", 700, 200, lefted, RGBA(255, 255, 255), fontTahoma, RGBA(1,0,0),RGBA(255,0,0));
 		//draw->Circle(1100, 500, 100, RGBA(255, 0, 0));
 		//draw->CircleFilled(1400, 500, 100, RGBA(255, 0, 0));
+		
 		
 
 		g_pd3dDevice->EndScene();
@@ -891,7 +872,7 @@ void Direct3D9Render::ResetDevice()
 
 ImVec2 Direct3D9Render::WorldToScreen(Vector3 pos)
 {
-	DirectX::XMMATRIX matrix = GetViewProjectionMatrix();
+	DirectX::XMMATRIX matrix = M.Matrix;
 	
 	ImVec2 returnVec = ImVec2(0,0);
 

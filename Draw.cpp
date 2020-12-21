@@ -371,7 +371,7 @@ void Draw::CircleRange(Vector3 Pos, float points, float r, RGBA color, float thi
 	float flPoint = M_PI_F * 2.0f / points;
 	
 
-	r += 80;
+	//r += 80;
 	bool first = true;
 	ImVec2 First, Last;
 	for (float flAngle = flPoint; flAngle < (M_PI_F * 2.0f); flAngle += flPoint)

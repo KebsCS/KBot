@@ -21,6 +21,8 @@
 //#define oShopList 0x28BDEA0
 
 
+#define UnitComponentInfo 0x2F1C
+#define UCIPropertiesInstance 0x1C
 
 
 //28C9344

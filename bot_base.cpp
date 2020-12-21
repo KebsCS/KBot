@@ -164,7 +164,7 @@ void MinionListLoop()
         for (int i = 0; i < MinionArrayLength * 4; i += 4)
         {
             CObject obj(Memory.Read<DWORD>(MinionArray + i));
-
+            obj.SetObjConsts();
            // clog.AddLog("%s %x %i", obj.GetName().c_str(), obj.Address(), obj.GetAlive());
             
             currobjList.emplace_back(obj);
@@ -554,7 +554,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     clog.AddLog("[startup] Config loaded");
 
     //rewrite this to work properly and use new verion C++ threads
-    CreateThread(0, 0, (LPTHREAD_START_ROUTINE)MinionListLoop, 0, 0, 0);
+    std::thread MinionListThread{ MinionListLoop };
    // CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0); //todo loop obj only when needed, not in different thread
     //CreateThread(0, 0, (LPTHREAD_START_ROUTINE)OrbwalkThread, 0, 0, 0); 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -571,6 +571,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             ::TranslateMessage(&Msg);
             continue;
         }
+        //std::thread MissileThread{ GetObjectList };
         Direct3D9.Render();
 
         if (M.ExitBot)
@@ -632,7 +633,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         //  //  }
 
         ////}
+        
 
+        //todo wards bounding
+        //initialization in different threads
+        //turret range in different func
+
+        //MissileThread.join();
         std::this_thread::sleep_for(std::chrono::milliseconds(M.Misc.AntiLag));
     }
 

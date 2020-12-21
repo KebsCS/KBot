@@ -8,14 +8,6 @@
 #include <string>
 
 
-#include "imgui.h"
-#include "imgui_impl_dx9.h"
-#include "imgui_impl_win32.h"
-#include <d3d9.h>
-#include <d3dx9.h>
-#pragma comment(lib, "d3d9.lib")
-#pragma comment(lib, "d3dx9.lib")
-#include <DirectXMath.h>
 
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
@@ -47,8 +39,8 @@ private:
     DirectX::XMMATRIX ReadMatrix(DWORD address);
     DirectX::XMMATRIX GetViewMatrix();
     DirectX::XMMATRIX GetProjectionMatrix();
-    DirectX::XMMATRIX GetViewProjectionMatrix();
-  
+    void GetViewProjectionMatrix();
+
 
 public:
 
@@ -87,6 +79,8 @@ public:
     //w2s
 	ImVec2 WorldToScreen(Vector3 pos);
 
+
+    void TalonRaptorJump();
 
 
 };

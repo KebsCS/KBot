@@ -218,14 +218,14 @@ void Mouse::MouseMiddleUp()
 void Mouse::RightClick()
 {
 	MouseRightDown();
-	std::this_thread::sleep_for(std::chrono::milliseconds(FAST_REACTION_TIME));
+	std::this_thread::sleep_for(std::chrono::milliseconds(RandomInt(12, 15)));
 	MouseRightUp();
 }
 
 void Mouse::LeftClick()
 {
 	MouseLeftDown();
-	std::this_thread::sleep_for(std::chrono::milliseconds(FAST_REACTION_TIME));
+	std::this_thread::sleep_for(std::chrono::milliseconds(RandomInt(12,15)));
 	MouseLeftUp();
 }
 

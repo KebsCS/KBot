@@ -14,6 +14,7 @@ struct Menu
     bool MenuOpen;
     bool ExitBot;
     bool ConsoleOpen;
+    DirectX::XMMATRIX Matrix;
 
     std::string Champion;
     std::string ScoreboardNames[10]; //for GUI scoreboard
@@ -62,6 +63,11 @@ struct Menu
         bool Master;
         float Color[4] = { 255.0f / 255.0f, 85.0f / 255.0f, 50.0f / 255.0f, 255.0f / 255.0f };
     }LastHit;
+
+    struct
+    {
+        bool Master;
+    }GankAlerter;
 
     struct
     {

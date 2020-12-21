@@ -28,7 +28,8 @@ void Initialize::StartupInfo()
 	clog.AddLog("ClientAddress: %x", ClientAddress);
 	clog.AddLog("OBJManager: %x", Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD)));
 
-	clog.AddLog("LocalPlayer: %x", LocalPlayer);
+	clog.AddLog("LocalPlayer: %x", Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD)));
+	clog.AddLog("UnitComponentInfo: %x", Local.GetUnitComponentInfo());
 	clog.AddLog("Name: %s", Local.GetName().c_str());
 	clog.AddLog("NetworkID: %d", Local.GetNetworkID());
 	clog.AddLog("IsVisible: %d", Local.IsVisible());
@@ -64,6 +65,7 @@ void Initialize::AddObjects()
 
 	MakeTestList();
 
+
 	//todo make champ class or smth
 	M.Champion = Local.GetChampName();
 	if (M.Champion == "Talon")
@@ -81,8 +83,8 @@ void Initialize::MakeHeroList()
 	int HeroArrayLength = Memory.Read<int>(dwHeroList + 0x08);
 	for (int i = 0; i < HeroArrayLength * 4; i += 4)
 	{
-
 		CObject obj(Memory.Read<DWORD>(HeroArray + i));
+		obj.SetPlayerConsts();
 		herolist.emplace_back(obj);
 		clog.AddLog("%s : %x %s %s ", obj.GetName().c_str(), obj.Address(), obj.SummonerSpell1().c_str(), obj.SummonerSpell2().c_str());
 	}
@@ -106,6 +108,7 @@ void Initialize::MakeTurretList()
 	{
 
 		CObject obj(Memory.Read<DWORD>(TurretArray + i));
+		obj.SetStructureConsts();
 		turretlist.emplace_back(obj);
 		//clog.AddLog("%s : %x", obj.GetName().c_str(), obj.Address());
 	}
@@ -128,6 +131,7 @@ void Initialize::MakeInhibList()
 	{
 
 		CObject obj(Memory.Read<DWORD>(InhibArray + i));
+		obj.SetStructureConsts();
 		inhiblist.emplace_back(obj);
 		//clog.AddLog("%s : %x", obj.GetName().c_str(), obj.Address());
 	}
@@ -149,6 +153,7 @@ void Initialize::MakeStructureList()
 	for (int i = 0; i < StructureArrayLength * 4; i += 4)
 	{
 		CObject obj(Memory.Read<DWORD>(StructureArray + i));
+		obj.SetStructureConsts();
 		structurelist.emplace_back(obj);
 		//clog.AddLog("%s : %x", obj.GetName().c_str(), obj.Address());
 	}
@@ -227,7 +232,7 @@ void Initialize::MakeTestList()
 
 void Initialize::CreateChampArray()
 {
-	//todo cleanup
+	//todo cleanup, maybe sort based on API's position
 
 	//own team = r  
 	//enemy team = b
@@ -236,9 +241,9 @@ void Initialize::CreateChampArray()
 	int ir = 0, ib = 0;
 	for (auto hero : herolist)
 	{
-		if (hero.GetTeam() == Local.GetTeam())
+		if (hero.GetTeam() == Local.GetTeam() && ir < 5)
 			r[ir++] = hero;
-		else
+		else if (ib < 5)
 			b[ib++] = hero;
 
 	}

@@ -5,6 +5,17 @@
 
 #pragma warning(disable:4996)
 
+
+
+#include "imgui.h"
+#include "imgui_impl_dx9.h"
+#include "imgui_impl_win32.h"
+#include <d3d9.h>
+#include <d3dx9.h>
+#pragma comment(lib, "d3d9.lib")
+#pragma comment(lib, "d3dx9.lib")
+#include <DirectXMath.h>
+
 #include <cmath>
 #include <vector>
 #include <map>
@@ -72,6 +83,7 @@
 #define SLOW_REACTION_TIME 1000
 
 #endif
+
 
 enum text_alignment : int 
 { 

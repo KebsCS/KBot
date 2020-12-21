@@ -38,6 +38,13 @@ private:
 
 
     DWORD base;
+    std::string name;
+    std::string champ;
+    std::string summ1;
+    std::string summ2;
+    int team;
+    float bounding;
+    
   //  bool alive;
   //  float timer;
     
@@ -49,7 +56,10 @@ public:
 
     int GetTeam()
     {
-        return Memory.Read<int>(base + oObjTeam);
+        if (!team || team < 0)
+            return Memory.Read<int>(base + oObjTeam);
+        else
+            return team;
     }
     bool IsVisible()
     {
@@ -57,7 +67,10 @@ public:
     }
     std::string GetName()
     {
-        return Memory.ReadString(base + oObjName);
+        if (name.empty())
+            return Memory.ReadString(base + oObjName);
+        else
+            return name;
     }
     float GetHealth()
     {
@@ -127,15 +140,24 @@ public:
     }
     std::string GetChampName()
     {
-        return Memory.ReadString(base + oObjChampionName); //0x3340
+        if (champ.empty())
+            return Memory.ReadString(base + oObjChampionName); //0x3340
+        else
+            return champ;
     }
     std::string SummonerSpell1()
     {
-        return Memory.ReadString(base + mSummonerSpell1);
+        if (summ1.empty())
+            return Memory.ReadString(base + mSummonerSpell1);
+        else
+            return summ1;
     }
     std::string SummonerSpell2()
     {
-        return Memory.ReadString(base + mSummonerSpell2);
+        if (summ2.empty())
+            return Memory.ReadString(base + mSummonerSpell2);
+        else
+            return summ2;
     }
     std::string KeystoneName()
     {
@@ -150,10 +172,10 @@ public:
     {
         return this->GetHealth() < 0.01f;
     }
-    bool IsRecalling()
+    int IsRecalling()
     {
         //6 = recall 16= teleport
-        return Memory.Read<bool>(base + oRecallState, sizeof(bool)) > 0 ? 1 : 0;
+        return Memory.Read<int>(base + oRecallState, sizeof(int));
     }
     float GetEXP()
     {
@@ -271,11 +293,66 @@ public:
     {
         this->timer = value;
     }*/
+    DWORD GetUnitComponentInfo()
+    {
+        return Memory.Read<DWORD>(base + UnitComponentInfo);
+    }
+    DWORD GetUCIPropertiesInstance()
+    {
+        return Memory.Read<DWORD>(this->GetUnitComponentInfo() + UCIPropertiesInstance);
+    }
+
+    float GetBoundingRadius()
+    {
+        if (!bounding || bounding <0.f)
+        {
+            float val = Memory.Read<float>(GetUCIPropertiesInstance() + 0x454);
+            if (val > 250.f)
+                return 65.f;
+            else
+                return val;
+        }
+        else
+            return bounding;
+    }
+    float GetSelectionRadius()
+    {
+        return Memory.Read<float>(GetUCIPropertiesInstance() + 0x44C);
+    }
+
+    float GetPathingRadius()
+    {
+        return Memory.Read<float>(GetUCIPropertiesInstance() + 0x450);
+    }
+
 
     CObject(DWORD addr) 
         :base{ addr }//, alive{ true }, timer{ 0 }
     {
 
+    }
+    CObject(DWORD addr, bool isLocal)
+        :base{ addr }
+    {
+        SetPlayerConsts();
+    }
+    void SetPlayerConsts()
+    {
+        name = this->GetName();
+        champ = this->GetChampName();
+        summ1 = this->SummonerSpell1();
+        summ2 = this->SummonerSpell2();
+        bounding = this->GetBoundingRadius();
+        SetObjConsts();
+    }
+    void SetObjConsts()
+    {
+        team = this->GetTeam();
+    }
+    void SetStructureConsts()
+    {
+        name = this->GetName();
+        SetObjConsts();
     }
     int GetNetworkID()
     {
@@ -387,9 +464,10 @@ public:
 
 
 
+static CObject Local(Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD)), true);
+    
 
-const DWORD LocalPlayer = Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD));
-static CObject Local(LocalPlayer);
+
 
 
 

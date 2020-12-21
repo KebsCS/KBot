@@ -47,6 +47,9 @@ void CConfig::Setup()
 	SetupValue(M.LastHit.Color[2], 0.f, "LastHit", "ColorB");
 	SetupValue(M.LastHit.Color[3], 1.f, "LastHit", "ColorA");
 
+
+	SetupValue(M.GankAlerter.Master, 0, "GankAlerter", "Master");
+
 	SetupValue(M.AutoSmite.Master, 0, "AutoSmite", "Master");
 	SetupValue(M.AutoSmite.Slot, 1, "AutoSmite", "Slot");
 	SetupValue(M.AutoSmite.Mode, 1, "AutoSmite", "Mode");

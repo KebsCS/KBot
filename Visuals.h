@@ -25,6 +25,8 @@ public:
 	void InhibTimers(CObject obj);
 
 	void WardsRange(CObject obj);
+
+	void GankAlerter(CObject obj);
 };
 
 
