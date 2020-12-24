@@ -143,7 +143,7 @@ bool Mouse::MouseMoveSLD(POINT coord)
 	return true;
 }
 
-void Mouse::MouseLeftDown()
+bool Mouse::MouseLeftDown()
 {
 	INPUT    Input = { 0 };
 	// left down 
@@ -152,11 +152,11 @@ void Mouse::MouseLeftDown()
 	Input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
 	::SendInput(1, &Input, sizeof(INPUT));
 
-
+	return true;
 	//LOG("LMB down");
 }
 
-void Mouse::MouseLeftUp()
+bool Mouse::MouseLeftUp()
 {
 	INPUT    Input = { 0 };
 	// left up
@@ -165,10 +165,10 @@ void Mouse::MouseLeftUp()
 	Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
 	::SendInput(1, &Input, sizeof(INPUT));
 
-	//LOG("LMB up");
+	return true;
 }
 
-void Mouse::MouseRightDown()
+bool Mouse::MouseRightDown()
 {
 	INPUT    Input = { 0 };
 	// left down 
@@ -177,10 +177,10 @@ void Mouse::MouseRightDown()
 	Input.mi.dwFlags = MOUSEEVENTF_RIGHTDOWN;
 	::SendInput(1, &Input, sizeof(INPUT));
 
-	//LOG("RMB down");
+	return true;
 }
 
-void Mouse::MouseRightUp()
+bool Mouse::MouseRightUp()
 {
 	INPUT    Input = { 0 };
 	// left up
@@ -189,10 +189,10 @@ void Mouse::MouseRightUp()
 	Input.mi.dwFlags = MOUSEEVENTF_RIGHTUP;
 	::SendInput(1, &Input, sizeof(INPUT));
 
-	//LOG("RMB up");
+	return true;
 }
 
-void Mouse::MouseMiddleDown()
+bool Mouse::MouseMiddleDown()
 {
 	INPUT    Input = { 0 };
 	// left down 
@@ -200,10 +200,10 @@ void Mouse::MouseMiddleDown()
 	Input.mi.dwFlags = MOUSEEVENTF_MIDDLEDOWN;
 	::SendInput(1, &Input, sizeof(INPUT));
 
-	//LOG("MMB down");
+	return true;
 }
 
-void Mouse::MouseMiddleUp()
+bool Mouse::MouseMiddleUp()
 {
 	INPUT    Input = { 0 };
 	// left up
@@ -212,25 +212,27 @@ void Mouse::MouseMiddleUp()
 	Input.mi.dwFlags = MOUSEEVENTF_MIDDLEUP;
 	::SendInput(1, &Input, sizeof(INPUT));
 
-	//LOG("MMB up");
+	return true;
 }
 
-void Mouse::RightClick()
+bool Mouse::RightClick()
 {
 	MouseRightDown();
-	std::this_thread::sleep_for(std::chrono::milliseconds(RandomInt(12, 15)));
+	std::this_thread::sleep_for(std::chrono::milliseconds(RandomInt(13, 15)));
 	MouseRightUp();
+	return true;
 }
 
-void Mouse::LeftClick()
+bool Mouse::LeftClick()
 {
 	MouseLeftDown();
-	std::this_thread::sleep_for(std::chrono::milliseconds(RandomInt(12,15)));
+	std::this_thread::sleep_for(std::chrono::milliseconds(RandomInt(13,15)));
 	MouseLeftUp();
+	return true;
 }
 
 
-void Mouse::LeftClickHold(int t)
+bool Mouse::LeftClickHold(int t)
 {
 	MouseLeftDown();
 
@@ -238,9 +240,10 @@ void Mouse::LeftClickHold(int t)
 	std::this_thread::sleep_for(std::chrono::milliseconds(t));
 
 	MouseLeftUp();
+	return true;
 }
 
-void Mouse::RightClickWithKey(int vk)
+bool Mouse::RightClickWithKey(int vk)
 {
 	INPUT    Input = { 0 };
 
@@ -261,10 +264,11 @@ void Mouse::RightClickWithKey(int vk)
 	Input.ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
 	Input.ki.wScan = MapVirtualKey(vk, 0);
 	::SendInput(1, &Input, sizeof(Input));
-	//LOG(vk, "+ right click");
+
+	return true;
 }
 
-void Mouse::LeftClickKWithKey(int vk)
+bool Mouse::LeftClickKWithKey(int vk)
 {
 	INPUT    Input = { 0 };
 
@@ -285,10 +289,11 @@ void Mouse::LeftClickKWithKey(int vk)
 	Input.ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
 	Input.ki.wScan = MapVirtualKey(vk, 0);
 	::SendInput(1, &Input, sizeof(Input));
-	//LOG("Key", vk, "+ left click");
+
+	return true;
 }
 
-void Mouse::Scroll(int ammount)
+bool Mouse::Scroll(int ammount)
 {
 	INPUT    Input = { 0 };
 	// left up
@@ -298,7 +303,7 @@ void Mouse::Scroll(int ammount)
 	Input.mi.mouseData = 120 * ammount;
 	::SendInput(1, &Input, sizeof(INPUT));
 
-	//LOG("Scrolled ", ammount);
+	return true;
 
 }
 

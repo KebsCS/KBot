@@ -52,7 +52,7 @@ void CConfig::Setup()
 
 	SetupValue(M.AutoSmite.Master, 0, "AutoSmite", "Master");
 	SetupValue(M.AutoSmite.Slot, 1, "AutoSmite", "Slot");
-	SetupValue(M.AutoSmite.Mode, 1, "AutoSmite", "Mode");
+	SetupValue(M.AutoSmite.Mode, 0, "AutoSmite", "Mode");
 	SetupValue(M.AutoSmite.MouseSpeed, 1.f, "AutoSmite", "MouseSpeed");
 
 
@@ -60,7 +60,11 @@ void CConfig::Setup()
 
 	SetupValue(M.Inhibs.Master, 0, "Inhibs", "Master");
 
+	SetupValue(M.Talon.DmgCalc, 0, "Talon", "DmgCalc");
 	SetupValue(M.Talon.Jumps, 0, "Talon", "Jumps");
+	SetupValue(M.Talon.JumpsKey, VK_LSHIFT, "Talon", "JumpsKey");
+	for (int i = 0; i < 4; i++)
+		SetupValue(M.Talon.JumpsType[i], 1, "Talon", "JumpsType" + std::to_string(i));
 
 }
 

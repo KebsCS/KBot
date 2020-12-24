@@ -5,10 +5,11 @@
 
 void Initialize::Start()
 {
-	float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+	M.GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
-	while (GameTime < 1) // pause if not in game
+	while (M.GameTime < 1) // pause if not in game
 	{
+		M.GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 
@@ -58,13 +59,21 @@ void Initialize::AddObjects()
 {
 
 
-	MakeHeroList();
-	MakeTurretList();
-	MakeInhibList();
-	MakeStructureList();
+	std::thread MakeHeroListThread(&Initialize::MakeHeroList, this);
+	std::thread MakeTurretListThread(&Initialize::MakeTurretList, this);
+	std::thread MakeInhibListThread(&Initialize::MakeInhibList, this);
+	std::thread MakeStructureListThread(&Initialize::MakeStructureList, this);
 
-	MakeTestList();
+	std::thread MakeTestListThread(&Initialize::MakeTestList, this);
 
+	//todo make threads return value
+
+
+	MakeHeroListThread.join();
+	MakeTurretListThread.join();
+	MakeInhibListThread.join();
+	MakeStructureListThread.join();
+	MakeTestListThread.join();
 
 	//todo make champ class or smth
 	M.Champion = Local.GetChampName();
@@ -235,15 +244,17 @@ void Initialize::CreateChampArray()
 	//todo cleanup, maybe sort based on API's position
 
 	//own team = r  
-	//enemy team = b
+	//enemy team = b 
 	std::vector<CObject>r(5);
 	std::vector<CObject>b(5);
-	int ir = 0, ib = 0;
+	int ir = 0;
+	int ib = 0;
 	for (auto hero : herolist)
 	{
+		//clog.AddLog("%d %s", hero.GetTeam(), hero.GetChampName().c_str());
 		if (hero.GetTeam() == Local.GetTeam() && ir < 5)
 			r[ir++] = hero;
-		else if (ib < 5)
+		else if (hero.GetTeam() != Local.GetTeam() && ib < 5)
 			b[ib++] = hero;
 
 	}
@@ -326,7 +337,7 @@ void Initialize::CreateChampArray()
 
 		}
 	}
-
+	
 	for (auto a : b)
 	{
 		if (a == 0)

@@ -26,6 +26,35 @@ void Keyboard::SpecialKeyUp(int vk)
 	::SendInput(1, &Input, sizeof(Input));
 }
 
+void Keyboard::ScancodeKeyDown(int vk)
+{
+	KEYBDINPUT  kb = { 0 };
+	INPUT       Input = { 0 };
+	kb.dwFlags = KEYEVENTF_SCANCODE;
+	kb.wVk = 0;
+	kb.wScan = vk;
+	kb.time = 0;
+	kb.dwExtraInfo = 0;
+	Input.type = INPUT_KEYBOARD;
+	Input.ki = kb;
+
+	::SendInput(1, &Input, sizeof(Input));
+}
+
+void Keyboard::ScancodeKeyUp(int vk)
+{
+	KEYBDINPUT  kb = { 0 };
+	INPUT       Input = { 0 };
+	ZeroMemory(&kb, sizeof(KEYBDINPUT));
+	ZeroMemory(&Input, sizeof(INPUT));
+	kb.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
+	kb.wVk = 0;
+	kb.wScan = vk;
+	Input.type = INPUT_KEYBOARD;
+	Input.ki = kb;
+	::SendInput(1, &Input, sizeof(Input));
+}
+
 //https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 //https://www.asciitable.com
 void Keyboard::GenerateKey(int vk, BOOL bExtended, bool shift)

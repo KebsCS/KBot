@@ -37,13 +37,16 @@ private:
    
 
 
-    DWORD base;
+    DWORD base = 0;
     std::string name;
     std::string champ;
     std::string summ1;
     std::string summ2;
-    int team;
-    float bounding;
+    int team = 0;
+    float bounding = -1;
+
+    int wardType = -1;
+   
     
   //  bool alive;
   //  float timer;
@@ -56,8 +59,11 @@ public:
 
     int GetTeam()
     {
-        if (!team || team < 0)
-            return Memory.Read<int>(base + oObjTeam);
+        if (!team)
+        {
+            team = Memory.Read<int>(base + oObjTeam);
+            return team;
+        }
         else
             return team;
     }
@@ -191,33 +197,35 @@ public:
     }
 
     //1.0 is 0 armor pen 25% armor pen is 0.75
-    float GetFlatAmorPen()
+    float GetArmorPen()
     {
         return Memory.Read<float>(base + oObjPercentArmorPen, sizeof(float));
     }
-    float GetTotalDamage(CObject* target)
+    
+    float GetTotalDamage(CObject target, float rawdamage = -1)
     {
-
+        float dmg = rawdamage == -1 ? this->GetTotalAD() : rawdamage;
         float lethality = (this->GetLethality() * (0.6 + 0.4 * this->GetLevel() / 18));
+        float armorPen = this->GetArmorPen();
         float reducedArmor;
-        if (target->GetArmor() <= 0)
+        if (target.GetArmor() <= 0)
         {
-            reducedArmor = target->GetArmor();
+            reducedArmor = target.GetArmor();
         }
-        else if (target->GetArmor() - lethality <= 0)
+        else if (target.GetArmor() * armorPen - lethality <= 0)
         {
             reducedArmor = 0;
         }
         else
         {
-            reducedArmor = target->GetArmor() - lethality;
+            reducedArmor = target.GetArmor() * armorPen - lethality;
         }
 
 
-        if (target->GetArmor() >= 0)
-            return this->GetTotalAD() * (100 / (100 + reducedArmor));
+        if (reducedArmor >= 0)
+            return dmg * (100 / (100 + reducedArmor));
         else
-            return this->GetTotalAD() * (2 - (100 / (100 - reducedArmor)));
+            return dmg * (2 - (100 / (100 - reducedArmor)));
     }
     float GetTotalAPDamage(CObject target)
     {
@@ -237,27 +245,45 @@ public:
     {
         return this->GetPosition().DistTo(obj.GetPosition());
     }
-
-    bool IsLasthitable(CObject me)
-    {
-
-        return this->GetHealth() <= GetTotalDamage(this);
-    }
     int IsWard()
     {
-        float maxHP = this->GetMaxHealth();
-        if (maxHP == 1.f || maxHP == 3.f || maxHP == 4.f)
+        if (wardType == -1)
         {
-            std::string name = this->GetName();
-            if (maxHP == 3.f)
-                return 1;
-            else if (name == "JammerDevice")
-                return 2;
-            else if (maxHP == 1.f && this->GetHealth() == 1.f && name.find("Plant") == std::string::npos && name.find("Shen") == std::string::npos)
-                return 3;
-            else return 0;
+            float maxHP = this->GetMaxHealth();
+            if (maxHP == 1.f || maxHP == 3.f || maxHP == 4.f)
+            {
+                std::string name = this->GetName();
+                if (maxHP == 3.f)
+                {
+                    wardType = NormalWard;
+                    return wardType;
+                }
+                else if (name == "JammerDevice")
+                {
+                    wardType = ControlWard;
+                    return wardType;
+                }
+                else if (maxHP == 1.f && this->GetHealth() == 1.f && name.find("Plant") == std::string::npos
+                    && name.find("Shen") == std::string::npos && name.find("Unused") == std::string::npos && name.find("Honey") == std::string::npos
+                    && name.find("Bard") == std::string::npos && name.find("Chime") == std::string::npos)
+                {
+                    wardType = BlueWard;
+                    return wardType;
+                }
+                else
+                {
+                    wardType = 0; //not a ward
+                    return wardType;
+                }
+            }
+            else
+            {
+                wardType = 0; //not a ward
+                return wardType;
+            }
         }
-        return 0;
+        else
+            return wardType;
     }
 
     Vector3 GetMissileStartPos()
@@ -304,13 +330,19 @@ public:
 
     float GetBoundingRadius()
     {
-        if (!bounding || bounding <0.f)
+        if (bounding == -1)
         {
             float val = Memory.Read<float>(GetUCIPropertiesInstance() + 0x454);
             if (val > 250.f)
-                return 65.f;
+            {
+                bounding = 65.f;
+                return bounding;
+            }
             else
-                return val;
+            {
+                bounding = val;
+                return bounding;
+            }
         }
         else
             return bounding;
@@ -327,7 +359,7 @@ public:
 
 
     CObject(DWORD addr) 
-        :base{ addr }//, alive{ true }, timer{ 0 }
+        :base{ addr }
     {
 
     }
@@ -343,16 +375,15 @@ public:
         summ1 = this->SummonerSpell1();
         summ2 = this->SummonerSpell2();
         bounding = this->GetBoundingRadius();
-        SetObjConsts();
+        team = this->GetTeam();
     }
     void SetObjConsts()
     {
-        team = this->GetTeam();
+       // team = this->GetTeam();
     }
     void SetStructureConsts()
     {
         name = this->GetName();
-        SetObjConsts();
     }
     int GetNetworkID()
     {
@@ -363,7 +394,7 @@ public:
         return base;
     }
     CObject() 
-        :base{ 0 }//, alive{ true }, timer{ 0 }
+        :base{ 0 }
     {
     }
 

@@ -191,280 +191,6 @@ void ObjListLoop()
     }
 }
 
-//double sub_3A7270(DWORD obj)
-//{
-//    float v1; // xmm0_4
-//    double result; // st7
-//
-//    v1 = Memory.Read<int>(obj + 1108);
-//    if (v1 == 3.4028235e38)
-//        result = 65.0;
-//    else
-//        result = v1;
-//    return result;
-//}
-//
-//
-//bool sub_BA5B80(DWORD obj)
-//{
-//    return Memory.Read<int>(obj) > Memory.Read<int>(obj+12) || Memory.Read<int>(obj+4) > Memory.Read<int>(obj+16) || Memory.Read<int>(obj+8) > Memory.Read<int>(obj +20);
-//}
-//
-//double sub_3F76C0(DWORD obj)
-//{
-//    DWORD v1; // esi
-//    __int64 v3; // [esp+4h] [ebp-24h]
-//    float v4; // [esp+Ch] [ebp-1Ch]
-//    __int64 v5; // [esp+1Ch] [ebp-Ch]
-//    float v6; // [esp+24h] [ebp-4h]
-//
-//    v1 = obj + 60;
-//
-//    auto xd = Memory.Read<float>(v3);
-//    auto xd2 = Memory.Read<float>(v3+1);
-//    if ((unsigned __int8)sub_BA5B80(obj + 60))
-//    {
-//        v3 = ClientAddress + 0x3544B50;
-//        v4 = Memory.Read<float>(ClientAddress + 0x3544B58);
-//    }
-//    else
-//    {
-//        xd = Memory.Read<int>(v1 + 12) - Memory.Read<int>(v1);
-//        xd2 = Memory.Read<int>(v1 + 16) - Memory.Read<int>(v1 + 4);
-//        v4 = Memory.Read<int>(v1 + 20) - Memory.Read<int>(v1 + 8);
-//        
-//    }
-//    v5 = v3;
-//    v6 = v4;
-//    if ((unsigned __int8)sub_BA5B80(v1))
-//    {
-//        v3 = 0x3544B50;
-//        v4 = Memory.Read<float>(0x3544B58);
-//    }
-//    else
-//    {
-//        
-//        xd = Memory.Read<int>(v1 + 12) - Memory.Read<int>(v1);
-//        xd2 = Memory.Read<int>(v1 + 16) - Memory.Read<int>(v1 + 4);
-//        v4 = Memory.Read<int>(v1 + 20) - Memory.Read<int>(v1 + 8);
-//    }
-//    return (xd + v6) * 0.25;
-//}
-//
-//
-//__int64 sub_134ACA0(unsigned int _ECX, signed int a2)
-//{
-//    DWORD _XMM0;
-//
-//    if ((ClientAddress+ 0x3558A0C) < 6)
-//    {
-//        _XMM0 = (double)_ECX + (double)a2 * 4294967296.0;
-//    }
-//    else
-//    {
-//     /*   __asm
-//        {
-//            vmovd   xmm0, ecx; Move 32 bits
-//            vpinsrd xmm0, xmm0, edx, 1; Insert Dword
-//            vcvtqq2pd xmm0, xmm0; Convert Packed Quadword Integers to Packed Double - Precision Floating - Point Values
-//        }*/
-//    }
-//    return _XMM0;
-//}
-//
-//double sub_A4A2C0(DWORD a1, double a2)
-//{
-//    int v2; // eax
-//    unsigned int v3; // esi
-//    int v4; // ecx
-//
-//    
-//    
-//    v2 = Memory.Read<DWORD>(a1);
-//    v3 = Memory.Read<int>(a1 + 16);
-//    v4 = Memory.Read<DWORD>(Memory.Read<DWORD>(a1 + 48));
-//    if ((Memory.Read<DWORD>(v2 + 52) - v4) >> 7 <= v3)
-//        int error = 1;
-//    return (float)((sub_134ACA0(Memory.Read<DWORD>(((v3 << 7) + v4)), Memory.Read<DWORD>(((v3 << 7) + v4))))
-//        * Memory.Read<double>(ClientAddress + 0x3538B28));
-//}
-//
-//double sub_336C00(DWORD obj, int a2)
-//{
-//    DWORD v2; // ebp
-//    BYTE v3; // ebx
-//    BYTE v4; // edi
-//    DWORD v5; // esi
-//    float v6; // xmm2_4
-//    double v7; // st7
-//    float v8; // xmm0_4
-//    float v10; // [esp+4h] [ebp-Ch]
-//    float v11; // [esp+8h] [ebp-8h]
-//    DWORD v12; // [esp+Ch] [ebp-4h]
-//    float v13; // [esp+14h] [ebp+4h]
-//    
-//    
-//    v2 = Memory.Read<DWORD>(Memory.Read<DWORD>(Memory.Read<int>(obj)));
-//    v13 = Memory.Read<float>(a2 + 488);
-//
-//
-//    v12 = Memory.Read<DWORD>(Memory.Read<DWORD>(Memory.Read<int>(obj + 4)));
-//    if (Memory.Read<DWORD>(Memory.Read<DWORD>(Memory.Read<int>(obj))) != v12)
-//    {
-//        do
-//        {
-//            
-//            
-//            v3 = Memory.Read<int>((Memory.Read<BYTE>(Memory.Read<DWORD>(v2))) + 4);
-//            v4 = Memory.Read<BYTE>(Memory.Read<DWORD>(Memory.Read<DWORD>(v2)));
-//            if (v4 != v3)
-//            {
-//                v5 = Memory.Read<float>(v4 + 8);
-//                do
-//                {
-//                    if (!Memory.Read<DWORD>(v4))
-//                    {
-//                        
-//                        
-//                        v6 = Memory.Read<DWORD>(v5 - 1);
-//                        if (v6 != Memory.Read<DWORD>(v5))
-//                        {
-//                            v11 = Memory.Read<int>(v5 + 8) + Memory.Read<int>(v5 + 4);
-//                            v7 = sub_A4A2C0(Memory.Read<DWORD>((ClientAddress + 0x1C79A08) + 8),v11);
-//                            v8 = Memory.Read<int>(v5 + 4);
-//                            v10 = v7;
-//                            if (v8 < v10)
-//                            {
-//                                if (v10 < v11)
-//                                    v6 = (float)((float)((float)(v10 - v8) / Memory.Read<int>(v5 + 8)) * (float)(Memory.Read<int>(v5 ) - Memory.Read<DWORD>(v5 - 1))) + Memory.Read<DWORD>(v5 - 1);
-//                                else
-//                                    v6 = Memory.Read<int>(v5);
-//                            }
-//                            else
-//                            {
-//                                v6 = Memory.Read<DWORD>(v5 - 1);
-//                            }
-//                        }
-//                        v13 = v6 + v13;
-//                    }
-//                    v4 += 20;
-//                    v5 += 5;
-//                } while (v4 != v3);
-//            }
-//            ++v2;
-//        } while (v2 != v12);
-//    }
-//    return v13;
-//}
-//
-//double GetBoundingRadius_(DWORD obj)
-//{
-//    DWORD v1; // esi
-//    DWORD v2; // eax
-//    double v3; // st7
-//    float v4; // ST08_4
-//    float v6; // [esp+8h] [ebp-4h]
-//   
-//    v1 = obj;
-//    if (!Memory.Read<DWORD>(obj + 3006))
-//        return sub_3F76C0(v1);
-//    v2 = Memory.Read<DWORD>(obj + 228);
-//    v3 = sub_3A7270(v2);
-//    v6 = v3;
-//    v4 = v3;
-//    if (v4 == 0.0)
-//        return sub_3F76C0(v1);
-//    if (Memory.Read<BYTE>(v1 + 8240))
-//        return Memory.Read<int>(v1 + 8236) * v6;
-//    return sub_336C00(Memory.Read<DWORD>(v1) + 1678, (int)(v1 + 1070)) * v6;
-//}
-
-
-
-//bool FUN_0155b3b0(float param_1)
-//
-//{   
-//    if (((Memory.Read<int>(param_1) < Memory.Read<int>(param_1 + 12) || Memory.Read<int>(param_1) == Memory.Read<int>(param_1 + 12)) &&
-//        (Memory.Read<int>(param_1 + 4) < Memory.Read<int>(param_1 + 16) || Memory.Read<int>(param_1 + 4) == Memory.Read<int>(param_1 + 16))) &&
-//        (Memory.Read<int>(param_1+ 8) < Memory.Read<int>(param_1+20) || Memory.Read<int>(param_1 +8) == Memory.Read<int>(param_1+20))) {
-//        return 0;
-//    }
-//    return 1;
-//}
-
-//bool FUN_0155b3b0(float obj)
-//{
-//    return Memory.Read<int>(obj) > Memory.Read<int>(obj+12) || Memory.Read<int>(obj+4) > Memory.Read<int>(obj+16) || Memory.Read<int>(obj+8) > Memory.Read<int>(obj +20);
-//}
-
-
-
-//undefined __fastcall FUN_0155b3b0(float* param_1)
-//
-//{
-//    if (((*param_1 < param_1[3] || *param_1 == param_1[3]) &&
-//        (param_1[1] < param_1[4] || param_1[1] == param_1[4])) &&
-//        (param_1[2] < param_1[5] || param_1[2] == param_1[5])) {
-//        return 0;
-//    }
-//    return 1;
-//}
-//
-
-//
-//DWORD getDwordFromBytes(byte* b)
-//{
-//    return (b[3]) | (b[2] << 8) | (b[1] << 16) | (b[0] << 24);
-//}
-//
-//float GetBoundingRadius(DWORD param_1)
-//{
-//    float pfVar1;
-//    bool cVar2;
-//    DWORD iVar3;
-//    float fVar4;
-//    uint_fast64_t uStack36;
-//    float fStack28;
-//    DWORD uStack16;
-//    float fStack4;
-//    
-//    if (Memory.Read<int>(param_1 + 12024) != 0) {
-//        uStack16 = 0xc989b7;
-//        iVar3 = Memory.Read<DWORD>((Memory.Read<int>(param_1) + 0xe4)); 
-//        uStack16 = 0xc989be;
-//        fVar4 = 65.0f;
-//        fStack4 = (float)fVar4;
-//    }
-//    pfVar1 = (float)(param_1 + 0x3c);
-//    cVar2 = FUN_0155b3b0(pfVar1);
-//    if (cVar2 == 0) {
-//        float temp1 = Memory.Read<float>(param_1 + 256) - Memory.Read<float>(param_1 + 244);
-//        BYTE btemp1[4];
-//        memcpy(&btemp1, (unsigned char*)(&temp1), 4);
-//
-//        float temp2 = Memory.Read<float>(param_1 + 252) - Memory.Read<float>(param_1 + 240);
-//        BYTE btemp2[4];
-//        memcpy(&btemp2, (unsigned char*)(&temp2), 4);
-//
-//
-//        DWORD d1 = getDwordFromBytes(btemp1);
-//        uint_fast64_t ret = d1 * 0x100000000;
-//        ret += getDwordFromBytes(btemp2);
-//        uStack36 = ret;
-//        fStack28 = Memory.Read<float>(param_1 + 260) - Memory.Read<float>(param_1 + 248);
-//    }
-//    else {
-//        uStack36 = ClientAddress + 0x3539B78;
-//        fStack28 = ClientAddress + 0x3539B80;
-//    }
-//    fStack4 = fStack28;
-//    FUN_0155b3b0(pfVar1);
-//    return Memory.Read<float>(uStack36);
-//}
-
-
-
-
 
 
 
@@ -481,6 +207,39 @@ void OrbwalkThread()
             }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+}
+
+
+void MenuHandler()
+{
+    while (true)
+    {
+        if (PressedKey(M.Misc.MenuKey)) //open menu
+        {
+            long winlong = GetWindowLong(hWnd, GWL_EXSTYLE);
+            if (!M.MenuOpen)
+            {
+                M.MenuOpen = !M.MenuOpen;
+                if (winlong != (WS_EX_LAYERED | WS_EX_TOPMOST))
+                    SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST);
+                SetForegroundWindow(hWnd);
+                //clog.AddLog("Menu Opened");
+
+
+            }
+            else
+            {
+                M.MenuOpen = !M.MenuOpen;
+                if (winlong != (WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT))
+                    SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT);
+                //clog.AddLog("Menu Closed");
+
+            }
+            while (PressedKey(M.Misc.MenuKey)) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); }
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
 }
@@ -555,6 +314,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     //rewrite this to work properly and use new verion C++ threads
     std::thread MinionListThread{ MinionListLoop };
+    MinionListThread.detach();
+    std::thread MenuHandlerThread{ MenuHandler };
+    MenuHandlerThread.detach();
    // CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0); //todo loop obj only when needed, not in different thread
     //CreateThread(0, 0, (LPTHREAD_START_ROUTINE)OrbwalkThread, 0, 0, 0); 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -572,46 +334,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             continue;
         }
         //std::thread MissileThread{ GetObjectList };
+        M.GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+      
         Direct3D9.Render();
 
-        if (M.ExitBot)
+        if (M.ExitBot || PressedKey(VK_F11)) //exit
             break;
 
-        if (PressedKey(M.Misc.MenuKey)) //open menu
-        {
-            long winlong = GetWindowLong(hWnd, GWL_EXSTYLE);
-            if (!M.MenuOpen)
-            {
-                M.MenuOpen = !M.MenuOpen;
-                if (winlong != (WS_EX_LAYERED | WS_EX_TOPMOST))
-                    SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST);
-                SetForegroundWindow(hWnd);
-                //clog.AddLog("Menu Opened");
-
-
-            }
-            else
-            {
-                M.MenuOpen = !M.MenuOpen;
-                if (winlong != (WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT))
-                    SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT);
-                //clog.AddLog("Menu Closed");
-
-            }
-            while (PressedKey(M.Misc.MenuKey)) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); }
-        }
-        else if (PressedKey(VK_F11)) //exit button
-        {
-            break;
-        }
-
-        
-       // clog.AddLog("%d , %d", mouse->GetPos().x, mouse->GetPos().y);
+        //clog.AddLog("%f", Local.GetEXP());
+ 
 
         //todo twisted fate cards bound seperatly+visual indicator
        
-        //GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float)); //todo gametime as global variable that can be accesed by any func
-    
+
+
+
         //clog.AddLog("%i", GetObjectList().size());
        // CObject undermouseObj(CObject::GetUnderMouseObject());
         //int xd = CObject::GetUnderMouseObject();
@@ -633,13 +370,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         //  //  }
 
         ////}
-        
 
-        //todo wards bounding
-        //initialization in different threads
-        //turret range in different func
+
+        //clog.AddLog("%f, %f, %f", Local.GetPosition().X, Local.GetPosition().Y, Local.GetPosition().Z);
+        //clog.AddLog("%d , %d", mouse->GetPos().x, mouse->GetPos().y);
+
 
         //MissileThread.join();
+        
         std::this_thread::sleep_for(std::chrono::milliseconds(M.Misc.AntiLag));
     }
 

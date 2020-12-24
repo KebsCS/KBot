@@ -47,41 +47,41 @@ public:
 	bool MouseMoveSLD(POINT coord);
 
 	//left clicks and holds it
-	void MouseLeftDown();
+	bool MouseLeftDown();
 
 	//Releases left mouse button 
-	void MouseLeftUp();
+	bool MouseLeftUp();
 
 	//right clicks and holds it
-	void MouseRightDown();
+	bool MouseRightDown();
 
 	//Releases right mouse button 
-	void MouseRightUp();
+	bool MouseRightUp();
 
 	//Presses scroll and holds it
-	void MouseMiddleDown();
+	bool MouseMiddleDown();
 
 	//releases pressing scroll
-	void MouseMiddleUp();
+	bool MouseMiddleUp();
 
 	//single right click
-	void RightClick();
+	bool RightClick();
 
 	//single left click
-	void LeftClick();
+	bool LeftClick();
 
 	//left clicks and holds it for given ammount of time
-	void LeftClickHold(int t);
+	bool LeftClickHold(int t);
 
 	//holds key and left clicks (e.g shift+click)
-	void LeftClickKWithKey(int vk);
+	bool LeftClickKWithKey(int vk);
 
 	//holds key and right clicks
-	void RightClickWithKey(int vk);
+	bool RightClickWithKey(int vk);
 
 	//Uses mouse scroll wheel, positive value scrolls up, negative scrolls down
 	//one wheel click = 1
-	void Scroll(int ammount);
+	bool Scroll(int ammount);
 
 	//returns x,y of mouse
 	POINT GetPos() const;

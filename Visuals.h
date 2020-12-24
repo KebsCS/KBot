@@ -10,11 +10,16 @@ class Visuals
 private:
 	//std::string getSpellImg(std::string name);
 	LPDIRECT3DTEXTURE9 GetSpellImg(std::string name);
+
+
+
 public:
 
-	void CooldownTimers(CObject obj, int type);
+	void CooldownTimers(CObject obj);
 
-	void DrawAARanges(CObject obj, int points, float thickness, RGBA color, bool local, RGBA localcolor);
+	void ScoreBoard(CObject obj);
+
+	void DrawAARanges(CObject obj, int points, float thickness, RGBA color, bool local, RGBA localcolor, bool turret);
 
 	void DrawTracers(CObject obj, float thickness);
 
@@ -27,6 +32,8 @@ public:
 	void WardsRange(CObject obj);
 
 	void GankAlerter(CObject obj);
+
+	void TalonDamageCalc(CObject obj);
 };
 
 

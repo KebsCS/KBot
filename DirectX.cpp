@@ -59,7 +59,7 @@ DirectX::XMMATRIX Direct3D9Render::GetViewMatrix()
 	
 
 	//DWORD Renderer = Memory.Read<DWORD>(ClientAddress + oRenderer, sizeof(DWORD));
-	return ReadMatrix(ClientAddress + oViewMatrix); // 10.21 0x3529CC8
+	return ReadMatrix(ClientAddress + oViewMatrix);
 }
 DirectX::XMMATRIX Direct3D9Render::GetProjectionMatrix()
 {
@@ -135,7 +135,7 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
 // In your own code you may want to display an actual icon if you are using a merged icon fonts (see docs/FONTS.md)
-static void HelpMarker(const char* desc)
+void Direct3D9Render::HelpMarker(const char* desc)
 {
 	ImGui::TextDisabled("(?)");
 	if (ImGui::IsItemHovered())
@@ -190,79 +190,357 @@ static void HelpMarker(const char* desc)
 //}
 
 
-void Direct3D9Render::TalonRaptorJump()
+void Direct3D9Render::HeroLoop()
 {
-
-	Vector3 raptorJumpSpot = Vector3(6724.0, 48.527, 4908.0);
-
-
-	if (Local.GetPosition().DistTo(raptorJumpSpot) < 1000)
+	//hero loop
+	if (M.Cooldowns.Master || M.AARange.Master || M.Tracers.Master || M.GankAlerter.Master || M.Talon.DmgCalc)
 	{
-		ImVec2 raptorJump = WorldToScreen(raptorJumpSpot);
-		if (raptorJump.x != 0 && raptorJump.y != 0)
+		for (auto obj : init->herolist)
 		{
-			draw->Circle(raptorJump.x, raptorJump.y, 75, RGBA(255, 255, 255));
-
-			if (Local.GetPosition().DistTo(raptorJumpSpot) < 400)
+			if (M.Cooldowns.Master)
 			{
+				//todo store cooldowns in object class
+				if (M.Cooldowns.Type[0] || M.Cooldowns.Type[1])
+					vis->CooldownTimers(obj);
+				if (M.Cooldowns.Type[2] && PressedKey(VK_TAB))
+					vis->ScoreBoard(obj);
 
-				ImVec2 raptorJumpFinal = WorldToScreen(Vector3(6190, 51.772114, 5634));
-				if (raptorJumpFinal.x != 0 && raptorJumpFinal.y != 0)
-				{
-					draw->Circle(raptorJumpFinal.x, raptorJumpFinal.y, 30, RGBA(255, 255, 0));
-					draw->Line(raptorJumpFinal.x, raptorJumpFinal.y, raptorJump.x, raptorJump.y, RGBA(255, 255, 0));
-
-					if (Local.GetPosition().DistTo(raptorJumpSpot) < 155 && PressedKey(VK_LSHIFT))
-					{
-
-						mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
-						mouse->RightClick();
-
-
-						std::this_thread::sleep_for(std::chrono::milliseconds(200));
-						M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-
-						raptorJump = WorldToScreen(raptorJumpSpot);
-						mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
-						mouse->RightClick();
-
-						ImVec2 raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
-						mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
-						mouse->RightClick();
-
-						std::this_thread::sleep_for(std::chrono::milliseconds(400));
-						M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-
-						raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
-						mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
-						mouse->RightClick();
-
-						raptorJump = WorldToScreen(raptorJumpSpot);
-						mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
-
-						mouse->RightClick();
-
-						std::this_thread::sleep_for(std::chrono::milliseconds(400));
-						M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-
-						ImVec2 raptorJumpDestination = WorldToScreen(Vector3(6324.0, 51.765816, 5808.0));
-						mouse->MouseMoveInstant(raptorJumpDestination.x, raptorJumpDestination.y);
-						keyboard->GenerateKeyScancode(DIK_E, false);
-						mouse->MouseMoveInstant(raptorJumpFinal.x, raptorJumpFinal.y);
-					}
-				}
 			}
-		}
 
+			if (M.AARange.Master)
+				vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
+					false, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]), false);
+
+
+			if (M.Tracers.Master)
+				vis->DrawTracers(obj, M.Tracers.Thickness);
+
+
+			if (M.GankAlerter.Master)
+				vis->GankAlerter(obj);
+
+			if (M.Talon.Master)
+			{
+				if (M.Talon.DmgCalc)
+					vis->TalonDamageCalc(obj);
+			}
+
+
+			//clog.AddLog("%s %i", obj.GetChampName().c_str(), obj.GetNetworkID());
+
+			//float dist = obj.GetDistToMe(Local);
+			//clog.AddLog("%s , %f", obj.GetName(), dist);
+			//float dmg = Local.GetTotalDamage(&obj);
+			//ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+			//std::string str = obj.GetName() + " , " + std::to_string(dmg);
+			//draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+
+		}
 	}
 
 }
+
+void Direct3D9Render::TurretLoop()
+{
+	//turret loop
+	if (M.AARange.Turrets)
+	{
+		for (auto obj : init->turretlist)
+		{
+
+			if (M.AARange.Turrets)
+				vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
+					false, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]), true);
+
+			//ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+			//std::string str = obj.GetName() + " , " + std::to_string(obj.Address()) +" " + std::to_string(obj.GetPosition().X) + " " + std::to_string(obj.GetPosition().Y) + " " + std::to_string(obj.GetPosition().Z);
+			//draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+		}
+	}
+
+}
+	
+void Direct3D9Render::Loops()
+{
+	if (M.AARange.Local)
+		vis->DrawAARanges(Local, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
+			M.AARange.Local, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]), false);
+
+	
+
+	//std::thread HeroLoopThread(&Direct3D9Render::HeroLoop, this);
+	//std::thread TurretLoopThread(&Direct3D9Render::TurretLoop, this);
+	HeroLoop();
+	TurretLoop();
+
+	//minions/monsters/wards loop
+	if (M.Wards.Master || M.LastHit.Master || M.AutoSmite.Master)
+	{
+		for (auto obj : minionList)
+		{
+			//clog.AddLog("%s", obj.GetName().c_str());
+			if (M.Wards.Master)
+				vis->WardsRange(obj);
+
+			if (M.AutoSmite.Master)
+				vis->AutoSmite(obj, M.AutoSmite.Slot, M.AutoSmite.Mode, M.AutoSmite.MouseSpeed);
+
+			if (M.LastHit.Master)
+				vis->LastHit(obj, RGBA(M.LastHit.Color[0], M.LastHit.Color[1], M.LastHit.Color[2], M.LastHit.Color[3]));
+
+			//	ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+			//float dmg = Local.GetTotalDamage(obj);
+			//std::string str = obj.GetName() + " , " + std::to_string(dmg) + " , " + std::to_string(obj.Address());
+			//draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+
+		}
+	}
+
+	//inhib loop
+	if (M.Inhibs.Master)
+	{
+		for (auto obj : init->inhiblist)
+		{
+			if (M.Inhibs.Master)
+			{
+				vis->InhibTimers(obj);
+			}
+
+		}
+	}
+
+
+
+	//if (!missileList.empty())
+	//{
+	//	for (CObject obj : missileList)
+	//	{
+	//		if (!obj.Address())
+	//			continue;
+	//		ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+	//		
+	//		if (RealPos.x == 0 && RealPos.y == 0)
+	//			continue;
+
+	//		if (!((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1))))
+	//			continue;
+	//		std::string name = obj.GetName();
+	//		if (name.find("Minion") != std::string::npos || name.empty())
+	//			continue;
+
+	//		Vector3 StartPos = obj.GetMissileStartPos();
+	//		Vector3 EndPos = obj.GetMissileEndPos();
+	//		ImVec2 RealStartPos = WorldToScreen(StartPos);
+	//		ImVec2 RealEndPos = WorldToScreen(EndPos);
+
+	//		if (RealStartPos.x == 0 && RealStartPos.y == 0)
+	//			continue;
+
+	//		if (RealEndPos.x == 0 && RealEndPos.y == 0)
+	//			continue;
+
+
+
+	//		draw->Line(RealStartPos.x, RealStartPos.y, RealEndPos.x, RealEndPos.y, RGBA(255, 255, 255));
+
+	//		
+	//		float missileWidth = Memory.Read<float>(Memory.Read<DWORD>(Memory.Read<DWORD>(obj.Address() + 0x230) + 0x44) + 0x458);
+
+	//		std::string str = name + " , " + std::to_string(obj.Address()) + " , " +  std::to_string(missileWidth);
+	//		//clog.AddLog("%s , %x", obj.GetName().c_str(), obj.Address());
+	//		draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+	//	}
+	//}
+	////todo move into champion class
+	if (M.Talon.Master)
+	{
+		if (M.Talon.Jumps)
+		{
+			if (M.Talon.JumpsType[1])
+			{
+				Vector3 raptorJumpSpot = Vector3(6724.0, 48.527, 4908.0);
+
+
+
+				if (Local.GetPosition().DistTo(raptorJumpSpot) < 1000)
+				{
+					ImVec2 raptorJump = WorldToScreen(raptorJumpSpot);
+					draw->Circle(raptorJump.x, raptorJump.y, 75, RGBA(255, 255, 255));
+					if (Local.GetPosition().DistTo(raptorJumpSpot) < 400)
+					{
+
+						ImVec2 raptorJumpFinal = WorldToScreen(Vector3(6190, 51.772114, 5634));
+						draw->Circle(raptorJumpFinal.x, raptorJumpFinal.y, 30, RGBA(255, 255, 0));
+						draw->Line(raptorJumpFinal.x, raptorJumpFinal.y, raptorJump.x, raptorJump.y, RGBA(255, 255, 0));
+
+						if (Local.GetPosition().DistTo(raptorJumpSpot) < 155 && PressedKey(VK_LSHIFT))
+						{
+
+							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
+							mouse->RightClick();
+							std::this_thread::sleep_for(std::chrono::milliseconds(200));
+							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+							raptorJump = WorldToScreen(raptorJumpSpot);
+							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
+							mouse->RightClick();
+
+							ImVec2 raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
+							mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
+							mouse->RightClick();
+
+							std::this_thread::sleep_for(std::chrono::milliseconds(400));
+							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+							raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
+							mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
+							mouse->RightClick();
+
+							raptorJump = WorldToScreen(raptorJumpSpot);
+							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
+							mouse->RightClick();
+							std::this_thread::sleep_for(std::chrono::milliseconds(400));
+							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+							ImVec2 raptorJumpDestination = WorldToScreen(Vector3(6324.0, 51.765816, 5808.0));
+							mouse->MouseMoveInstant(raptorJumpDestination.x, raptorJumpDestination.y);
+							keyboard->GenerateKeyScancode(DIK_E, false);
+							mouse->MouseMoveInstant(raptorJumpFinal.x, raptorJumpFinal.y);
+						}
+					}
+
+				}
+			}
+
+			if (M.Talon.JumpsType[0])
+			{
+				Vector3 drakeJumpSpot = Vector3(8688, 50.623039, 5196);
+				if (Local.GetPosition().DistTo(drakeJumpSpot) < 1000)
+				{
+					ImVec2 drakeJump = WorldToScreen(drakeJumpSpot);
+					draw->Circle(drakeJump.x, drakeJump.y, 75, RGBA(255, 255, 255));
+					if (Local.GetPosition().DistTo(drakeJumpSpot) < 400)
+					{
+						ImVec2 drakeJumpFinal = WorldToScreen(Vector3(9372, -71.240601, 4642));
+						draw->Circle(drakeJumpFinal.x, drakeJumpFinal.y, 30, RGBA(255, 255, 0));
+						draw->Line(drakeJumpFinal.x, drakeJumpFinal.y, drakeJump.x, drakeJump.y, RGBA(255, 255, 0));
+
+						if (Local.GetPosition().DistTo(drakeJumpSpot) < 155 && PressedKey(VK_LSHIFT))
+						{
+
+							mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
+							mouse->RightClick();
+							std::this_thread::sleep_for(std::chrono::milliseconds(200));
+							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+							mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
+							mouse->RightClick();
+
+
+							ImVec2 drakeJumpCorrection = WorldToScreen(Vector3(8600, 48.448730, 5214));
+							mouse->MouseMoveInstant(drakeJumpCorrection.x, drakeJumpCorrection.y);
+							mouse->RightClick();
+
+							std::this_thread::sleep_for(std::chrono::milliseconds(400));
+							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+							drakeJumpCorrection = WorldToScreen(Vector3(8600, 48.448730, 5214));
+							mouse->MouseMoveInstant(drakeJumpCorrection.x, drakeJumpCorrection.y);
+							mouse->RightClick();
+
+
+							drakeJump = WorldToScreen(drakeJumpSpot);
+							mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
+							mouse->RightClick();
+							std::this_thread::sleep_for(std::chrono::milliseconds(400));
+							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+							ImVec2 drakeJumpDestination = WorldToScreen(Vector3(10048.0, -71.240601, 4408));//ImVec2(1920, 1080);// 
+
+							mouse->MouseMoveInstant(drakeJumpDestination.x, drakeJumpDestination.y);
+							keyboard->GenerateKeyScancode(DIK_E, false);
+							mouse->MouseMoveInstant(drakeJumpFinal.x, drakeJumpFinal.y);
+						}
+					}
+				}
+			}
+			if (M.Talon.JumpsType[2])
+			{
+				Vector3 botJumpSpot = Vector3(12472, 51.729401, 4508);
+				if (Local.GetPosition().DistTo(botJumpSpot) < 800)
+				{
+					ImVec2 botJump = WorldToScreen(botJumpSpot);
+					draw->Circle(botJump.x, botJump.y, 75, RGBA(255, 255, 255));
+					if (Local.GetPosition().DistTo(botJumpSpot) < 400)
+					{
+						ImVec2 botJumpFinal = WorldToScreen(Vector3(13122, 51.366905, 3988));
+						draw->Circle(botJumpFinal.x, botJumpFinal.y, 30, RGBA(255, 255, 0));
+						draw->Line(botJumpFinal.x, botJumpFinal.y, botJump.x, botJump.y, RGBA(255, 255, 0));
+
+						if (Local.GetPosition().DistTo(botJumpSpot) < 155 && PressedKey(VK_LSHIFT))
+						{
+
+							mouse->MouseMoveInstant(botJump.x, botJump.y);
+							mouse->RightClick();
+							std::this_thread::sleep_for(std::chrono::milliseconds(200));
+							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+							mouse->MouseMoveInstant(botJump.x, botJump.y);
+							mouse->RightClick();
+
+
+							ImVec2 botJumpDestination = WorldToScreen(Vector3(13022, 51.366901, 3808));
+
+							mouse->MouseMoveInstant(botJumpDestination.x, botJumpDestination.y);
+							keyboard->GenerateKeyScancode(DIK_E, false);
+							mouse->MouseMoveInstant(botJumpFinal.x, botJumpFinal.y);
+						}
+					}
+				}
+			}
+			if (M.Talon.JumpsType[3])
+			{
+				Vector3 topJumpSpot = Vector3(2424, 54.32550, 10406);
+				if (Local.GetPosition().DistTo(topJumpSpot) < 800)
+				{
+					ImVec2 topJump = WorldToScreen(topJumpSpot);
+					draw->Circle(topJump.x, topJump.y, 75, RGBA(255, 255, 255));
+					if (Local.GetPosition().DistTo(topJumpSpot) < 400)
+					{
+						ImVec2 topJumpFinal = WorldToScreen(Vector3(1734, 52.838100, 11004));
+						draw->Circle(topJumpFinal.x, topJumpFinal.y, 30, RGBA(255, 255, 0));
+						draw->Line(topJumpFinal.x, topJumpFinal.y, topJump.x, topJump.y, RGBA(255, 255, 0));
+
+						if (Local.GetPosition().DistTo(topJumpSpot) < 155 && PressedKey(VK_LSHIFT))
+						{
+
+							mouse->MouseMoveInstant(topJump.x, topJump.y);
+							mouse->RightClick();
+							std::this_thread::sleep_for(std::chrono::milliseconds(200));
+							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+							mouse->MouseMoveInstant(topJump.x, topJump.y);
+							mouse->RightClick();
+
+
+							ImVec2 topJumpDestination = WorldToScreen(Vector3(1824, 52.8381, 11106));
+
+							mouse->MouseMoveInstant(topJumpDestination.x, topJumpDestination.y);
+							keyboard->GenerateKeyScancode(DIK_E, false);
+							mouse->MouseMoveInstant(topJumpFinal.x, topJumpFinal.y);
+						}
+					}
+				}
+
+
+
+			}
+
+		}
+	}
+
+	//HeroLoopThread.join();
+	//TurretLoopThread.join();
+}
+
 
 
 int Direct3D9Render::Render()
 {
 	//read vieprojwmatrix for w2s
-	std::thread ViewmatrixThread(&Direct3D9Render::GetViewProjectionMatrix, this); 
+	
 	//M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
 
 	// Start the Dear ImGui frame
@@ -270,16 +548,16 @@ int Direct3D9Render::Render()
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	
+	std::thread ViewmatrixThread(&Direct3D9Render::GetViewProjectionMatrix, this);
+
 	if (M.MenuOpen)
 	{
-		
-		static int counter = 0;
+
 		char buf[128];
 		sprintf(buf, "KBot %.1f FPS ###AnimatedTitle", ImGui::GetIO().Framerate);
 		ImGui::SetNextWindowPos(ImVec2(903, 349), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(350, 350), ImGuiCond_FirstUseEver);
-		ImGui::Begin(buf, &M.MenuOpen);// , ImGuiWindowFlags_AlwaysAutoResize);
+		ImGui::Begin(buf);// , ImGuiWindowFlags_AlwaysAutoResize);
 		if (ImGui::BeginPopupContextItem())
 		{
 			if (ImGui::MenuItem("Open Console"))
@@ -294,25 +572,25 @@ int Direct3D9Render::Render()
 		ImGuiTreeNodeFlags collapsing_header_flags = ImGuiTreeNodeFlags_DefaultOpen;
 		if (ImGui::BeginTabBar("TabBar", tab_bar_flags))
 		{
-			if (ImGui::BeginTabItem("Main"))
-			{
-				ImGui::Separator();
-				ImGui::Columns(2, 0, false);
-				draw->ImageFromMemory(draw->textureFlash, 0, 0, "", 99, 32, 32, true);
-				draw->ImageFromMemory(draw->textureSmite, 0, 0, "", 99, 32, 32, true);
-				draw->ImageFromMemory(draw->textureIgnite, 0, 0, "", 99, 32, 32, true);
-				draw->ImageFromMemory(draw->textureTeleport, 0, 0, "", 99, 32, 32, true);
-				draw->ImageFromMemory(draw->textureHeal, 0, 0, "", 99, 32, 32, true);
-				ImGui::NextColumn();
-				draw->ImageFromMemory(draw->textureExhaust, 0, 0, "", 99, 32, 32, true);
-				draw->ImageFromMemory(draw->textureBarrier, 0, 0, "", 99, 32, 32, true);
-				draw->ImageFromMemory(draw->textureCleanse, 0, 0, "", 99, 32, 32, true);
-				draw->ImageFromMemory(draw->textureGhost, 0, 0, "", 99, 32, 32, true);
-				draw->ImageFromMemory(draw->textureClarity, 0, 0, "", 99, 32, 32, true);
-				ImGui::Columns(1);
-				
-				ImGui::EndTabItem();
-			}
+			//if (ImGui::BeginTabItem("Main"))
+			//{
+			//	ImGui::Separator();
+			//	ImGui::Columns(2, 0, false);
+			//	draw->ImageFromMemory(draw->textureFlash, 0, 0, "", 99, 32, 32, true);
+			//	draw->ImageFromMemory(draw->textureSmite, 0, 0, "", 99, 32, 32, true);
+			//	draw->ImageFromMemory(draw->textureIgnite, 0, 0, "", 99, 32, 32, true);
+			//	draw->ImageFromMemory(draw->textureTeleport, 0, 0, "", 99, 32, 32, true);
+			//	draw->ImageFromMemory(draw->textureHeal, 0, 0, "", 99, 32, 32, true);
+			//	ImGui::NextColumn();
+			//	draw->ImageFromMemory(draw->textureExhaust, 0, 0, "", 99, 32, 32, true);
+			//	draw->ImageFromMemory(draw->textureBarrier, 0, 0, "", 99, 32, 32, true);
+			//	draw->ImageFromMemory(draw->textureCleanse, 0, 0, "", 99, 32, 32, true);
+			//	draw->ImageFromMemory(draw->textureGhost, 0, 0, "", 99, 32, 32, true);
+			//	draw->ImageFromMemory(draw->textureClarity, 0, 0, "", 99, 32, 32, true);
+			//	ImGui::Columns(1);
+
+			//	ImGui::EndTabItem();
+			//}
 			if (ImGui::BeginTabItem("Visuals"))
 			{
 				if (ImGui::CollapsingHeader("Enemies", collapsing_header_flags))
@@ -321,8 +599,8 @@ int Direct3D9Render::Render()
 					ImGui::SameLine();
 					ImGui::ColorEdit4("AARangeColor##3", (float*)&M.AARange.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
 					ImGui::SameLine();
-					
-					
+
+
 
 
 					ImGui::SliderInt2("", M.AARange.Slider, 10, 60, "%d");
@@ -333,16 +611,21 @@ int Direct3D9Render::Render()
 					ImGui::SliderFloat("##TracersThickness", &M.Tracers.Thickness, 0.1f, 10.f, "Thickness: %lg", 1.f);
 					ImGui::Separator();
 
-					ImGui::Checkbox("Cooldowns", &M.Cooldowns.Master);
-					ImGui::Text("Types:");
-					ImGui::Selectable("Text on champ", &M.Cooldowns.Type[0]);
-					ImGui::Selectable("Image on champ", &M.Cooldowns.Type[1]);
-					ImGui::Selectable("Scoreboard", &M.Cooldowns.Type[2]);
-
 					ImGui::Checkbox("Gank Alerter", &M.GankAlerter.Master);
+					ImGui::Separator();
+
+					ImGui::Checkbox("Cooldowns", &M.Cooldowns.Master);
+					if (M.Cooldowns.Master)
+					{
+						ImGui::Selectable("Text on champ", &M.Cooldowns.Type[0]);
+						ImGui::Selectable("Image on champ", &M.Cooldowns.Type[1]);
+						ImGui::Selectable("Scoreboard", &M.Cooldowns.Type[2]);
+					}
+
 					
+
 				}
-				
+
 				if (ImGui::CollapsingHeader("Local", collapsing_header_flags))
 				{
 					ImGui::Checkbox("AA Range##Local", &M.AARange.Local);
@@ -359,7 +642,7 @@ int Direct3D9Render::Render()
 
 				if (ImGui::CollapsingHeader("Structures", collapsing_header_flags))
 				{
-					
+
 					ImGui::Checkbox("Turrets Range", &M.AARange.Turrets);
 					ImGui::Separator();
 
@@ -371,7 +654,7 @@ int Direct3D9Render::Render()
 
 				}
 
-				
+
 
 				ImGui::EndTabItem();
 			}
@@ -386,7 +669,7 @@ int Direct3D9Render::Render()
 			{
 				ImGui::Checkbox("Enable - just a placeholder ##Orbwalker", &M.Orbwalker.Master);
 				ImGui::Combo("Hold Key", &M.Orbwalker.HoldKey, keyNames, ARRAYSIZE(keyNames));
-				draw->ImageFromMemory(draw->textureSks, 0, 0, "", 99, 256*1.25, 256*1.25, true);
+				draw->ImageFromMemory(draw->textureSks, 0, 0, "", 99, 256 * 1.25, 256 * 1.25, true);
 
 				ImGui::EndTabItem();
 			}
@@ -396,7 +679,7 @@ int Direct3D9Render::Render()
 				{
 					ImGui::Columns(2, 0, false);
 					ImGui::Checkbox("Enable ##AutoSmite", &M.AutoSmite.Master);
-					
+
 
 					ImGui::NextColumn();
 					ImGui::Text("Slot:");
@@ -409,7 +692,7 @@ int Direct3D9Render::Render()
 					ImGui::RadioButton("Instant", &M.AutoSmite.Mode, 0); ImGui::SameLine();
 					ImGui::RadioButton("Legit", &M.AutoSmite.Mode, 1); ImGui::SameLine();
 					ImGui::RadioButton("Extra legit", &M.AutoSmite.Mode, 2);
-					
+
 					ImGui::SliderFloat("##AutoSmiteMouseSpeed", &M.AutoSmite.MouseSpeed, 0.1f, 1.f, "Mouse Speed: %lg", 1.f);
 
 				}
@@ -422,7 +705,7 @@ int Direct3D9Render::Render()
 				ImGui::Separator();
 				ImGui::Combo("Menu Key", &M.Misc.MenuKey, keyNames, ARRAYSIZE(keyNames));
 
-			
+
 				ImGui::Separator();
 				ImGui::Text("Scoreboard alignment:");
 				ImGui::Columns(2, 0, false);
@@ -453,7 +736,7 @@ int Direct3D9Render::Render()
 							std::string tmp = M.ScoreboardNames[n];
 							M.ScoreboardNames[n] = M.ScoreboardNames[payload_n];
 							M.ScoreboardNames[payload_n] = tmp;
-						
+
 						}
 						ImGui::EndDragDropTarget();
 					}
@@ -462,8 +745,8 @@ int Direct3D9Render::Render()
 				ImGui::NextColumn();
 				if (ImGui::Button("Swap", ImVec2(200, 50)))
 				{
-					for(int i=0;i<10;i+=2)
-					std::swap(M.ScoreboardNames[i], M.ScoreboardNames[i+1]);
+					for (int i = 0; i < 10; i += 2)
+						std::swap(M.ScoreboardNames[i], M.ScoreboardNames[i + 1]);
 				}
 				ImGui::Columns(1);
 
@@ -475,7 +758,18 @@ int Direct3D9Render::Render()
 			{
 				if (M.Champion == "Talon")
 				{
+					ImGui::Checkbox("Damage Calculator", &M.Talon.DmgCalc);
+					ImGui::Separator();
 					ImGui::Checkbox("Pixel Perfect Jumps", &M.Talon.Jumps);
+					ImGui::Combo("Jumps Key", &M.Talon.JumpsKey, keyNames, ARRAYSIZE(keyNames));
+					if (M.Talon.Jumps)
+					{
+						ImGui::Selectable("Drake", &M.Talon.JumpsType[0]);
+						ImGui::Selectable("Blue-side Raptors", &M.Talon.JumpsType[1]);
+						ImGui::Selectable("Botlane", &M.Talon.JumpsType[2]);
+						ImGui::Selectable("Toplane", &M.Talon.JumpsType[3]);
+					}
+
 				}
 				else
 					ImGui::Text("Only Talon for now");
@@ -524,7 +818,7 @@ int Direct3D9Render::Render()
 					Config->Setup();
 				ImGui::Columns(1);
 				ImGui::Separator();
-				
+
 				for (int i = 0; i < M.Configs; i++) // print every config
 				{
 					std::string configName = "fileName" + std::to_string(i);
@@ -542,10 +836,10 @@ int Direct3D9Render::Render()
 						Config->Load(returned);
 					ImGui::Columns(1);
 					ImGui::Separator();
-					
+
 				}
 
-				
+
 
 				ImGui::EndTabItem();
 			}
@@ -556,7 +850,7 @@ int Direct3D9Render::Render()
 		ImGui::End();
 
 		//ImGui::ShowDemoWindow();
-		
+
 	}
 
 	if (M.ConsoleOpen)
@@ -565,8 +859,9 @@ int Direct3D9Render::Render()
 	}
 
 
+
 	// Rendering
-	
+
 	g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
 	g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
@@ -576,196 +871,15 @@ int Direct3D9Render::Render()
 		ViewmatrixThread.join(); // wait for it to execute
 
 
-		if (M.AARange.Local)
-			vis->DrawAARanges(Local, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
-				M.AARange.Local, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]));
-
-		//hero loop
-		if (M.Cooldowns.Master || M.AARange.Master || M.Tracers.Master || M.GankAlerter.Master)
-		{
-			for (auto obj : init->herolist)
-			{
-				if (M.Cooldowns.Master && ( M.Cooldowns.Type[0] || M.Cooldowns.Type[1] || M.Cooldowns.Type[2]))
-					vis->CooldownTimers(obj, 0);
-
-				if (M.AARange.Master)
-					vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
-						false, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]));
-				
-
-				if (M.Tracers.Master)
-					vis->DrawTracers(obj, M.Tracers.Thickness);
-
-				
-				if (M.GankAlerter.Master)
-					vis->GankAlerter(obj);
-
-
-				//clog.AddLog("%s %i", obj.GetChampName().c_str(), obj.GetNetworkID());
-
-				//float dist = obj.GetDistToMe(Local);
-				//clog.AddLog("%s , %f", obj.GetName(), dist);
-				//float dmg = Local.GetTotalDamage(&obj);
-				//ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
-				//std::string str = obj.GetName() + " , " + std::to_string(dmg);
-				//draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
-
-			}
-		}
+		Loops();
+	
 		ImGui::EndFrame();
 		ImGui::Render();
 		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
-		//turret loop
-		if (M.AARange.Turrets)
-		{
-			for (auto obj : init->turretlist)
-			{
-
-				if (M.AARange.Turrets)
-					vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
-						false, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]));
-			}
-		}
-
-		//minions/monsters/wards loop
-		if (M.Wards.Master || M.LastHit.Master || M.AutoSmite.Master)
-		{
-			for (auto obj : minionList)
-			{
-				//clog.AddLog("%s", obj.GetName().c_str());
-				if (M.Wards.Master)
-					vis->WardsRange(obj);
-
-				if (M.AutoSmite.Master)
-					vis->AutoSmite(obj, M.AutoSmite.Slot, M.AutoSmite.Mode, M.AutoSmite.MouseSpeed);
-
-				if (M.LastHit.Master)
-					vis->LastHit(obj, RGBA(M.LastHit.Color[0], M.LastHit.Color[1], M.LastHit.Color[2], M.LastHit.Color[3]));
-
-				/*	ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
-				float dmg = Local.GetTotalDamage(&obj);
-				std::string str = obj.GetName() + " , " + std::to_string(dmg) + " , " + std::to_string(obj.Address());
-				draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);*/
-
-			}
-		}
-
-		//inhib loop
-		if (M.Inhibs.Master)
-		{
-			for (auto obj : init->inhiblist)
-			{
-				if (M.Inhibs.Master)
-				{
-					vis->InhibTimers(obj);
-				}
-
-			}
-		}
-
-		//if (!missileList.empty())
-		//{
-		//	for (CObject obj : missileList)
-		//	{
-		//		if (!obj.Address())
-		//			continue;
-		//		ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
-		//		
-		//		if (RealPos.x == 0 && RealPos.y == 0)
-		//			continue;
-
-		//		if (!((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1))))
-		//			continue;
-		//		std::string name = obj.GetName();
-		//		if (name.find("Minion") != std::string::npos || name.empty())
-		//			continue;
-
-		//		Vector3 StartPos = obj.GetMissileStartPos();
-		//		Vector3 EndPos = obj.GetMissileEndPos();
-		//		ImVec2 RealStartPos = WorldToScreen(StartPos);
-		//		ImVec2 RealEndPos = WorldToScreen(EndPos);
-
-		//		if (RealStartPos.x == 0 && RealStartPos.y == 0)
-		//			continue;
-
-		//		if (RealEndPos.x == 0 && RealEndPos.y == 0)
-		//			continue;
 
 
 
-		//		draw->Line(RealStartPos.x, RealStartPos.y, RealEndPos.x, RealEndPos.y, RGBA(255, 255, 255));
-
-		//		
-		//		float missileWidth = Memory.Read<float>(Memory.Read<DWORD>(Memory.Read<DWORD>(obj.Address() + 0x230) + 0x44) + 0x458);
-
-		//		std::string str = name + " , " + std::to_string(obj.Address()) + " , " +  std::to_string(missileWidth);
-		//		//clog.AddLog("%s , %x", obj.GetName().c_str(), obj.Address());
-		//		draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
-		//	}
-		//}
-
-		
-		////todo move into champion class
-		if (M.Talon.Master)
-		{
-			if (M.Talon.Jumps)
-			{
-				//todo dont run when havent finished last time
-				std::thread TalonRaptorJumpThread(&Direct3D9Render::TalonRaptorJump, this);
-
-				Vector3 drakeJumpSpot = Vector3(8688, 50.623039, 5196);
-				if (Local.GetPosition().DistTo(drakeJumpSpot) < 1000)
-				{
-					ImVec2 drakeJump = WorldToScreen(drakeJumpSpot);
-					if (drakeJump.x != 0 && drakeJump.y != 0)
-					{
-						draw->Circle(drakeJump.x, drakeJump.y, 75, RGBA(255, 255, 255));
-						if (Local.GetPosition().DistTo(drakeJumpSpot) < 400)
-						{
-							ImVec2 drakeJumpFinal = WorldToScreen(Vector3(9372, -71.240601, 4642));
-							if (drakeJumpFinal.x != 0 && drakeJumpFinal.y != 0)
-							{
-								draw->Circle(drakeJumpFinal.x, drakeJumpFinal.y, 30, RGBA(255, 255, 0));
-								draw->Line(drakeJumpFinal.x, drakeJumpFinal.y, drakeJump.x, drakeJump.y, RGBA(255, 255, 0));
-
-								if (Local.GetPosition().DistTo(drakeJumpSpot) < 155 && PressedKey(VK_LSHIFT))
-								{
-
-									mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
-									mouse->RightClick();
-									std::this_thread::sleep_for(std::chrono::milliseconds(200));
-									mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
-									mouse->RightClick();
-
-
-									ImVec2 drakeJumpCorrection = WorldToScreen(Vector3(8600, 48.448730, 5214));
-									mouse->MouseMoveInstant(drakeJumpCorrection.x, drakeJumpCorrection.y);
-									mouse->RightClick();
-
-									std::this_thread::sleep_for(std::chrono::milliseconds(400));
-									drakeJumpCorrection = WorldToScreen(Vector3(8600, 48.448730, 5214));
-									mouse->MouseMoveInstant(drakeJumpCorrection.x, drakeJumpCorrection.y);
-									mouse->RightClick();
-
-
-									drakeJump = WorldToScreen(drakeJumpSpot);
-									mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
-									mouse->RightClick();
-									std::this_thread::sleep_for(std::chrono::milliseconds(400));
-									ImVec2 drakeJumpDestination = ImVec2(1920, 1080);// WorldToScreen(Vector3(9700, -71.240601, 4716));
-
-									mouse->MouseMoveInstant(drakeJumpDestination.x, drakeJumpDestination.y);
-									keyboard->GenerateKeyScancode(DIK_E, false);
-									mouse->MouseMoveInstant(drakeJumpFinal.x, drakeJumpFinal.y);
-								}
-							}
-						}
-					}
-				}
-				TalonRaptorJumpThread.join();
-			}
-		}
 	/*	
 		DWORD testList = Memory.Read<DWORD>(ClientAddress + 0x28BDEFC);
 		clog.AddLog("TestList: %x", testList);

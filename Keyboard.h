@@ -33,6 +33,12 @@ public:
 	//releases special key
 	void SpecialKeyUp(int vk);
 
+	//presses scancode key
+	void ScancodeKeyDown(int vk);
+
+	//releases scancode key
+	void ScancodeKeyUp(int vk);
+
 	//expects the key (as a capital letter), whether its held down, and whether to yield a capital letter. 
 	// example sending ('A',false,false) yields 'a'
 	// to achieve 'A', send ('A',false,true)

@@ -41,6 +41,7 @@ private:
     DirectX::XMMATRIX GetProjectionMatrix();
     void GetViewProjectionMatrix();
 
+    void HelpMarker(const char* desc);
 
 public:
 
@@ -75,12 +76,16 @@ public:
 
     //restarts directx drawings
 	void ResetDevice();
+
+    void Loops();
+
+    void HeroLoop();
+
+    void TurretLoop();
 	
     //w2s
 	ImVec2 WorldToScreen(Vector3 pos);
 
-
-    void TalonRaptorJump();
 
 
 };

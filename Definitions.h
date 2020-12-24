@@ -16,6 +16,8 @@
 #pragma comment(lib, "d3dx9.lib")
 #include <DirectXMath.h>
 
+#include "SpellDB.h"
+
 #include <cmath>
 #include <vector>
 #include <map>
@@ -258,6 +260,7 @@ struct Vector3
 	{
 		if (X == A.X && Y == A.Y && Z == A.Z)
 			return true;
+		else return false;
 	}
 
 	inline Vector3 operator + (const Vector3& A) const
@@ -614,7 +617,7 @@ const char* const keyNames[] =
 
 };
 
-
+//https://community.bistudio.com/wiki/DIK_KeyCodes
 enum DirectInputKeys : int
 {
 	DIK_ESCAPE = 0x01,
@@ -782,5 +785,7 @@ const std::vector<std::string>ChampNames = {
 	"Warwick", "Wukong", "Xayah", "Xerath", "Xin Zhao", "XinZhao","Yasuo", "Yone", "Yorick", "Yuumi", "Zac", "Zed", "Ziggs", "Zilean", "Zoe", "Zyra",
 	"MonkeyKing", "Mega Gnar", "MegaGnar", "Target Dummy", "TargetDummy"
 };
+
+const float LevelEXP[18] = { 0,280,660,1140,1720,2400,3180,4060,5040,6120,7300,8580,9960,11440,13020,14700,16480,18360 };
 
 #endif // !_DEFINITIONS_H_
