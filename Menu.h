@@ -96,8 +96,8 @@ struct Menu
         bool DmgCalc = 0;
         bool Jumps = 0;
         int JumpsKey = VK_LSHIFT;
-        //0-drake 1-blue raptors 2-botlane 3-toplane
-        bool JumpsType[4];
+        //0-drake 1-blue raptors 2-botlane 3-toplane 4-red raptors
+        bool JumpsType[5];
        
     }Talon;
 

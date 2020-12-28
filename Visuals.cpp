@@ -470,7 +470,7 @@ void Visuals::DrawTracers(CObject obj, float thickness)
 }
 
 
-//todo reverse bounding radius and check it within smite range
+//todo bounding radius within smite range
 //https://www.unknowncheats.me/forum/league-of-legends/327917-incoming-damage-minions.html
 void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 {
@@ -533,7 +533,7 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 
 	if (obj.GetHealth() <= SmiteDamage)
 	{
-		clog.AddLog("a");
+		//clog.AddLog("a");
 	
 		BlockInput(1);	
 
@@ -689,13 +689,21 @@ void Visuals::WardsRange(CObject obj)
 
 	if (type == NormalWard)
 	{
-		RGBA WardColor(255, 170, 0);
-		draw->String("Ward", RealPos.x, RealPos.y, centered, WardColor, Direct3D9.fontTahomaSmall);
-		draw->CircleRange(Pos, 14, 900, WardColor);
-		if (wardTimer[obj.Address()] - M.GameTime <= 0)
+		
+		if (!wardTimer.count(obj.Address()) || (wardTimer[obj.Address()] - M.GameTime) < -100) // if timer for a ward doesnt exist
+		{
 			wardTimer[obj.Address()] = M.GameTime + obj.GetMana();
-
-		draw->String(std::to_string((int)(wardTimer[obj.Address()] - M.GameTime)), RealPos.x, RealPos.y+10, centered, RGBA(255, 255, 255), Direct3D9.fontTahomaSmall);
+			//todo wards sometimes start with around 60 mana and its random
+			//clog.AddLog("%f , %d", obj.GetMaxMana(),obj.Address());
+		}
+		if (wardTimer[obj.Address()] - M.GameTime > 0) //draw only if timer above 0
+		{
+			draw->String(std::to_string((int)(wardTimer[obj.Address()] - M.GameTime)), RealPos.x, RealPos.y + 10, centered, RGBA(255, 255, 255), Direct3D9.fontTahomaSmall);
+			RGBA WardColor(255, 170, 0);
+			draw->String("Ward", RealPos.x, RealPos.y, centered, WardColor, Direct3D9.fontTahomaSmall);
+			//draw->String(std::to_string(obj.Address()), RealPos.x, RealPos.y, centered, WardColor, Direct3D9.fontTahomaSmall);	
+			draw->CircleRange(Pos, 14, 900, WardColor);
+		}
 	}
 	else if (type == ControlWard)
 	{
@@ -709,7 +717,7 @@ void Visuals::WardsRange(CObject obj)
 		draw->String("Blue Ward", RealPos.x, RealPos.y, centered, BlueWardColor, Direct3D9.fontTahomaSmall);
 		draw->CircleRange(Pos, 14, 500, BlueWardColor);
 	}
-	//todo plants sometimes show up as blue ward
+	//for testing
 	draw->String(obj.GetName(), RealPos.x, RealPos.y+30, centered, RGBA(255,255,255), Direct3D9.fontTahomaSmall);
 
 
@@ -720,13 +728,10 @@ void Visuals::WardsRange(CObject obj)
 
 
 std::map<DWORD, float>lastEXP;
-int wait = 0;
-std::string Expstr;
-std::string currentChampName;
+std::map<DWORD, float>expTimer;
+std::map<DWORD, int>howManyNearby;
 void Visuals::GankAlerter(CObject obj)
 {
-	wait++;
-
 
 	if (obj.GetTeam() == Local.GetTeam())
 		return;
@@ -737,72 +742,79 @@ void Visuals::GankAlerter(CObject obj)
 		return;
 
 	float temp = lastEXP[obj.Address()];
+	
+	//solo exp:
+	//~60 melee ~30 caster
 
+
+
+
+	//todo when 3 nearby and melee is killed it shows as 1 nearby(caster)
 	if (obj.GetEXP() != lastEXP[obj.Address()])
 	{
-		//Expstr = std::to_string(obj.GetEXP() - lastEXP[obj.Address()]);
+		//clog.AddLog("%s got %f xp",obj.GetChampName(), obj.GetEXP() - lastEXP[obj.Address()]);
 
-		if (INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 2, 115.0, 117.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 3, 115.0, 117.0))
-			clog.AddLog("[error] someone near %s - cannon", obj.GetChampName().c_str());
+		//if (INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 2, 115.0, 117.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 3, 115.0, 117.0)
+		//	|| INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 4, 115.0, 117.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 5, 115.0, 117.0))
+		//	clog.AddLog("[error] someone near %s - cannon", obj.GetChampName().c_str());
 
-		if (INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 2, 37.0, 39.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 3, 37.0, 39.0))
-			clog.AddLog("[error] someone near %s - caster", obj.GetChampName().c_str());
+		//else if (INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 2, 37.0, 39.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 3, 37.0, 39.0)
+		//	|| INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 4, 37.0, 39.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 5, 37.0, 39.0))
+		//	clog.AddLog("[error] someone near %s - caster", obj.GetChampName().c_str());
 
-		if (INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 2, 74.0, 77.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 3, 74.0, 77.0))
-			clog.AddLog("[error] someone near %s - melee", obj.GetChampName().c_str());
+		//else if (INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 2, 74.0, 77.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 3, 74.0, 77.0)
+		//	 || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 4, 74.0, 77.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 5, 74.0, 77.0))
+		//	clog.AddLog("[error] someone near %s - melee", obj.GetChampName().c_str());
 
 		if (INRANGE((obj.GetEXP() - temp) * 2, 115.0, 117.0)
 			|| INRANGE((obj.GetEXP() - temp) * 2, 37.0, 39.0)
 			|| INRANGE((obj.GetEXP() - temp) * 2, 74.0, 77.0))
 		{
-			//ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
-			//draw->String("2 PEOPLE NEARBY!", RealPos.x, RealPos.y, centered, RGBA(255, 50, 50), fontTahoma);
-			Expstr = "SOMEONE NEAR " + obj.GetChampName();
-			currentChampName = obj.GetChampName();
+			howManyNearby[obj.Address()] = 1;
+			expTimer[obj.Address()] = M.GameTime + 5;
 		}
-
-
-		if (INRANGE((obj.GetEXP() - temp) * 3, 115.0, 117.0)
+		else if (INRANGE((obj.GetEXP() - temp) * 3, 115.0, 117.0)
 			|| INRANGE((obj.GetEXP() - temp) * 3, 37.0, 39.0)
 			|| INRANGE((obj.GetEXP() - temp) * 3, 74.0, 77.0))
 		{
-			/*ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
-			draw->String("3 PEOPLE NEARBY!", RealPos.x, RealPos.y, centered, RGBA(255, 50, 50), fontTahoma);*/
-			Expstr = "2 PEOPLE NEAR " + obj.GetChampName();
-			currentChampName = obj.GetChampName();
+			howManyNearby[obj.Address()] = 2;
+			expTimer[obj.Address()] = M.GameTime + 5;
 		}
-
-		
-		if (!Expstr.empty())
+		else if (INRANGE((obj.GetEXP() - temp) * 4, 115.0, 117.0)
+			|| INRANGE((obj.GetEXP() - temp) * 4, 37.0, 39.0)
+			|| INRANGE((obj.GetEXP() - temp) * 4, 74.0, 77.0))
 		{
-
-			bool Open = true;
-			std::string wndName = "##gankalert" + obj.GetChampName();
-			const auto flags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs;
-
-		
-			//clog.AddLog("%s got %s xp ", obj.GetChampName().c_str(), std::to_string(obj.GetEXP() - lastEXP[obj.Address()]).c_str());
+			howManyNearby[obj.Address()] = 3;
+			expTimer[obj.Address()] = M.GameTime + 5;
 		}
-		if (wait > 1000)
-			wait = 0;
+		else if (INRANGE((obj.GetEXP() - temp) * 5, 115.0, 117.0)
+			|| INRANGE((obj.GetEXP() - temp) * 5, 37.0, 39.0)
+			|| INRANGE((obj.GetEXP() - temp) * 5, 74.0, 77.0))
+		{
+			howManyNearby[obj.Address()] = 4;
+			expTimer[obj.Address()] = M.GameTime + 5;
+		}
+
+
 		lastEXP[obj.Address()] = obj.GetEXP();
 		
 	}
-	if (wait < 1000)
+	if (expTimer[obj.Address()] - M.GameTime > 0)
 	{
-		if (!Expstr.empty() && obj.GetChampName() == currentChampName)
-		{
-			//todo better drawings
-			ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
-			if (RealPos.x == 0.f && RealPos.y == 0.f)
-				return;
 
-			if (!((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1))))
-				return;
-			draw->String(Expstr, RealPos.x, RealPos.y, centered, RGBA(255, 50, 50), Direct3D9.fontTahoma);
+		//todo better drawings
+		ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+		if (RealPos.x == 0.f && RealPos.y == 0.f)
+			return;
 
-		}
+		if (!((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1))))
+			return;
+
+		std::string str = std::to_string(howManyNearby[obj.Address()]) + (howManyNearby[obj.Address()] == 1 ? " CHAMPION" : " CHAMPIONS") + " NEARBY!";
+		draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 50, 50), Direct3D9.fontTahoma);
+
 	}
+	
 
 
 

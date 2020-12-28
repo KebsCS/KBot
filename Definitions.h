@@ -5,7 +5,7 @@
 
 #pragma warning(disable:4996)
 
-
+//#define NOLEAGUE
 
 #include "imgui.h"
 #include "imgui_impl_dx9.h"
@@ -67,9 +67,6 @@
 
 #define PressedKey( x ) ( GetAsyncKeyState (x) & 0x8000 )
 
-#define HUMANIZER
-
-#ifdef HUMANIZER
 
 #define VERYFAST_REACTION_TIME RandomInt(1,10)
 #define FAST_REACTION_TIME RandomInt(9,11)
@@ -77,14 +74,6 @@
 #define MEDIUM_REACTION_TIME RandomInt(90,110)
 #define SLOW_REACTION_TIME RandomInt(900,1100)
 
-#else
-#define VERYFAST_REACTION_TIME 5
-#define FAST_REACTION_TIME 10
-#define AVERAGE_REACTION_TIME 50
-#define MEDIUM_REACTION_TIME 100
-#define SLOW_REACTION_TIME 1000
-
-#endif
 
 
 enum text_alignment : int 

@@ -5,6 +5,10 @@
 
 void Initialize::Start()
 {
+#ifndef NOLEAGUE
+
+
+
 	M.GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
 	while (M.GameTime < 1) // pause if not in game
@@ -17,9 +21,12 @@ void Initialize::Start()
 	AddObjects();
 	CreateChampArray();
 	
+	StartupInfo();
 
 	//std::string strAPI = api->GET("https://127.0.0.1", "/liveclientdata/allgamedata", 2999);
 	
+
+#endif // !NOLEAGUE
 }
 
 void Initialize::StartupInfo()

@@ -97,14 +97,42 @@ bool Draw::InitTextures()
 void Draw::ImageFromMemory(LPDIRECT3DTEXTURE9 texturename, int x, int y, std::string text, int index, int in_width, int in_height, bool inWindow)
 {
 
-	// Retrieve texture info
+	// todo it flickers when text is changing, probably smth to do with wnd name
+	//also drawing text over image
 	D3DSURFACE_DESC my_texture_desc;
 	HRESULT res = texturename->GetLevelDesc(0, &my_texture_desc);
 	IM_ASSERT(res == 0);
 
 
-	//todo drawing with text inw indow without window etc
+	if (!inWindow)
+	{
+		bool Open = true;
+		std::string wndName = "##texture" + text + std::to_string(index);
+		const auto flags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs;
+
+		ImGui::Begin(wndName.c_str(), &Open, flags);
+		ImGui::SetWindowSize(ImVec2(in_width, in_height), ImGuiCond_Always);
+		ImGui::SetWindowPos(ImVec2(x, y), ImGuiCond_Always);
+	}
+
 	ImGui::Image(texturename, ImVec2((float)in_width, (float)in_height));
+
+	if (!text.empty())
+	{
+		String(text, x + in_width + 5, y, lefted, RGBA(255, 255, 255), Direct3D9.fontTahoma);
+		//ImGui::Text(text.c_str());
+	/*	ImFont* newFont = ImGui::GetFont();
+		newFont->Scale = 2;
+		ImGui::PushFont(newFont);
+		ImGui::GetForegroundDrawList()->AddText(ImVec2(x + in_width / 5, y + in_height / 10), IM_COL32(1, 0, 0, 255), text.c_str());
+		newFont->Scale = 1;
+		ImGui::PopFont();*/
+	}
+
+	if (!inWindow)
+	{
+		ImGui::End();
+	}
 }
 
 

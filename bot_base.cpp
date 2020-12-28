@@ -273,25 +273,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
 
-    if (FindWindowA(0, XorStr("League of Legends (TM) Client")))
-    {
-        // clog.AddLog("Window Found");
+#ifndef NOLEAGUE
 
-        hWnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_LAYERED, overlayClassName, overlayClassName, WS_POPUP, 1, 1, SCREENWIDTH, SCREENHEIGHT, 0, 0, 0, 0);
-        SetLayeredWindowAttributes(hWnd, 0, 0, LWA_ALPHA);
-        SetLayeredWindowAttributes(hWnd, 0, 0, LWA_COLORKEY);
-        //SetLayeredWindowAttributes(hWnd, RGB(255, 255, 255),100, /* 0=transparent, 255=completely solid*/LWA_COLORKEY);
-        //SetWindowPos(hWnd, HWND_TOPMOST, 0 ,0 , SCREENWIDTH, SCREENHEIGHT, SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
-        //ShowWindow(hWnd, SW_SHOW);
-
-    }
-    else
+    LPCSTR windowName = XorStr("League of Legends (TM) Client");
+    if (!FindWindowA(0, windowName))
     {
-        // clog.AddLog("[error] Window Creation Failed");
         MessageBox(0, L"Game not found", L"Window creation failed", 0);
         ::UnregisterClass(wc.lpszClassName, wc.hInstance);
         return 0;
     }
+
+#endif // !NOLEAGUE
+
+    hWnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_LAYERED, overlayClassName, overlayClassName, WS_POPUP, 1, 1, SCREENWIDTH, SCREENHEIGHT, 0, 0, 0, 0);
+    SetLayeredWindowAttributes(hWnd, 0, 0, LWA_ALPHA);
+    SetLayeredWindowAttributes(hWnd, 0, 0, LWA_COLORKEY);
+    //SetLayeredWindowAttributes(hWnd, RGB(255, 255, 255),100, /* 0=transparent, 255=completely solid*/LWA_COLORKEY);
+    //SetWindowPos(hWnd, HWND_TOPMOST, 0 ,0 , SCREENWIDTH, SCREENHEIGHT, SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+    //ShowWindow(hWnd, SW_SHOW);
+
+
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
@@ -312,16 +313,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     Config->Load("default");
     clog.AddLog("[startup] Config loaded");
 
-    //rewrite this to work properly and use new verion C++ threads
+
+#ifndef NOLEAGUE
+
+
+
     std::thread MinionListThread{ MinionListLoop };
     MinionListThread.detach();
+
+#endif // !NOLEAGUE
+
     std::thread MenuHandlerThread{ MenuHandler };
     MenuHandlerThread.detach();
-   // CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0); //todo loop obj only when needed, not in different thread
+
+
+   // CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0); //todo loop obj only when needed, not in different thread and c++11 threads
     //CreateThread(0, 0, (LPTHREAD_START_ROUTINE)OrbwalkThread, 0, 0, 0); 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    init->StartupInfo();
 
     //message Loop
     ZeroMemory(&Msg, sizeof(Msg));
@@ -334,19 +343,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             continue;
         }
         //std::thread MissileThread{ GetObjectList };
-        M.GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
-      
-        Direct3D9.Render();
+        
 
-        if (M.ExitBot || PressedKey(VK_F11)) //exit
+        if (M.ExitBot || PressedKey(VK_F11))// || !FindWindowA(0, windowName)) //exit
             break;
+#ifndef NOLEAGUE
+
+
+
+        M.GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+
+#endif // !NOLEAGUE
+
+
+        Direct3D9.Render();
 
         //clog.AddLog("%f", Local.GetEXP());
  
 
         //todo twisted fate cards bound seperatly+visual indicator
        
-
 
 
         //clog.AddLog("%i", GetObjectList().size());

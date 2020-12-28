@@ -70,8 +70,11 @@ DirectX::XMMATRIX Direct3D9Render::GetProjectionMatrix()
 
 void Direct3D9Render::GetViewProjectionMatrix()
 {
+#ifndef NOLEAGUE
 
 	M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+
+#endif // !NOLEAGUE
 }
 
 
@@ -128,8 +131,10 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 		clog.AddLog("[startup] Initialized textures");
 	else clog.AddLog("[error] Failed to initialize textures");
 
+
 	init->Start();
 	
+
 	return true;
 }
 
@@ -528,6 +533,57 @@ void Direct3D9Render::Loops()
 
 			}
 
+			if (M.Talon.JumpsType[4])
+			{
+				Vector3 raptorJumpSpot = Vector3(6724.0, 48.527, 4908.0);
+
+				if (Local.GetPosition().DistTo(raptorJumpSpot) < 1000)
+				{
+					ImVec2 raptorJump = WorldToScreen(raptorJumpSpot);
+					draw->Circle(raptorJump.x, raptorJump.y, 75, RGBA(255, 255, 255));
+					if (Local.GetPosition().DistTo(raptorJumpSpot) < 400)
+					{
+
+						ImVec2 raptorJumpFinal = WorldToScreen(Vector3(6190, 51.772114, 5634));
+						draw->Circle(raptorJumpFinal.x, raptorJumpFinal.y, 30, RGBA(255, 255, 0));
+						draw->Line(raptorJumpFinal.x, raptorJumpFinal.y, raptorJump.x, raptorJump.y, RGBA(255, 255, 0));
+
+						if (Local.GetPosition().DistTo(raptorJumpSpot) < 155 && PressedKey(VK_LSHIFT))
+						{
+
+							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
+							mouse->RightClick();
+							std::this_thread::sleep_for(std::chrono::milliseconds(200));
+							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+							raptorJump = WorldToScreen(raptorJumpSpot);
+							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
+							mouse->RightClick();
+
+							ImVec2 raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
+							mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
+							mouse->RightClick();
+
+							std::this_thread::sleep_for(std::chrono::milliseconds(400));
+							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+							raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
+							mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
+							mouse->RightClick();
+
+							raptorJump = WorldToScreen(raptorJumpSpot);
+							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
+							mouse->RightClick();
+							std::this_thread::sleep_for(std::chrono::milliseconds(400));
+							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
+							ImVec2 raptorJumpDestination = WorldToScreen(Vector3(6324.0, 51.765816, 5808.0));
+							mouse->MouseMoveInstant(raptorJumpDestination.x, raptorJumpDestination.y);
+							keyboard->GenerateKeyScancode(DIK_E, false);
+							mouse->MouseMoveInstant(raptorJumpFinal.x, raptorJumpFinal.y);
+						}
+					}
+
+				}
+			}
+
 		}
 	}
 
@@ -768,6 +824,7 @@ int Direct3D9Render::Render()
 						ImGui::Selectable("Blue-side Raptors", &M.Talon.JumpsType[1]);
 						ImGui::Selectable("Botlane", &M.Talon.JumpsType[2]);
 						ImGui::Selectable("Toplane", &M.Talon.JumpsType[3]);
+						ImGui::Selectable("Red-side Raptors", &M.Talon.JumpsType[4]);
 					}
 
 				}
@@ -870,9 +927,17 @@ int Direct3D9Render::Render()
 	{
 		ViewmatrixThread.join(); // wait for it to execute
 
+#ifndef NOLEAGUE
 
 		Loops();
-	
+
+#endif // !NOLEAGUE
+
+		
+
+
+		//draw->ImageFromMemory(draw->textureIgnite, mouse->GetPos().x, mouse->GetPos().y, "abc", 3213, 120, 120, false);
+
 		ImGui::EndFrame();
 		ImGui::Render();
 		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
@@ -880,24 +945,33 @@ int Direct3D9Render::Render()
 
 
 
-	/*	
-		DWORD testList = Memory.Read<DWORD>(ClientAddress + 0x28BDEFC);
-		clog.AddLog("TestList: %x", testList);
-		DWORD testarray = Memory.Read<DWORD>(testList + 0x04);
-		int testlength = Memory.Read<int>(testList + 0x08);
-		for (int i = 0; i < testlength * 4; i += 4)
-		{
-			CObject obj(Memory.Read<DWORD>(testarray + i));
-			ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
-			
-			if (RealPos.x == 0 && RealPos.y == 0)
-				continue;
+		//
+		//DWORD testList = Memory.Read<DWORD>(ClientAddress + 0x34F848C);
+		//clog.AddLog("TestList: %x", testList);
+		//DWORD testarray = Memory.Read<DWORD>(testList + 0xC4);
+		//int testlength = Memory.Read<int>(testList + 0xC8);
+		//for (int i = 0; i < testlength * 4; i += 4)
+		//{
+		//	CObject obj(Memory.Read<DWORD>(testarray + i));
+		//	ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+
+		//	//if (RealPos.x == 0 && RealPos.y == 0)
+		//	//	continue;
+
+		//	Vector3 StartPos = obj.GetMissileStartPos();
+		//	Vector3 EndPos = obj.GetMissileEndPos();
+		//	ImVec2 RealStartPos = WorldToScreen(StartPos);
+		//	ImVec2 RealEndPos = WorldToScreen(EndPos);
 
 
-			clog.AddLog("%s : %x", obj.GetName().c_str(), obj.Address());
-			std::string str = obj.GetName() + " , " + std::to_string(obj.Address());
-			draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
-		}*/
+
+		//	draw->Line(RealStartPos.x, RealStartPos.y, RealEndPos.x, RealEndPos.y, RGBA(255, 255, 255));
+
+		//
+		//	clog.AddLog("%s : %x", obj.GetName().c_str(), obj.Address());
+		//	std::string str = obj.GetName() + " , " + std::to_string(obj.Address());
+		//	draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+		//}
 
 
 		//float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));

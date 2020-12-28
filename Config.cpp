@@ -63,7 +63,7 @@ void CConfig::Setup()
 	SetupValue(M.Talon.DmgCalc, 0, "Talon", "DmgCalc");
 	SetupValue(M.Talon.Jumps, 0, "Talon", "Jumps");
 	SetupValue(M.Talon.JumpsKey, VK_LSHIFT, "Talon", "JumpsKey");
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 5; i++)
 		SetupValue(M.Talon.JumpsType[i], 1, "Talon", "JumpsType" + std::to_string(i));
 
 }

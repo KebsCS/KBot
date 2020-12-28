@@ -26,6 +26,7 @@ private:
 	//LPDIRECT3DTEXTURE9 LoadTextureFromFile(const char* filename, LPDIRECT3DTEXTURE9* out_texture, int* out_width, int* out_height, LPDIRECT3DDEVICE9 xD);
 public:
 
+	//todo use image class
 	LPDIRECT3DTEXTURE9 textureBarrier = NULL;
 	LPDIRECT3DTEXTURE9 textureClarity = NULL;
 	LPDIRECT3DTEXTURE9 textureCleanse = NULL;

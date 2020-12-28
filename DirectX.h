@@ -470,11 +470,16 @@ struct ConsoleLog
             AddLog("Loaded config");
             Config->Load("default");
         }
-        else if (Stricmp(command_line, "OBJECTS") == 0)
+       /* else if (Stricmp(command_line, "OBJECTS") == 0)
         {
             ObjectMenuOpen = !ObjectMenuOpen;
 
             AddLog("Showed objects");
+        }*/
+        else if (Stricmp(command_line, "INFO") == 0)
+        {
+            IgnoreStopPrint = true;
+            init->StartupInfo();
         }
         else
         {
