@@ -1,32 +1,66 @@
 #include "Initialize.h"
 
 #include "DirectX.h"
-#include "API.h"
 
-void Initialize::Start()
+
+CObject Local;
+DWORD OBJManager;
+DWORD OBJManagerArray;
+DWORD MissileMap;
+IScript* championScript;
+
+bool Initialize::Start()
 {
 #ifndef NOLEAGUE
 
 
 
 	M.GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
-
+	int wait = 0;
 	while (M.GameTime < 1) // pause if not in game
 	{
+		if (wait > 30)
+			if (MessageBoxA(0, XorStr("Game not starting, continue?"), 0, MB_YESNO) == IDNO) //if no button is pressed 
+				return false;
+			else
+				wait = 0;
 		M.GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		if (PressedKey(VK_F11))
+			return false;
+		wait++;
 	}
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+
+	//globals
+	Local = CObject(Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD)));
+	if (!Local.Address())
+		return false;
+	Local.SetPlayerConsts();
+	OBJManager = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
+	OBJManagerArray = Memory.Read<DWORD>(OBJManager + 0x14, sizeof(DWORD));
+	MissileMap = Memory.Read<DWORD>(ClientAddress + oMissileMap);
+
+	M.Champion = Local.GetChampName();
+	championScript = ScriptUtils::GetScriptByChampionName(M.Champion);
 
 
 	AddObjects();
 	CreateChampArray();
 	
-	StartupInfo();
+	if(M.Debug)
+		StartupInfo();
 
 	//std::string strAPI = api->GET("https://127.0.0.1", "/liveclientdata/allgamedata", 2999);
 	
 
+
+#elif
+	M.Champion = "Empty";
+
 #endif // !NOLEAGUE
+	return true;
 }
 
 void Initialize::StartupInfo()
@@ -34,13 +68,14 @@ void Initialize::StartupInfo()
 
 	clog.AddLog("ProcessId: %d", Memory.ProcessID);
 	clog.AddLog("ClientAddress: %x", ClientAddress);
-	clog.AddLog("OBJManager: %x", Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD)));
+	clog.AddLog("OBJManager: %x", OBJManager);
 
-	clog.AddLog("LocalPlayer: %x", Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD)));
+	clog.AddLog("LocalPlayer: %x", Local.Address());
 	clog.AddLog("UnitComponentInfo: %x", Local.GetUnitComponentInfo());
 	clog.AddLog("Name: %s", Local.GetName().c_str());
 	clog.AddLog("NetworkID: %d", Local.GetNetworkID());
 	clog.AddLog("IsVisible: %d", Local.IsVisible());
+	clog.AddLog("Bounding: %d", Local.GetBoundingRadius());
 	clog.AddLog("GetTeam: %d", Local.GetTeam());
 	clog.AddLog("HP: %f", Local.GetHealth());
 	clog.AddLog("MaxHP: %f", Local.GetMaxHealth());
@@ -82,12 +117,6 @@ void Initialize::AddObjects()
 	MakeStructureListThread.join();
 	MakeTestListThread.join();
 
-	//todo make champ class or smth
-	M.Champion = Local.GetChampName();
-	if (M.Champion == "Talon")
-	{
-		M.Talon.Master = true;
-	}
 }
 
 
@@ -102,13 +131,14 @@ void Initialize::MakeHeroList()
 		CObject obj(Memory.Read<DWORD>(HeroArray + i));
 		obj.SetPlayerConsts();
 		herolist.emplace_back(obj);
-		clog.AddLog("%s : %x %s %s ", obj.GetName().c_str(), obj.Address(), obj.SummonerSpell1().c_str(), obj.SummonerSpell2().c_str());
+		if (M.Debug)
+			clog.AddLog("%s : %x %s %s ", obj.GetName().c_str(), obj.Address(), obj.SummonerSpell1().c_str(), obj.SummonerSpell2().c_str());
 	}
 
 	std::string str;
 	if (herolist.size() < 10)
 		str = "error";
-	else str = "startup";
+	else str = "start";
 	clog.AddLog("[%s] Added %i/10 heroes", str.c_str(), herolist.size());
 
 }
@@ -131,7 +161,7 @@ void Initialize::MakeTurretList()
 	std::string str;
 	if (turretlist.size() < 22)
 		str = "error";
-	else str = "startup";
+	else str = "start";
 	clog.AddLog("[%s] Added %i/22 turrets", str.c_str(), turretlist.size());
 
 }
@@ -154,7 +184,7 @@ void Initialize::MakeInhibList()
 	std::string str;
 	if (inhiblist.size() < 6)
 		str = "error";
-	else str = "startup";
+	else str = "start";
 	clog.AddLog("[%s] Added %i/6 inhibitors", str.c_str(), inhiblist.size());
 
 }
@@ -221,13 +251,13 @@ void Initialize::MakeTestList()
 	//		//clog.AddLog("%s", obj.GetName());
 	//		if (objName == "Target Dummy")
 	//		{
-	//			clog.AddLog("[startup] Added hero: %s", objName.c_str());
+	//			clog.AddLog("[start] Added hero: %s", objName.c_str());
 	//			herolist.emplace_back(obj);
 	//			continue;
 	//		}
 	//	/*	if (objName.find("Turret_") != std::string::npos)
 	//		{
-	//			clog.AddLog("[startup] Added turret: %s", objName.c_str());
+	//			clog.AddLog("[start] Added turret: %s", objName.c_str());
 	//			herolist.emplace_back(obj);
 	//			continue;
 	//		}*/
@@ -237,7 +267,7 @@ void Initialize::MakeTestList()
 	//			
 	//			if (name == objChampName)
 	//			{
-	//				clog.AddLog("[startup] Added hero: %s", objChampName.c_str());
+	//				clog.AddLog("[start] Added hero: %s", objChampName.c_str());
 	//				herolist.emplace_back(obj);
 	//				break;
 	//			}

@@ -7,22 +7,14 @@
 #include <iomanip>
 #include <string>
 
-
-
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
 
-#include "Definitions.h"
+
 #include "Includes.h"
-
-
-#include "KInterface.h"
-#include "offsets.h"
-#include "ObjectManager.h"
-
-
 #include "Initialize.h"
 #include "Config.h"
+#include "ScriptUtils.h"
 
 
 extern LPDIRECT3D9              g_pD3D;
@@ -39,16 +31,18 @@ private:
     DirectX::XMMATRIX ReadMatrix(DWORD address);
     DirectX::XMMATRIX GetViewMatrix();
     DirectX::XMMATRIX GetProjectionMatrix();
-    void GetViewProjectionMatrix();
-
+   
     void HelpMarker(const char* desc);
 
 public:
+    void GetViewProjectionMatrix();
 
 
 	ID3DXFont* fontArial;
 	ID3DXFont* fontTahoma;
     ID3DXFont* fontTahomaSmall;
+
+    void MissileThread();
 
 	Direct3D9Render()
 	{
@@ -211,7 +205,9 @@ struct ConsoleLog
         Commands.push_back("REINIT");
         Commands.push_back("LOADCFG");
         Commands.push_back("SAVECFG");
-        Commands.push_back("OBJECTS");
+        //Commands.push_back("OBJECTS");
+        Commands.push_back("INFO");
+
         AutoScroll = true;
         ScrollToBottom = false;
         StopPrinting = false;
@@ -256,7 +252,7 @@ struct ConsoleLog
 
     void    Draw(const char* title, bool* p_open)
     {
-        ImGui::SetNextWindowPos(ImVec2(1252, 471), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(1505, 435), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(389, 605), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin(title, p_open))
         {
@@ -350,9 +346,10 @@ struct ConsoleLog
             // (e.g. make Items[] an array of structure, store color/type etc.)
             ImVec4 color;
             bool has_color = false;
-            if (strstr(item, "[error]")) { color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); has_color = true; }
-            else if (strncmp(item, "# ", 2) == 0) { color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); has_color = true; }
-            else if (strncmp(item, "[startup]", 2) == 0) { color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); has_color = true; }
+            if (strstr(item, XorStr("[error]"))) { color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); has_color = true; }
+            else if (strncmp(item, XorStr("# "), 2) == 0) { color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); has_color = true; }
+            else if (strstr(item, XorStr("[start]"))) { color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); has_color = true; }
+            else if (strstr(item, XorStr("[info]"))) { color = ImVec4(0.4f, 1.f, 0.4f, 1.0f); has_color = true; }
             if (has_color)
                 ImGui::PushStyleColor(ImGuiCol_Text, color);
             ImGui::TextUnformatted(item);
@@ -479,7 +476,10 @@ struct ConsoleLog
         else if (Stricmp(command_line, "INFO") == 0)
         {
             IgnoreStopPrint = true;
-            init->StartupInfo();
+            if(M.Debug)
+                init->StartupInfo();
+            else
+                AddLog(XorStr("[info] %s"), M.ServerInfo.c_str());
         }
         else
         {

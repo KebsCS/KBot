@@ -16,6 +16,9 @@ Visuals *vis;
 extern std::vector<CObject>minionList;
 extern std::vector<CObject>missileList;
 extern std::vector<DWORD> objList;
+
+extern DWORD GetFirst();
+extern DWORD GetNext(DWORD a2);
 DirectX::XMMATRIX Direct3D9Render::ReadMatrix(DWORD address)
 {
 
@@ -83,7 +86,7 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 
 	if ((g_pD3D = Direct3DCreate9(D3D_SDK_VERSION)) == NULL)
 	{
-		MessageBox(0, L" Direct3DCreate9 Failed", 0, 0);
+		MessageBoxA(0, " Direct3DCreate9 Failed", 0, 0);
 
 		return false;
 	}
@@ -105,14 +108,14 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 
 	if (g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &g_d3dpp, &g_pd3dDevice) < 0)
 	{
-		MessageBox(0, L" CreateDevice Failed", 0, 0);
+		MessageBoxA(0, " CreateDevice Failed", 0, 0);
 
 		return false;
 	}
 
 	if (FAILED(D3DXCreateLine(g_pd3dDevice, &g_Line)))
 	{
-		MessageBox(0, L" D3DXCreateLine Failed", 0, 0);
+		MessageBoxA(0, " D3DXCreateLine Failed", 0, 0);
 		if (g_pd3dDevice) { g_pd3dDevice->Release(); g_pd3dDevice = NULL; }
 		if (g_pD3D) { g_pD3D->Release(); g_pD3D = NULL; }
 		return false;
@@ -128,11 +131,12 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 	Renderimgui(hWnd);
 
 	if (draw->InitTextures())
-		clog.AddLog("[startup] Initialized textures");
+		clog.AddLog("[start] Initialized textures");
 	else clog.AddLog("[error] Failed to initialize textures");
 
 
-	init->Start();
+	if (!init->Start())
+		return false;
 	
 
 	return true;
@@ -207,7 +211,8 @@ void Direct3D9Render::HeroLoop()
 				//todo store cooldowns in object class
 				if (M.Cooldowns.Type[0] || M.Cooldowns.Type[1])
 					vis->CooldownTimers(obj);
-				if (M.Cooldowns.Type[2] && PressedKey(VK_TAB))
+				//if master + tab /  scoreboard window + show scoreboard
+				if ((M.Cooldowns.Type[2] && ((PressedKey(VK_TAB))) || (M.Cooldowns.ScoreboardWnd && M.Cooldowns.Scoreboard.ShowScoreboard)))
 					vis->ScoreBoard(obj);
 
 			}
@@ -267,6 +272,10 @@ void Direct3D9Render::TurretLoop()
 	
 void Direct3D9Render::Loops()
 {
+
+	if (M.Debug)
+		MissileThread();
+
 	if (M.AARange.Local)
 		vis->DrawAARanges(Local, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
 			M.AARange.Local, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]), false);
@@ -356,241 +365,181 @@ void Direct3D9Render::Loops()
 	//		draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
 	//	}
 	//}
-	////todo move into champion class
-	if (M.Talon.Master)
-	{
-		if (M.Talon.Jumps)
-		{
-			if (M.Talon.JumpsType[1])
-			{
-				Vector3 raptorJumpSpot = Vector3(6724.0, 48.527, 4908.0);
 
-
-
-				if (Local.GetPosition().DistTo(raptorJumpSpot) < 1000)
-				{
-					ImVec2 raptorJump = WorldToScreen(raptorJumpSpot);
-					draw->Circle(raptorJump.x, raptorJump.y, 75, RGBA(255, 255, 255));
-					if (Local.GetPosition().DistTo(raptorJumpSpot) < 400)
-					{
-
-						ImVec2 raptorJumpFinal = WorldToScreen(Vector3(6190, 51.772114, 5634));
-						draw->Circle(raptorJumpFinal.x, raptorJumpFinal.y, 30, RGBA(255, 255, 0));
-						draw->Line(raptorJumpFinal.x, raptorJumpFinal.y, raptorJump.x, raptorJump.y, RGBA(255, 255, 0));
-
-						if (Local.GetPosition().DistTo(raptorJumpSpot) < 155 && PressedKey(VK_LSHIFT))
-						{
-
-							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
-							mouse->RightClick();
-							std::this_thread::sleep_for(std::chrono::milliseconds(200));
-							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-							raptorJump = WorldToScreen(raptorJumpSpot);
-							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
-							mouse->RightClick();
-
-							ImVec2 raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
-							mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
-							mouse->RightClick();
-
-							std::this_thread::sleep_for(std::chrono::milliseconds(400));
-							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-							raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
-							mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
-							mouse->RightClick();
-
-							raptorJump = WorldToScreen(raptorJumpSpot);
-							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
-							mouse->RightClick();
-							std::this_thread::sleep_for(std::chrono::milliseconds(400));
-							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-							ImVec2 raptorJumpDestination = WorldToScreen(Vector3(6324.0, 51.765816, 5808.0));
-							mouse->MouseMoveInstant(raptorJumpDestination.x, raptorJumpDestination.y);
-							keyboard->GenerateKeyScancode(DIK_E, false);
-							mouse->MouseMoveInstant(raptorJumpFinal.x, raptorJumpFinal.y);
-						}
-					}
-
-				}
-			}
-
-			if (M.Talon.JumpsType[0])
-			{
-				Vector3 drakeJumpSpot = Vector3(8688, 50.623039, 5196);
-				if (Local.GetPosition().DistTo(drakeJumpSpot) < 1000)
-				{
-					ImVec2 drakeJump = WorldToScreen(drakeJumpSpot);
-					draw->Circle(drakeJump.x, drakeJump.y, 75, RGBA(255, 255, 255));
-					if (Local.GetPosition().DistTo(drakeJumpSpot) < 400)
-					{
-						ImVec2 drakeJumpFinal = WorldToScreen(Vector3(9372, -71.240601, 4642));
-						draw->Circle(drakeJumpFinal.x, drakeJumpFinal.y, 30, RGBA(255, 255, 0));
-						draw->Line(drakeJumpFinal.x, drakeJumpFinal.y, drakeJump.x, drakeJump.y, RGBA(255, 255, 0));
-
-						if (Local.GetPosition().DistTo(drakeJumpSpot) < 155 && PressedKey(VK_LSHIFT))
-						{
-
-							mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
-							mouse->RightClick();
-							std::this_thread::sleep_for(std::chrono::milliseconds(200));
-							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-							mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
-							mouse->RightClick();
-
-
-							ImVec2 drakeJumpCorrection = WorldToScreen(Vector3(8600, 48.448730, 5214));
-							mouse->MouseMoveInstant(drakeJumpCorrection.x, drakeJumpCorrection.y);
-							mouse->RightClick();
-
-							std::this_thread::sleep_for(std::chrono::milliseconds(400));
-							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-							drakeJumpCorrection = WorldToScreen(Vector3(8600, 48.448730, 5214));
-							mouse->MouseMoveInstant(drakeJumpCorrection.x, drakeJumpCorrection.y);
-							mouse->RightClick();
-
-
-							drakeJump = WorldToScreen(drakeJumpSpot);
-							mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
-							mouse->RightClick();
-							std::this_thread::sleep_for(std::chrono::milliseconds(400));
-							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-							ImVec2 drakeJumpDestination = WorldToScreen(Vector3(10048.0, -71.240601, 4408));//ImVec2(1920, 1080);// 
-
-							mouse->MouseMoveInstant(drakeJumpDestination.x, drakeJumpDestination.y);
-							keyboard->GenerateKeyScancode(DIK_E, false);
-							mouse->MouseMoveInstant(drakeJumpFinal.x, drakeJumpFinal.y);
-						}
-					}
-				}
-			}
-			if (M.Talon.JumpsType[2])
-			{
-				Vector3 botJumpSpot = Vector3(12472, 51.729401, 4508);
-				if (Local.GetPosition().DistTo(botJumpSpot) < 800)
-				{
-					ImVec2 botJump = WorldToScreen(botJumpSpot);
-					draw->Circle(botJump.x, botJump.y, 75, RGBA(255, 255, 255));
-					if (Local.GetPosition().DistTo(botJumpSpot) < 400)
-					{
-						ImVec2 botJumpFinal = WorldToScreen(Vector3(13122, 51.366905, 3988));
-						draw->Circle(botJumpFinal.x, botJumpFinal.y, 30, RGBA(255, 255, 0));
-						draw->Line(botJumpFinal.x, botJumpFinal.y, botJump.x, botJump.y, RGBA(255, 255, 0));
-
-						if (Local.GetPosition().DistTo(botJumpSpot) < 155 && PressedKey(VK_LSHIFT))
-						{
-
-							mouse->MouseMoveInstant(botJump.x, botJump.y);
-							mouse->RightClick();
-							std::this_thread::sleep_for(std::chrono::milliseconds(200));
-							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-							mouse->MouseMoveInstant(botJump.x, botJump.y);
-							mouse->RightClick();
-
-
-							ImVec2 botJumpDestination = WorldToScreen(Vector3(13022, 51.366901, 3808));
-
-							mouse->MouseMoveInstant(botJumpDestination.x, botJumpDestination.y);
-							keyboard->GenerateKeyScancode(DIK_E, false);
-							mouse->MouseMoveInstant(botJumpFinal.x, botJumpFinal.y);
-						}
-					}
-				}
-			}
-			if (M.Talon.JumpsType[3])
-			{
-				Vector3 topJumpSpot = Vector3(2424, 54.32550, 10406);
-				if (Local.GetPosition().DistTo(topJumpSpot) < 800)
-				{
-					ImVec2 topJump = WorldToScreen(topJumpSpot);
-					draw->Circle(topJump.x, topJump.y, 75, RGBA(255, 255, 255));
-					if (Local.GetPosition().DistTo(topJumpSpot) < 400)
-					{
-						ImVec2 topJumpFinal = WorldToScreen(Vector3(1734, 52.838100, 11004));
-						draw->Circle(topJumpFinal.x, topJumpFinal.y, 30, RGBA(255, 255, 0));
-						draw->Line(topJumpFinal.x, topJumpFinal.y, topJump.x, topJump.y, RGBA(255, 255, 0));
-
-						if (Local.GetPosition().DistTo(topJumpSpot) < 155 && PressedKey(VK_LSHIFT))
-						{
-
-							mouse->MouseMoveInstant(topJump.x, topJump.y);
-							mouse->RightClick();
-							std::this_thread::sleep_for(std::chrono::milliseconds(200));
-							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-							mouse->MouseMoveInstant(topJump.x, topJump.y);
-							mouse->RightClick();
-
-
-							ImVec2 topJumpDestination = WorldToScreen(Vector3(1824, 52.8381, 11106));
-
-							mouse->MouseMoveInstant(topJumpDestination.x, topJumpDestination.y);
-							keyboard->GenerateKeyScancode(DIK_E, false);
-							mouse->MouseMoveInstant(topJumpFinal.x, topJumpFinal.y);
-						}
-					}
-				}
-
-
-
-			}
-
-			if (M.Talon.JumpsType[4])
-			{
-				Vector3 raptorJumpSpot = Vector3(6724.0, 48.527, 4908.0);
-
-				if (Local.GetPosition().DistTo(raptorJumpSpot) < 1000)
-				{
-					ImVec2 raptorJump = WorldToScreen(raptorJumpSpot);
-					draw->Circle(raptorJump.x, raptorJump.y, 75, RGBA(255, 255, 255));
-					if (Local.GetPosition().DistTo(raptorJumpSpot) < 400)
-					{
-
-						ImVec2 raptorJumpFinal = WorldToScreen(Vector3(6190, 51.772114, 5634));
-						draw->Circle(raptorJumpFinal.x, raptorJumpFinal.y, 30, RGBA(255, 255, 0));
-						draw->Line(raptorJumpFinal.x, raptorJumpFinal.y, raptorJump.x, raptorJump.y, RGBA(255, 255, 0));
-
-						if (Local.GetPosition().DistTo(raptorJumpSpot) < 155 && PressedKey(VK_LSHIFT))
-						{
-
-							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
-							mouse->RightClick();
-							std::this_thread::sleep_for(std::chrono::milliseconds(200));
-							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-							raptorJump = WorldToScreen(raptorJumpSpot);
-							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
-							mouse->RightClick();
-
-							ImVec2 raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
-							mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
-							mouse->RightClick();
-
-							std::this_thread::sleep_for(std::chrono::milliseconds(400));
-							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-							raptorJumpCorrection = WorldToScreen(Vector3(6786.0, 48.527, 4842.0));
-							mouse->MouseMoveInstant(raptorJumpCorrection.x, raptorJumpCorrection.y);
-							mouse->RightClick();
-
-							raptorJump = WorldToScreen(raptorJumpSpot);
-							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
-							mouse->RightClick();
-							std::this_thread::sleep_for(std::chrono::milliseconds(400));
-							M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-							ImVec2 raptorJumpDestination = WorldToScreen(Vector3(6324.0, 51.765816, 5808.0));
-							mouse->MouseMoveInstant(raptorJumpDestination.x, raptorJumpDestination.y);
-							keyboard->GenerateKeyScancode(DIK_E, false);
-							mouse->MouseMoveInstant(raptorJumpFinal.x, raptorJumpFinal.y);
-						}
-					}
-
-				}
-			}
-
-		}
-	}
+	
 
 	//HeroLoopThread.join();
 	//TurretLoopThread.join();
 }
 
+CObjectManager* ObjManager = new CObjectManager();
+
+void Direct3D9Render::MissileThread()
+{
+	//auto obj = GetFirst();
+
+	//while (obj)
+	//{
+	//	CObject cobj(obj);
+	//	int team = cobj.GetTeam();
+	//	if (team == 100 || team == 200 || team == 300)
+	//	{
+	//		if (cobj.IsMissile())
+	//		{
+
+	//			CObject source = ObjManager->GetObjByIndex(cobj.GetMissileSourceIndex());
+	//			//DWORD spellinfo = Memory.Read<DWORD>(cobj.Address() + 0x230);
+	//			//DWORD spelldata = Memory.Read<DWORD>(spellinfo + 0x44);
+	//			//float speed = Memory.Read<float>(spelldata + 0x428);
+	//			//
+	//			////clog.AddLog("%x ,  %s  , %d", source.Address(), source.GetChampName().c_str(), cobj.GetMissileSourceIndex());
+	//			//clog.AddLog("%x , %s ", cobj.Address(), cobj.GetName().c_str());
+	//			if (source.IsHero())
+	//			{
+	//				if (cobj.GetName().find("basic") == std::string::npos)
+	//				{
+
+	//					Vector3 StartPos = cobj.GetMissileStartPos();
+	//					ImVec2 RealStartPos = Direct3D9.WorldToScreen(StartPos);
+	//					Vector3 EndPos = cobj.GetMissileEndPos();
+	//					ImVec2 RealEndPos = Direct3D9.WorldToScreen(EndPos);
+
+
+
+	//					/*DWORD spellinfo = Memory.Read<DWORD>(cobj.Address() + 0x230);
+	//					DWORD spelldata = Memory.Read<DWORD>(spellinfo + 0x44);
+	//					float speed = Memory.Read<float>(spellinfo + 0x450);
+	//					std::string desc = Memory.ReadString(spelldata + 0x0088);
+	//					clog.AddLog("=============");
+	//					for (int i = 0; i < 2000; i += 4)
+	//					{
+	//						speed = Memory.Read<float>(spelldata + i);
+	//						clog.AddLog("%x ,  %s, %f  , %x", cobj.Address(), cobj.GetName().c_str(), speed ,i);
+	//					}*/
+
+	//					if (RealStartPos.x != 0 && RealStartPos.y != 0 && RealEndPos.x != 0 && RealEndPos.y != 0)
+	//					{
+	//						std::string str = cobj.GetName() + " , " + std::to_string(cobj.Address());
+	//						draw->String(str, RealEndPos.x, RealEndPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
+	//						draw->Line(RealStartPos, RealEndPos, RGBA(255, 255, 255));
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
+	//	obj = GetNext(obj);
+	//}
+
+
+	//std::vector<CObject> missiles;
+	int numMissiles = Memory.Read<int>(MissileMap + 0x78);
+	int rootNode = Memory.Read<int>(MissileMap + 0x74);
+	//clog.AddLog("%x", rootNode);
+	std::queue<int> nodesToVisit;
+	std::set<int> visitedNodes;
+	nodesToVisit.push(rootNode);
+
+	int childNode1, childNode2, childNode3, node;
+	while (nodesToVisit.size() > 0 && visitedNodes.size() < numMissiles * 2)
+	{
+		node = nodesToVisit.front();
+		nodesToVisit.pop();
+		visitedNodes.insert(node);
+		//clog.AddLog("%x", node);
+		childNode1 = Memory.Read<int>(node);
+		childNode2 = Memory.Read<int>(node + 4);
+		childNode3 = Memory.Read<int>(node + 8);
+
+
+		if (visitedNodes.find(childNode1) == visitedNodes.end())
+			nodesToVisit.push(childNode1);
+		if (visitedNodes.find(childNode2) == visitedNodes.end())
+			nodesToVisit.push(childNode2);
+		if (visitedNodes.find(childNode3) == visitedNodes.end())
+			nodesToVisit.push(childNode3);
+
+		unsigned int netId = Memory.Read<int>(node + 0x10);
+
+
+		// Actual missiles net_id start from 0x40000000 and throught the game this id will be incremented by 1 for each missile.
+		// So we use this information to check if missiles are valid.
+		if (netId - (unsigned int)0x40000000 > 0x100000)
+			continue;
+
+		int addr = Memory.Read<int>(node + 0x14);
+		if (addr == 0)
+			continue;
+
+		// The MissileClient is wrapped around another object
+		addr = Memory.Read<int>(addr + 0x4);
+		if (addr == 0)
+			continue;
+
+		addr = Memory.Read<int>(addr + 0x10);
+		if (addr == 0)
+			continue;
+
+		// At this point addr is the address of the MissileClient
+		MissileClient obj(addr); //std::unique_ptr<CObject>(new CObject());
+	   // m->LoadFromMem(addr, hProcess);
+		
+		// Check one more time that we read a valid missile
+		if (obj.GetNetworkID() != netId)
+			continue;
+		//.AddLog("%x", m.Address());
+		//clog.AddLog("%s %x", obj.GetName().c_str(), obj.Address());
+		//missiles.push_back(m);
+
+		int team = obj.GetTeam();
+		if (team == 100 || team == 200 || team == 300)
+		{
+			CObject source = obj.GetSource();
+			if (source.IsHero())
+			{
+				if (!utils->StringContains(obj.GetName(), "basic", true))
+				{
+
+					Vector3 StartPos = obj.GetMissileStartPos();
+					ImVec2 RealStartPos = WorldToScreen(StartPos);
+					if (RealStartPos.x == 0 || RealStartPos.y == 0)
+						continue;
+					Vector3 EndPos = obj.GetMissileEndPos();
+					ImVec2 RealEndPos = WorldToScreen(EndPos);
+					if (RealEndPos.x == 0 || RealEndPos.y == 0)
+						continue;
+
+					/*Vector3 direction = EndPos - StartPos;
+
+					Vector3 pos1 = StartPos + Vector3(direction.Z * -1.0f, direction.Y, direction.X * 1.0f).Normalize();
+					ImVec2 RealPos1 = Direct3D9.WorldToScreen(pos1);
+					draw->Circle(RealPos1.x, RealPos1.y, 5, RGBA(255, 255, 255));
+					Vector3 pos2 = StartPos + Vector3(direction.Z * 1.0f, direction.Y, direction.X * -1.0f).Normalize();
+					ImVec2 RealPos2 = Direct3D9.WorldToScreen(pos2);
+					draw->Circle(RealPos2.x, RealPos2.y, 5, RGBA(255, 255, 255));
+					Vector3 pos3 = EndPos + Vector3(direction.Z * -1.0f, direction.Y, direction.X * 1.0f).Normalize();
+					ImVec2 RealPos3 = Direct3D9.WorldToScreen(pos3);
+					draw->Circle(RealPos3.x, RealPos3.y, 5, RGBA(255, 255, 255));
+					Vector3 pos4 = EndPos + Vector3(direction.Z * 1.0f, direction.Y, direction.X * -1.0f).Normalize();
+					ImVec2 RealPos4 = Direct3D9.WorldToScreen(pos4);
+					draw->Circle(RealPos4.x, RealPos4.y, 5, RGBA(255, 255, 255));
+					draw->Line(RealPos1, RealPos2, RGBA(255, 255, 255));
+					draw->Line(RealPos3, RealPos4, RGBA(255, 255, 255));
+					draw->Line(RealPos1, RealPos3, RGBA(255, 255, 255));
+					draw->Line(RealPos1, RealPos4, RGBA(255, 255, 255));*/
+
+					std::string str = obj.GetName() + " , " + std::to_string(obj.Address());
+					draw->String(str, RealEndPos.x, RealEndPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
+					draw->Line(RealStartPos, RealEndPos, RGBA(255, 255, 255));
+				
+				}
+			}
+
+		}
+
+	}
+
+
+}
 
 
 int Direct3D9Render::Render()
@@ -610,9 +559,9 @@ int Direct3D9Render::Render()
 	{
 
 		char buf[128];
-		sprintf(buf, "KBot %.1f FPS ###AnimatedTitle", ImGui::GetIO().Framerate);
-		ImGui::SetNextWindowPos(ImVec2(903, 349), ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize(ImVec2(350, 350), ImGuiCond_FirstUseEver);
+		sprintf(buf, XorStr("KBot %.1f FPS ###AnimatedTitle"), ImGui::GetIO().Framerate);
+		ImGui::SetNextWindowPos(ImVec2(904, 349), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(419, 421), ImGuiCond_FirstUseEver);
 		ImGui::Begin(buf);// , ImGuiWindowFlags_AlwaysAutoResize);
 		if (ImGui::BeginPopupContextItem())
 		{
@@ -652,6 +601,8 @@ int Direct3D9Render::Render()
 				if (ImGui::CollapsingHeader("Enemies", collapsing_header_flags))
 				{
 					ImGui::Checkbox("AA Range", &M.AARange.Master);
+					//if (ImGui::IsItemHovered())
+					//	ImGui::SetTooltip("test");
 					ImGui::SameLine();
 					ImGui::ColorEdit4("AARangeColor##3", (float*)&M.AARange.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
 					ImGui::SameLine();
@@ -669,8 +620,12 @@ int Direct3D9Render::Render()
 
 					ImGui::Checkbox("Gank Alerter", &M.GankAlerter.Master);
 					ImGui::Separator();
-
+					ImGui::Columns(2, 0, false);
 					ImGui::Checkbox("Cooldowns", &M.Cooldowns.Master);
+					ImGui::NextColumn();
+					ImGui::Checkbox("Scoreboard Window", &M.Cooldowns.ScoreboardWnd);
+					ImGui::Columns(1);
+
 					if (M.Cooldowns.Master)
 					{
 						ImGui::Selectable("Text on champ", &M.Cooldowns.Type[0]);
@@ -678,7 +633,85 @@ int Direct3D9Render::Render()
 						ImGui::Selectable("Scoreboard", &M.Cooldowns.Type[2]);
 					}
 
-					
+					if (M.Cooldowns.ScoreboardWnd)
+					{
+						ImGui::SetNextWindowPos(ImVec2(1324, 502), ImGuiCond_FirstUseEver);
+						ImGui::SetNextWindowSize(ImVec2(437, 301), ImGuiCond_FirstUseEver);
+
+						if (ImGui::Begin("Scoreboard##Window", &M.Cooldowns.ScoreboardWnd))
+						{
+							
+							ImGui::Columns(2, 0, false);
+							ImGui::Checkbox("Summoner spells", &M.Cooldowns.Scoreboard.Summs);
+							ImGui::Checkbox("Experience", &M.Cooldowns.Scoreboard.Exp);
+							ImGui::NextColumn();
+							ImGui::Checkbox("Ultimates", &M.Cooldowns.Scoreboard.Ults);
+							ImGui::Checkbox("Items", &M.Cooldowns.Scoreboard.Items);
+							ImGui::Columns(1);
+
+							ImGui::Separator();
+
+							ImGui::Text("Alignment:");
+							ImGui::Columns(2, 0, false);
+							for (int n = 0; n < 10; n++)
+							{
+								ImGui::PushID(n);
+								if ((n % 2) != 0)
+									ImGui::SameLine();
+								ImGui::Button(M.ScoreboardNames[n].c_str(), ImVec2(100, 25));
+
+								// Our buttons are both drag sources and drag targets here!
+								if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+								{
+									// Set payload to carry the index of our item (could be anything)
+									ImGui::SetDragDropPayload("DND_DEMO_CELL", &n, sizeof(int));
+
+									// Display preview (could be anything, e.g. when dragging an image we could decide to display
+									// the filename and a small preview of the image, etc.)
+									ImGui::Text("Swap %s", M.ScoreboardNames[n].c_str());
+									ImGui::EndDragDropSource();
+								}
+								if (ImGui::BeginDragDropTarget())
+								{
+									if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
+									{
+										IM_ASSERT(payload->DataSize == sizeof(int));
+										int payload_n = *(const int*)payload->Data;
+										std::string tmp = M.ScoreboardNames[n];
+										M.ScoreboardNames[n] = M.ScoreboardNames[payload_n];
+										M.ScoreboardNames[payload_n] = tmp;
+
+									}
+									ImGui::EndDragDropTarget();
+								}
+								ImGui::PopID();
+							}
+							ImGui::NextColumn();
+							if (ImGui::Button(M.Cooldowns.Scoreboard.ShowScoreboard ? "Hide Scoreboard" : "Show Scoreboard", ImVec2(200, 50)))
+							{
+								SetForegroundWindow(FindWindowA(0, XorStr("League of Legends (TM) Client")));
+								std::this_thread::sleep_for(std::chrono::milliseconds(100));
+								keyboard->GenerateKeyScancode(DIK_O, false);
+								M.Cooldowns.Scoreboard.ShowScoreboard = !M.Cooldowns.Scoreboard.ShowScoreboard;
+							}
+							if (ImGui::Button("Swap", ImVec2(200, 50)))
+							{
+								for (int i = 0; i < 10; i += 2)
+									std::swap(M.ScoreboardNames[i], M.ScoreboardNames[i + 1]);
+							}
+
+							ImGui::Columns(1);
+
+							ImGui::Separator();
+							const int u16_one = 1;
+							ImGui::InputScalar("Position X", ImGuiDataType_U16, &M.Cooldowns.Scoreboard.Pos[0], &u16_one, NULL, "%u");
+							ImGui::InputScalar("Position Y", ImGuiDataType_U16, &M.Cooldowns.Scoreboard.Pos[1], &u16_one, NULL, "%u");
+
+						
+
+						}
+						ImGui::End();
+					}
 
 				}
 
@@ -690,6 +723,7 @@ int Direct3D9Render::Render()
 					ImGui::Separator();
 
 					ImGui::Checkbox("LastHit Helper", &M.LastHit.Master);
+					ImGui::SameLine(); HelpMarker("Visual indicator, when to lasthit");
 					ImGui::SameLine();
 					ImGui::ColorEdit4("LastHitColor##3", (float*)&M.LastHit.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
 
@@ -763,48 +797,7 @@ int Direct3D9Render::Render()
 
 
 				ImGui::Separator();
-				ImGui::Text("Scoreboard alignment:");
-				ImGui::Columns(2, 0, false);
-				for (int n = 0; n < 10; n++)
-				{
-					ImGui::PushID(n);
-					if ((n % 2) != 0)
-						ImGui::SameLine();
-					ImGui::Button(M.ScoreboardNames[n].c_str(), ImVec2(100, 25));
 
-					// Our buttons are both drag sources and drag targets here!
-					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
-					{
-						// Set payload to carry the index of our item (could be anything)
-						ImGui::SetDragDropPayload("DND_DEMO_CELL", &n, sizeof(int));
-
-						// Display preview (could be anything, e.g. when dragging an image we could decide to display
-						// the filename and a small preview of the image, etc.)
-						ImGui::Text("Swap %s", M.ScoreboardNames[n].c_str());
-						ImGui::EndDragDropSource();
-					}
-					if (ImGui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
-						{
-							IM_ASSERT(payload->DataSize == sizeof(int));
-							int payload_n = *(const int*)payload->Data;
-							std::string tmp = M.ScoreboardNames[n];
-							M.ScoreboardNames[n] = M.ScoreboardNames[payload_n];
-							M.ScoreboardNames[payload_n] = tmp;
-
-						}
-						ImGui::EndDragDropTarget();
-					}
-					ImGui::PopID();
-				}
-				ImGui::NextColumn();
-				if (ImGui::Button("Swap", ImVec2(200, 50)))
-				{
-					for (int i = 0; i < 10; i += 2)
-						std::swap(M.ScoreboardNames[i], M.ScoreboardNames[i + 1]);
-				}
-				ImGui::Columns(1);
 
 
 				ImGui::EndTabItem();
@@ -812,6 +805,8 @@ int Direct3D9Render::Render()
 
 			if (ImGui::BeginTabItem(M.Champion.c_str()))
 			{
+
+
 				if (M.Champion == "Talon")
 				{
 					ImGui::Checkbox("Damage Calculator", &M.Talon.DmgCalc);
@@ -903,7 +898,6 @@ int Direct3D9Render::Render()
 			ImGui::EndTabBar();
 		}
 
-
 		ImGui::End();
 
 		//ImGui::ShowDemoWindow();
@@ -928,8 +922,16 @@ int Direct3D9Render::Render()
 		ViewmatrixThread.join(); // wait for it to execute
 
 #ifndef NOLEAGUE
+		//std::thread MissileLoopThread;
+
 
 		Loops();
+
+		if (championScript)
+			championScript->OnKeyDown(1);
+
+		//if(M.Debug)
+		//	MissileLoopThread.join();
 
 #endif // !NOLEAGUE
 
@@ -948,8 +950,8 @@ int Direct3D9Render::Render()
 		//
 		//DWORD testList = Memory.Read<DWORD>(ClientAddress + 0x34F848C);
 		//clog.AddLog("TestList: %x", testList);
-		//DWORD testarray = Memory.Read<DWORD>(testList + 0xC4);
-		//int testlength = Memory.Read<int>(testList + 0xC8);
+		//DWORD testarray = Memory.Read<DWORD>(testList + 0x74);
+		//int testlength = Memory.Read<int>(testList + 0x78);
 		//for (int i = 0; i < testlength * 4; i += 4)
 		//{
 		//	CObject obj(Memory.Read<DWORD>(testarray + i));
@@ -971,6 +973,7 @@ int Direct3D9Render::Render()
 		//	clog.AddLog("%s : %x", obj.GetName().c_str(), obj.Address());
 		//	std::string str = obj.GetName() + " , " + std::to_string(obj.Address());
 		//	draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+
 		//}
 
 
@@ -983,6 +986,14 @@ int Direct3D9Render::Render()
 		//}
 		//draw->String(std::to_string(xdtimer - GameTime), 100, 100, centered, RGBA(255, 255, 255),fontTahoma);
 		
+
+		if (M.DrawServerInfo )
+		{
+			if (M.StartTime + 10 - M.GameTime > 0) //draw text on script start
+				draw->StringBoxed(M.ServerInfo, 10, 10, lefted, RGBA(255, 255, 255), fontTahoma, RGBA(255, 255, 255), RGBA(1, 0, 0));
+			else
+				M.DrawServerInfo = false;
+		}
 
 
 		//drawings test

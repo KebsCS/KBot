@@ -1,10 +1,11 @@
 
-
-#include "ObjectManager.h"
 //#include "Orbwalker.h"
 #include "DirectX.h"
+#include "API.h"
 
-LPCWSTR overlayClassName = L"ovrl"; // overlay window name
+
+
+LPCSTR overlayClassName = "ovrl"; // overlay window name
 
 HWND hWnd;
 HWND tWnd;
@@ -45,12 +46,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-DWORD GetFirst(DWORD objManager)
+
+DWORD GetFirst()
 {
+    DWORD objManager = OBJManager;
     int v1; // eax
     int v2; // edx
 
-    v1 = Memory.Read<int>(objManager + 0x14);
+    v1 = OBJManagerArray;
     v2 = Memory.Read<int>(objManager + 0x18);
     if (v1 == v2)
         return 0;
@@ -64,15 +67,15 @@ DWORD GetFirst(DWORD objManager)
 }
 
 
-static DWORD OBJManager = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
-DWORD GetNext(DWORD objManager, DWORD a2)
+
+DWORD GetNext( DWORD a2)
 {
     int v2; // eax
     uint16_t v3; // edx
     uint16_t v4; // esi
     int v5; // eax
 
-    v2 = Memory.Read<int>(objManager + 0x14);
+    v2 = OBJManagerArray;
     v3 = Memory.Read<uint16_t>(a2 + 0x20) + 1; // loops from first to last object index - 1 to a1a
     v4 = 0xbb8;//(Memory.Read<int>(objManager + 0x18) - v2) >> 2; // always bb8 (max possible ammount of objects maybe?)
     if (v3 >= v4)
@@ -92,67 +95,83 @@ DWORD GetNext(DWORD objManager, DWORD a2)
 }
 
 
+
+
+//
+//std::vector<CObject>missileList;
+//
+//std::vector<DWORD> GetObjectList()
+//{
+//
+//    std::vector<DWORD> list;
+//    auto obj = GetFirst();
+//
+//    std::vector<CObject>currmissileList;
+//
+//    while (obj)
+//    {
+//        //missileList.clear();
+//
+//        if (obj)
+//        {
+//            CObject currobj(obj);
+//            bool addMissile = true;
+//
+//            auto itminion = std::find(minionList.begin(), minionList.end(), currobj);
+//            if (itminion != minionList.end())
+//                addMissile = false;
+//
+//            if (addMissile)
+//            {
+//                auto ithero = std::find(init->herolist.begin(), init->herolist.end(), currobj);
+//                if (ithero != init->herolist.end())
+//                    addMissile = false;
+//            }
+//
+//            if (addMissile)
+//            {
+//                auto ittest = std::find(init->objlisttest.begin(), init->objlisttest.end(), currobj);
+//                if (ittest != init->objlisttest.end())
+//                    addMissile = false;
+//            }
+//
+//            if (addMissile)
+//                if (!currobj.IsMissile())//&& !xd.IsTroy())
+//                    addMissile = false;
+//            if(addMissile)
+//                currmissileList.emplace_back(currobj);
+//        
+//            // clog.AddLog("%x", obj);
+//            list.push_back(obj);
+//        }
+//
+//        obj = GetNext(obj);
+//        
+//    }
+//    if(!currmissileList.empty())
+//        missileList = currmissileList;
+//    return list;
+//}
+
+//std::vector<DWORD>objList;
+//
+////object manager loop
+//void ObjListLoop()
+//{
+//    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+//    while (true)
+//    {
+//
+//        objList = GetObjectList();
+//
+//        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+//    }
+//}
+//
+
+
+
 std::vector<CObject>minionList;
-
-
-std::vector<CObject>missileList;
-
-std::vector<DWORD> GetObjectList()
-{
-
-    std::vector<DWORD> list;
-    auto obj = GetFirst(OBJManager);
-
-    std::vector<CObject>currmissileList;
-
-    while (obj)
-    {
-        //missileList.clear();
-
-        if (obj)
-        {
-            CObject currobj(obj);
-            bool addMissile = true;
-
-            auto itminion = std::find(minionList.begin(), minionList.end(), currobj);
-            if (itminion != minionList.end())
-                addMissile = false;
-
-            if (addMissile)
-            {
-                auto ithero = std::find(init->herolist.begin(), init->herolist.end(), currobj);
-                if (ithero != init->herolist.end())
-                    addMissile = false;
-            }
-
-            if (addMissile)
-            {
-                auto ittest = std::find(init->objlisttest.begin(), init->objlisttest.end(), currobj);
-                if (ittest != init->objlisttest.end())
-                    addMissile = false;
-            }
-
-            if (addMissile)
-                if (!currobj.IsMissile())//&& !xd.IsTroy())
-                    addMissile = false;
-            if(addMissile)
-                currmissileList.emplace_back(currobj);
-        
-            // clog.AddLog("%x", obj);
-            list.push_back(obj);
-        }
-
-        obj = GetNext(OBJManager, obj);
-        
-    }
-    if(!currmissileList.empty())
-        missileList = currmissileList;
-    return list;
-}
-
-
-
-
 void MinionListLoop()
 {
     DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oMinionList);
@@ -175,22 +194,6 @@ void MinionListLoop()
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 }
-
-std::vector<DWORD>objList;
-
-//object manager loop
-void ObjListLoop()
-{
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    while (true)
-    {
-
-        objList = GetObjectList();
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-}
-
 
 
 
@@ -227,7 +230,6 @@ void MenuHandler()
                 SetForegroundWindow(hWnd);
                 //clog.AddLog("Menu Opened");
 
-
             }
             else
             {
@@ -237,6 +239,15 @@ void MenuHandler()
                 //clog.AddLog("Menu Closed");
 
             }
+#ifndef NOLEAGUE
+
+            if (!FindWindowA(0, XorStr("League of Legends (TM) Client")))
+            {
+                M.ExitBot = true;
+                break;
+            }
+                
+#endif // !NOLEAGUE
             while (PressedKey(M.Misc.MenuKey)) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -244,33 +255,111 @@ void MenuHandler()
 
 }
 
+
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 
-    WNDCLASSEX wc;
+    WNDCLASSEXA wc;
     //Registering the Window Class
-    wc.cbSize = sizeof(WNDCLASSEX); //
-    wc.style = CS_VREDRAW | CS_HREDRAW;
+    wc.cbSize = sizeof(WNDCLASSEXA); //
+    wc.style = CS_VREDRAW | CS_HREDRAW | CS_NOCLOSE;
     wc.lpfnWndProc = WndProc; //
     wc.cbClsExtra = 0; // 
     wc.cbWndExtra = 0; // 
     wc.hInstance = hInstance; // 
-    wc.hIcon = LoadIcon(NULL, IDI_APPLICATION); // 
-    wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION); // 
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW); // 
+    wc.hIcon = 0;// LoadIconA(NULL, IDI_APPLICATION);
+    wc.hIconSm = 0;// LoadIconA(NULL, IDI_APPLICATION); // 
+    wc.hCursor = 0;// LoadCursorA(NULL, IDC_ARROW); // 
     wc.hbrBackground = (HBRUSH)CreateSolidBrush(RGB(0, 0, 0)); // 
     wc.lpszMenuName = overlayClassName; //
     wc.lpszClassName = overlayClassName; //
 
 
 
-    if (!RegisterClassEx(&wc))
+    if (!RegisterClassExA(&wc))
     {
-        // clog.AddLog("[error] Window Registration Failed");
-        MessageBox(0, L" Window Registration Failed", 0, 0);
-        ::UnregisterClass(wc.lpszClassName, wc.hInstance);
+        MessageBoxA(0, XorStr("Window Registration Failed"), std::to_string(GetLastError()).c_str(), 0);
+        ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
         return 0;
     }
+
+
+    std::string htmlData = api->GET(XorStr("https://raw.githubusercontent.com"), XorStr("/y3541599/test/main/README.md"));
+    size_t nPos = htmlData.find(XorStr("#Version#")) + strlen(XorStr("#Version#"));
+    if (nPos == std::string::npos)
+    {
+        M.ExitBot = true;
+        ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
+        return 0;
+
+    }
+    std::string NowVersion = htmlData.substr(nPos, htmlData.find(XorStr("$Version$"), nPos) - nPos);
+    nPos = htmlData.find(XorStr("#Patch#")) + strlen(XorStr("#Patch#"));
+    if (nPos == std::string::npos)
+    {
+        M.ExitBot = true;
+        ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
+        return 0;
+    }
+    std::string NowPatch = htmlData.substr(nPos, htmlData.find(XorStr("$Patch$"), nPos) - nPos);
+ 
+    if (NowVersion != XorStr("1.0.0") || NowPatch != XorStr("10.25"))
+    {
+        MessageBoxA(0, XorStr("Outdated version"), 0, 0);
+        M.ExitBot = true;
+        ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
+        return 0;
+    }
+
+    nPos = htmlData.find(XorStr("#Info#")) + strlen(XorStr("#Info#"));
+    if (nPos == std::string::npos)
+    {
+        M.ExitBot = true;
+        ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
+        return 0;
+    }
+    std::string ServerInfo = htmlData.substr(nPos, htmlData.find(XorStr("$Info$"), nPos) - nPos);
+
+    if (!ServerInfo.empty())
+    {
+        clog.AddLog(XorStr("[info] %s"), ServerInfo.c_str());
+        M.ServerInfo = ServerInfo;
+        M.DrawServerInfo = true;
+    }
+    clog.AddLog(XorStr("[start] Version: %s"), NowVersion.c_str());
+    clog.AddLog(XorStr("[start] Patch: %s"), NowPatch.c_str());
+
+
+
+
+    htmlData = api->GET(XorStr("https://24timezones.com"), XorStr("/time-zone/cet"));
+    nPos = htmlData.find(XorStr(" January ")) + strlen(XorStr(" January "));
+    if (nPos == std::string::npos)
+    {
+        M.ExitBot = true;
+        ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
+        return 0;
+
+    }
+    std::string Today = htmlData.substr(nPos, htmlData.find(XorStr(", 2021</p>"), nPos) - nPos).c_str();
+    try
+    {
+        if (std::stoi(Today) > 31) //end of month
+        {
+            M.ExitBot = true;
+            ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
+            return 0;
+
+        }
+    }
+    catch (...)
+    {
+        M.ExitBot = true;
+        ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
+        return 0;
+    }
+
 
 
 #ifndef NOLEAGUE
@@ -278,21 +367,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     LPCSTR windowName = XorStr("League of Legends (TM) Client");
     if (!FindWindowA(0, windowName))
     {
-        MessageBox(0, L"Game not found", L"Window creation failed", 0);
-        ::UnregisterClass(wc.lpszClassName, wc.hInstance);
+        MessageBoxA(0, XorStr("Game not found"), XorStr("Window creation failed"), 0);
+        M.ExitBot = true;
+        ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
         return 0;
     }
 
 #endif // !NOLEAGUE
 
-    hWnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_LAYERED, overlayClassName, overlayClassName, WS_POPUP, 1, 1, SCREENWIDTH, SCREENHEIGHT, 0, 0, 0, 0);
+    hWnd = CreateWindowExA(WS_EX_TOPMOST | WS_EX_LAYERED, overlayClassName, overlayClassName, WS_POPUP, 1, 1, SCREENWIDTH, SCREENHEIGHT, 0, 0, 0, 0);
     SetLayeredWindowAttributes(hWnd, 0, 0, LWA_ALPHA);
     SetLayeredWindowAttributes(hWnd, 0, 0, LWA_COLORKEY);
     //SetLayeredWindowAttributes(hWnd, RGB(255, 255, 255),100, /* 0=transparent, 255=completely solid*/LWA_COLORKEY);
     //SetWindowPos(hWnd, HWND_TOPMOST, 0 ,0 , SCREENWIDTH, SCREENHEIGHT, SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
     //ShowWindow(hWnd, SW_SHOW);
 
-
+    Config->Setup();
+    Config->Load(XorStr("default"));
+    clog.AddLog(XorStr("[start] Config loaded"));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
@@ -300,18 +392,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (!Direct3D9.DirectXInit(hWnd))
     {
         Direct3D9.Shutdown();
-        ::UnregisterClass(wc.lpszClassName, wc.hInstance);
+        ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
         return 0;
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
     ::ShowWindow(hWnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hWnd);
 
-    Config->Setup();
-    Config->Load("default");
-    clog.AddLog("[startup] Config loaded");
+  
 
 
 #ifndef NOLEAGUE
@@ -321,6 +411,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     std::thread MinionListThread{ MinionListLoop };
     MinionListThread.detach();
 
+
+    M.StartTime = M.GameTime;
 #endif // !NOLEAGUE
 
     std::thread MenuHandlerThread{ MenuHandler };
@@ -330,6 +422,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
    // CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0); //todo loop obj only when needed, not in different thread and c++11 threads
     //CreateThread(0, 0, (LPTHREAD_START_ROUTINE)OrbwalkThread, 0, 0, 0); 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+
 
 
     //message Loop
@@ -353,16 +447,81 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         M.GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 
+        if (championScript && PressedKey(VK_SPACE))
+            championScript->Harass();
+
+
 #endif // !NOLEAGUE
 
 
         Direct3D9.Render();
 
-        //clog.AddLog("%f", Local.GetEXP());
+
+        //std::vector<CObject> missiles;
+
+        //int missileMapPtr = Memory.Read<DWORD>(ClientAddress+ 0x34F848C);
+       
+        //int numMissiles = Memory.Read<int>(missileMapPtr + 0x78);
+        //int rootNode = Memory.Read<int>(missileMapPtr + 0x74);
+        ////clog.AddLog("%x", rootNode);
+        //std::queue<int> nodesToVisit;
+        //std::set<int> visitedNodes;
+        //nodesToVisit.push(rootNode);
+
+        //int childNode1, childNode2, childNode3, node;
+        //while (nodesToVisit.size() > 0 && visitedNodes.size() < numMissiles * 2) 
+        //{
+        //    node = nodesToVisit.front();
+        //    nodesToVisit.pop();
+        //    visitedNodes.insert(node);
+        //    //clog.AddLog("%x", node);
+        //    childNode1 = Memory.Read<int>(node);
+        //    childNode2 = Memory.Read<int>(node+4);
+        //    childNode3 = Memory.Read<int>(node+8);
+
+
+        //    if (visitedNodes.find(childNode1) == visitedNodes.end())
+        //        nodesToVisit.push(childNode1);
+        //    if (visitedNodes.find(childNode2) == visitedNodes.end())
+        //        nodesToVisit.push(childNode2);
+        //    if (visitedNodes.find(childNode3) == visitedNodes.end())
+        //        nodesToVisit.push(childNode3);
+
+        //    unsigned int netId = Memory.Read<int>(node + 0x10);
+        //   
+
+        //    // Actual missiles net_id start from 0x40000000 and throught the game this id will be incremented by 1 for each missile.
+        //    // So we use this information to check if missiles are valid.
+        //    if (netId - (unsigned int)0x40000000 > 0x100000)
+        //        continue;
+
+        //    int addr = Memory.Read<int>(node + 0x14);
+        //    if (addr == 0)
+        //        continue;
+
+        //    // The MissileClient is wrapped around another object
+        //    addr = Memory.Read<int>(addr + 0x4); 
+        //    if (addr == 0)
+        //        continue;
+
+        //    addr = Memory.Read<int>(addr + 0x10);
+        //    if (addr == 0)
+        //        continue;
+
+        //    // At this point addr is the address of the MissileClient
+        //    CObject m(addr); //std::unique_ptr<CObject>(new CObject());
+        //   // m->LoadFromMem(addr, hProcess);
+
+        //    // Check one more time that we read a valid missile
+        //    if (m.GetNetworkID() != netId)
+        //        continue;
+        //    //.AddLog("%x", m.Address());
+        //    clog.AddLog("%s %x", m.GetName().c_str(), m.Address());
+        //    missiles.push_back(m);
+        //}
  
 
         //todo twisted fate cards bound seperatly+visual indicator
-       
 
 
         //clog.AddLog("%i", GetObjectList().size());
@@ -387,19 +546,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         ////}
 
-
-        //clog.AddLog("%f, %f, %f", Local.GetPosition().X, Local.GetPosition().Y, Local.GetPosition().Z);
-        //clog.AddLog("%d , %d", mouse->GetPos().x, mouse->GetPos().y);
-
+  /*      clog.AddLog("Mouse: %f, %f, %f", mouse->GetMouseWorldPosition().X, mouse->GetMouseWorldPosition().Y, mouse->GetMouseWorldPosition().Z);
+        clog.AddLog("Player: %f, %f, %f", Local.GetPosition().X, Local.GetPosition().Y, Local.GetPosition().Z);
+        clog.AddLog("Real Mouse: %d , %d", mouse->GetPos().x, mouse->GetPos().y);*/
 
         //MissileThread.join();
         
         std::this_thread::sleep_for(std::chrono::milliseconds(M.Misc.AntiLag));
     }
 
-    Config->Save("default");
+    Config->Save(XorStr("default"));
     Direct3D9.Shutdown();
     ::DestroyWindow(hWnd);
-    ::UnregisterClass(wc.lpszClassName, wc.hInstance);
+    ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
     return 0;
 }

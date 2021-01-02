@@ -6,8 +6,8 @@ void CConfig::Setup()
 
 
 	SetupValue(M.MenuOpen, 1, "Main", "MenuOpen");
-	SetupValue(M.ConsoleOpen, 1, "Main", "ConsoleOpen");
-
+	SetupValue(M.ConsoleOpen, 0, "Main", "ConsoleOpen");
+	SetupValue(M.Debug, 0, "Main", "Debug");
 
 	SetupValue(M.Misc.AntiLag, 1, "Misc", "AntiLag");
 	SetupValue(M.Misc.MenuKey, VK_INSERT, "Misc", "MenuKey");
@@ -40,6 +40,17 @@ void CConfig::Setup()
 	SetupValue(M.Cooldowns.Type[0], 0, "Cooldowns", "Type0");
 	SetupValue(M.Cooldowns.Type[1], 0, "Cooldowns", "Type1");
 	SetupValue(M.Cooldowns.Type[2], 0, "Cooldowns", "Type2");
+	SetupValue(M.Cooldowns.ScoreboardWnd, 0, "Cooldowns", "ScoreboardWnd");
+
+	SetupValue(M.Cooldowns.Scoreboard.Pos[0], 985, "Scoreboard", "X");
+	SetupValue(M.Cooldowns.Scoreboard.Pos[1], 280, "Scoreboard", "Y");
+	SetupValue(M.Cooldowns.Scoreboard.Summs, 1, "Scoreboard", "Summs");
+	SetupValue(M.Cooldowns.Scoreboard.Ults, 1, "Scoreboard", "Ults");
+	SetupValue(M.Cooldowns.Scoreboard.Summs, 1, "Scoreboard", "Summs");
+	SetupValue(M.Cooldowns.Scoreboard.Exp, 1, "Scoreboard", "Exp");
+	SetupValue(M.Cooldowns.Scoreboard.Items, 0, "Scoreboard", "Items");
+
+
 
 	SetupValue(M.LastHit.Master, 0, "LastHit", "Master");
 	SetupValue(M.LastHit.Color[0], 0.f, "LastHit", "ColorR");

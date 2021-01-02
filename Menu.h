@@ -12,11 +12,20 @@ struct Menu
 
     //globals
     //todo make a global namespace
-    bool MenuOpen = 0;
-    bool ExitBot = 0;
+    bool MenuOpen = 1;
     bool ConsoleOpen = 0;
+    bool Debug = 0;
+
+    bool ExitBot = 0;
+
     float GameTime = 0;
+    float StartTime = 0;
     DirectX::XMMATRIX Matrix;
+
+
+    std::string ServerInfo;
+    bool DrawServerInfo = 0;
+  
 
     std::string Champion;
     std::string ScoreboardNames[10]; //for GUI scoreboard
@@ -59,6 +68,17 @@ struct Menu
         bool Master = 0;
         //0-text on champ 1-img on champ 2-scoreboard
         bool Type[3];
+        bool ScoreboardWnd = 0;
+        struct 
+        {
+            bool ShowScoreboard = 0;
+            int Pos[2] = { 985,280 }; //x,y
+            bool Summs = 1;
+            bool Ults = 1;
+            bool Exp = 1;
+            bool Items = 0;
+
+        }Scoreboard;
     }Cooldowns;
 
     struct

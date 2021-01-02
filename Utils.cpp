@@ -71,3 +71,39 @@ Area Utils::GetForegroundWindowArea() const
 	return t;
 }
 
+
+std::string Utils::ToLower(std::string str)
+{
+	std::transform(str.begin(), str.end(), str.begin(),
+		[](unsigned char c) { return std::tolower(c); } 
+	);
+	return str;
+}
+
+std::string Utils::ToUpper(std::string str)
+{
+	std::transform(str.begin(), str.end(), str.begin(),
+		[](unsigned char c) { return std::toupper(c); }
+	);
+	return str;
+}
+
+bool Utils::StringContains(std::string strA, std::string strB, bool ignore_case)
+{
+	if (strA == "" || strB == "")
+		return true;
+
+	if (ignore_case)
+	{
+		strA = ToLower(strA);
+		strB = ToLower(strB);
+	}
+
+	if (strA.find(strB) != std::string::npos)
+		return true;
+
+	return false;
+}
+
+
+Utils* utils = new Utils();

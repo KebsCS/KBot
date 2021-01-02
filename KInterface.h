@@ -45,22 +45,24 @@ private:
 	std::string StrRead(ULONG ReadAddress)
 	{
 		BYTE bytes[24];
+		ZeroMemory(&bytes, sizeof(bytes));
 		bool invalidChar = false;
 		for (int i = 0; i < 24; i += 4)
 		{
 			//todo rewrite to only read addres once for all the bytes / read string instantly
-			BYTE byte[4];
+			BYTE buff[4];
+			ZeroMemory(&buff, sizeof(buff));
 			float buf = Read<float>(ReadAddress + i, 4); //read bytes from address in memory
-			memcpy(&byte, (unsigned char*)(&buf), 4); // transforms float bytes char bytes
+			memcpy(&buff, (unsigned char*)(&buf), 4); // transforms float bytes char bytes
 
 
 			for (int j = 0; j < 4; j++)
 			{
 
-				bytes[i + j] = byte[j]; // adds chars to bytes array making a string 
-				if ((char)byte[j] < 0 || (char)byte[j] >= 128)
+				bytes[i + j] = buff[j]; // adds chars to bytes array making a string 
+				if ((char)buff[j] < 0 || (char)buff[j] >= 128)
 				{
-					memcpy(&byte[j], "\0", 1); 
+					memcpy(&buff[j], "\0", 1);
 					invalidChar = true;
 					break;
 				}

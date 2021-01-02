@@ -12,9 +12,10 @@ static KInterface Memory(R"(\\.\kbotl)");
 static DWORD ClientAddress = Memory.GetClientModule();
 
 
+
 class CObject
 {
-private:
+protected:
 
 
     int IsFunc(DWORD param_1, int param_2)
@@ -38,6 +39,7 @@ private:
 
 
     DWORD base = 0;
+    DWORD spellbook = 0;
     std::string name;
     std::string champ;
     std::string summ1;
@@ -46,16 +48,28 @@ private:
     float bounding = -1;
 
     int wardType = -1;
-   
+
     
-  //  bool alive;
-  //  float timer;
     
 public:
     //bool IsTroy()
     //{
     //    return 0;//;IsTroyFunc(base);
     //}
+
+    DWORD Address() const
+    {
+        return base;
+    }
+    CObject()
+        :base{ 0 }
+    {
+    }
+    CObject(DWORD addr)
+        :base{ addr }
+    {
+
+    }
 
     int GetTeam()
     {
@@ -142,7 +156,9 @@ public:
     }
     DWORD GetSpellByID(int id)
     {
-        return Memory.Read<DWORD>(base + (oObjSpellBook + /*0x440*/ 0x478) + (0x4 * id), sizeof(DWORD));
+        if (!spellbook)
+            spellbook = (oObjSpellBook + /*0x440*/ 0x478);
+        return Memory.Read<DWORD>(base + spellbook + (0x4 * id), sizeof(DWORD));
     }
     std::string GetChampName()
     {
@@ -154,20 +170,26 @@ public:
     std::string SummonerSpell1()
     {
         if (summ1.empty())
-            return Memory.ReadString(base + mSummonerSpell1);
+        {
+            summ1 = Memory.ReadString(base + oObjSummonerSpell1);
+            return summ1;
+        }
         else
             return summ1;
     }
     std::string SummonerSpell2()
     {
         if (summ2.empty())
-            return Memory.ReadString(base + mSummonerSpell2);
+        {
+            summ2 = Memory.ReadString(base + oObjSummonerSpell2);
+            return summ2;
+        }
         else
             return summ2;
     }
     std::string KeystoneName()
     {
-        return Memory.ReadString(base + mKeystone1);
+        return Memory.ReadString(base + oObjKeystone1);
     }
 
     int GetLevel()
@@ -265,7 +287,8 @@ public:
                 }
                 else if (maxHP == 1.f && this->GetHealth() == 1.f && name.find("Plant") == std::string::npos
                     && name.find("Shen") == std::string::npos && name.find("Unused") == std::string::npos && name.find("Honey") == std::string::npos
-                    && name.find("Bard") == std::string::npos && name.find("Chime") == std::string::npos)
+                    && name.find("Bard") == std::string::npos && name.find("Chime") == std::string::npos && name.find("Nunu") == std::string::npos
+                    && name.find("Ivern") == std::string::npos)
                 {
                     wardType = BlueWard;
                     return wardType;
@@ -286,39 +309,8 @@ public:
             return wardType;
     }
 
-    Vector3 GetMissileStartPos()
-    {
-        Vector3 startPos = Vector3(Memory.Read<float>(base + oMissileStartPos, sizeof(float)),
-            Memory.Read<float>(base + oMissileStartPos + 0x4, sizeof(float)),
-            Memory.Read<float>(base + oMissileStartPos + 0x8, sizeof(float)));
-        startPos.Y += 100;
-        return startPos;
-    }
+   
 
-    Vector3 GetMissileEndPos()
-    {
-        Vector3 startPos = Vector3(Memory.Read<float>(base + oMissileEndPos, sizeof(float)),
-            Memory.Read<float>(base + oMissileEndPos + 0x4, sizeof(float)),
-            Memory.Read<float>(base + oMissileEndPos + 0x8, sizeof(float)));
-        startPos.Y += 100;
-        return startPos;
-    }
-   /* bool GetAlive() const
-    {
-        return this->alive;
-    }
-    void SetAlive(bool state)
-    {
-        this->alive = state;
-    }
-    float GetTimer() const 
-    {
-        return this->timer;
-    }
-    void SetTimer(float value)
-    {
-        this->timer = value;
-    }*/
     DWORD GetUnitComponentInfo()
     {
         return Memory.Read<DWORD>(base + UnitComponentInfo);
@@ -332,7 +324,7 @@ public:
     {
         if (bounding == -1)
         {
-            float val = Memory.Read<float>(GetUCIPropertiesInstance() + 0x454);
+            float val = Memory.Read<float>(GetUCIPropertiesInstance() + oBoundingRadius);
             if (val > 250.f)
             {
                 bounding = 65.f;
@@ -349,25 +341,17 @@ public:
     }
     float GetSelectionRadius()
     {
-        return Memory.Read<float>(GetUCIPropertiesInstance() + 0x44C);
+        return Memory.Read<float>(GetUCIPropertiesInstance() + oSelectionRadius);
     }
 
     float GetPathingRadius()
     {
-        return Memory.Read<float>(GetUCIPropertiesInstance() + 0x450);
+        return Memory.Read<float>(GetUCIPropertiesInstance() + oPathingRadius);
     }
 
 
-    CObject(DWORD addr) 
-        :base{ addr }
-    {
+  
 
-    }
-    CObject(DWORD addr, bool isLocal)
-        :base{ addr }
-    {
-        SetPlayerConsts();
-    }
     void SetPlayerConsts()
     {
         name = this->GetName();
@@ -389,14 +373,7 @@ public:
     {
         return Memory.Read<int>(base + oObjNetworkID);
     }
-    DWORD Address() const
-    {
-        return base;
-    }
-    CObject() 
-        :base{ 0 }
-    {
-    }
+
 
     inline bool operator == (const CObject& A) const
     {
@@ -477,29 +454,42 @@ public:
         return IsFunc(base, ObjectType::Unknown2);
     }
 
-    //static int GetUnderMouseObject() //todo apparently a pointer to pointer
-    //{
-    //    int address = Memory.Read<DWORD>(ClientAddress + oUnderMouseObject);
-    //    CObject under_mouse_object;
-
-    //    if (address > 0)
-    //        under_mouse_object = Memory.Read<DWORD>(address);
+  
+};
 
 
-    //    return address;
-    //}
+extern CObject Local;// (Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD)), true);
+extern DWORD OBJManager; //OBJManager = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
+extern DWORD OBJManagerArray; //Memory.Read<DWORD>(OBJManager + 0x14, sizeof(DWORD));
+extern DWORD MissileMap;
 
-   
+
+
+class CObjectManager
+{
+public:
+    CObject GetObjByIndex(int index)
+    {
+        if (OBJManagerArray)
+        {
+
+            if (index > 3000 && index < 0) //invalid index
+                return 0;
+            CObject cobj(Memory.Read<DWORD>(OBJManagerArray + (0x4 * index), sizeof(DWORD)));
+            if (cobj == 0)
+                return 0;
+
+            return cobj;
+
+        }
+        return 0;
+    }
+
 
 };
 
 
-
-static CObject Local(Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD)), true);
-    
-
-
-
+extern CObjectManager* ObjManager;
 
 
 

@@ -7,6 +7,7 @@
 #include "stdlib.h" //srand and rand
 #include "Definitions.h" //Area
 #include <math.h> //sin function
+#include "ObjectManager.h" //hudinstance and memory reads
 
 class Mouse
 {
@@ -110,6 +111,22 @@ public:
 
 	//returns execution time im milliseconds
 	double GetExecutionTime();
+
+
+	inline Vector3 GetMouseWorldPosition()
+	{
+		DWORD MousePtr = ClientAddress + oHudInstance;
+		auto aux1 = Memory.Read<DWORD>(MousePtr);
+		aux1 += 0x14;
+		auto aux2 = Memory.Read<DWORD>(aux1);
+		aux2 += 0x1C;
+
+		float X = Memory.Read<float>(aux2 + 0x0);
+		float Y = Memory.Read<float>(aux2 + 0x4);
+		float Z = Memory.Read<float>(aux2 + 0x8);
+
+		return Vector3{ X, Y, Z };
+	}
 
 };
 

@@ -151,6 +151,12 @@ static bool w_strcmp(const char* str1, const char* str2)
 #define XorStr( s ) ( s )
 #endif*/
 
+#ifdef ENABLE_XOR
+#define XorStr _xor_ 
+#else
+#define XorStr
+#endif
+
 END_NAMESPACE
 
 #endif // !_XOR_H_

@@ -3,9 +3,11 @@
 #ifndef  _INITIALIZE_H_
 #define _INITIALIZE_H_
 
-#include "ObjectManager.h"
 #include <string>
 #include <vector>
+
+#include "ObjectManager.h"
+#include "CMissileClient.h"
 
 class Initialize
 {
@@ -19,7 +21,7 @@ public:
 
 	std::vector<CObject>objlisttest;
 
-	void Start();
+	bool Start();
 
 	//logs usefull info to console
 	void StartupInfo();

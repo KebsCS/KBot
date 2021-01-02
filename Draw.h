@@ -55,6 +55,7 @@ public:
 
 	//draws line
 	void Line(int x, int y, int x2, int y2, RGBA rgb, float thickness = 1.f);
+	void Line(ImVec2 pos1, ImVec2 pos2, RGBA rgb, float thickness = 1.f);
 
 	//draws text
 	void String(std::string text, int x, int y, int orientation, RGBA color, ID3DXFont* font, bool bordered = true, RGBA bcolor = RGBA(1, 0, 0));
@@ -76,6 +77,7 @@ public:
 
 	//draws filled circle
 	void CircleFilled(int x, int y, float r, RGBA rgb);
+	void CircleFilled(ImVec2 coord, float r, RGBA rgb);
 
 	//draws game's cricle range
 	void CircleRange(Vector3 Pos, float points, float r, RGBA color, float thickness = 1.f);

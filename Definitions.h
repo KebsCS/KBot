@@ -7,6 +7,16 @@
 
 //#define NOLEAGUE
 
+#define ENABLE_XOR
+
+#include <vector>
+#include <map>
+#include <thread>
+#include <chrono>
+#include <algorithm>
+#include <set>
+#include <queue>
+
 #include "imgui.h"
 #include "imgui_impl_dx9.h"
 #include "imgui_impl_win32.h"
@@ -16,24 +26,11 @@
 #pragma comment(lib, "d3dx9.lib")
 #include <DirectXMath.h>
 
-#include "SpellDB.h"
-
-#include <cmath>
-#include <vector>
-#include <map>
-#include <thread>
-#include <chrono>
-
 
 #include "xor.h"
+#include "SpellDB.h"
+#include "Vector.h"
 
-#define ENABLE_XOR
-
-#ifdef ENABLE_XOR
-#define XorStr _xor_ 
-#else
-#define XorStr
-#endif
 
 // default screen size
 #define SCREENWIDTH ::GetSystemMetrics(SM_CXSCREEN)
@@ -42,7 +39,7 @@
 
 #define M_PI 3.14159265358979323846	// pi
 #define M_PI_F ((float)(M_PI))	// Shouldn't collide with anything.
-
+#define M_PHI		1.61803398874989484820 // golden ratio
 
 //rand() isnt really random, todo
 //use bind(uniform_int_distribution<>{min,man},default_random_engine{})
@@ -142,6 +139,7 @@ enum ObjectType : int
 	Unknown2 = (1 << 18), //0x40000
 };
 
+
 struct RGBA
 {
 	int R, G, B, A;
@@ -224,124 +222,6 @@ struct Pixel
 		_x = x;
 		_y = y;
 		_color = color;
-	}
-};
-
-
-struct Vector3
-{
-	float X, Y, Z;
-
-	inline Vector3() 
-	{
-		X = Y = Z = 0;
-	}
-	inline Vector3(const float x, const float y, const float z)
-	{
-		X = x; Y = y; Z = z;
-	}
-	inline void Zero()
-	{
-		X = Y = Z = 0;
-	}
-
-	inline bool operator == (const Vector3& A) const
-	{
-		if (X == A.X && Y == A.Y && Z == A.Z)
-			return true;
-		else return false;
-	}
-
-	inline Vector3 operator + (const Vector3& A) const
-	{
-		return Vector3(X + A.X, Y + A.Y, Z + A.Z);
-	}
-
-	inline Vector3 operator + (const float A) const
-	{
-		return Vector3(X + A, Y + A, Z + A);
-	}
-
-	inline Vector3 operator * (const float A) const
-	{
-		return Vector3(A * X, A * Y, A * Z);
-	}
-
-	inline Vector3 operator * (const Vector3& A) const
-	{
-		return Vector3(A.X * X, A.Y * Y, A.Z * Z);
-	}
-
-	inline Vector3 operator - (const float A) const
-	{
-		return Vector3(A * X, A * Y, A * Z);
-	}
-
-	inline Vector3 operator - (const Vector3& A) const
-	{
-		return Vector3(A.X - X, A.Y - Y, A.Z - Z);
-	}
-
-	inline Vector3 operator / (const float A) const
-	{
-		return Vector3(A / X, A / Y, A / Z);
-	}
-
-	inline Vector3 operator / (const Vector3& A) const
-	{
-		return Vector3(A.X / X, A.Y / Y, A.Z / Z);
-	}
-
-	float dot(const Vector3& vec) const
-	{
-		return X * vec.X + Y * vec.Y + Z * vec.Z;
-	}
-
-	inline float lengthSquared()
-	{
-		return X * X + Y * Y + Z * Z;
-	}
-
-	inline float length()
-	{
-		return (float)sqrt(lengthSquared());
-	}
-
-	inline Vector3 perpendicularTo()
-	{
-		return Vector3(Z, Y, -X);
-	}
-
-	inline Vector3 Normalize()
-	{
-		float length = this->length();
-		if (length != 0)
-		{
-			float inv = 1.0f / length;
-			X *= inv;
-			Y *= inv;
-			Z *= inv;
-		}
-		return Vector3(X, Y, Z);
-	}
-
-	inline float DistTo(const Vector3& A) {
-		float out = sqrtf(powf(X - A.X, 2) + powf(Y - A.Y, 2) + powf(Z - A.Z, 2));
-		return out < 0 ? out * -1 : out;
-	}
-};
-
-struct Vector4
-{
-	float X, Y, Z, W;
-
-	inline Vector4()
-	{
-		X = Y = Z = W = 0;
-	}
-	inline Vector4(const float x, const float y, const float z, const float w)
-	{
-		X = x; Y = y; Z = z; W = w;
 	}
 };
 

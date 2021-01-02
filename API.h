@@ -2,10 +2,13 @@
 #define _API_H_
 
 
+
 #include<Windows.h>
 #include<WinInet.h>
 #pragma comment(lib,"WinInet.lib")
 #include <string>
+
+#include "html_parser.hpp"
 
 
 class API

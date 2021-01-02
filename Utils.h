@@ -42,8 +42,17 @@ public:
 	//retruns an Area struct with foreground window size
 	Area GetForegroundWindowArea() const;
 
+	//converts whole string to lowercase
+	std::string ToLower(std::string str);
+
+	//converts whole string to uppercase
+	std::string ToUpper(std::string str);
+
+	//check if strA contains strB
+	bool StringContains(std::string strA, std::string strB, bool ignore_case = false);
 };
 
+extern Utils* utils;
 
 #endif
 

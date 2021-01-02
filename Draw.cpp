@@ -231,6 +231,11 @@ void Draw::Line(int x, int y, int x2, int y2, RGBA rgb, float thickness)
 	g_Line->Draw(points, 2, D3DCOLOR_ARGB(rgb.A, rgb.R, rgb.G, rgb.B));
 }
 
+void Draw::Line(ImVec2 pos1, ImVec2 pos2, RGBA rgb, float thickness)
+{
+	Line(pos1.x, pos1.y, pos2.x, pos2.y, rgb, thickness);
+}
+
 
 
 void Draw::String(std::string text, int x, int y, int orientation, RGBA color, ID3DXFont* font, bool bordered, RGBA bcolor)
@@ -376,7 +381,7 @@ void Draw::Circle(int x, int y, float r, RGBA rgb)
 
 
 
-void  Draw::CircleFilled(int x, int y, float r, RGBA rgb)
+void Draw::CircleFilled(int x, int y, float r, RGBA rgb)
 {
 	VERTEX_2D_DIF verts[CIRCLE_RESOLUTION + 1];
 
@@ -391,6 +396,11 @@ void  Draw::CircleFilled(int x, int y, float r, RGBA rgb)
 
 	g_pd3dDevice->SetFVF(VERTEX_2D_DIF::FVF);
 	g_pd3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, CIRCLE_RESOLUTION - 1, &verts, sizeof(VERTEX_2D_DIF));
+}
+
+void Draw::CircleFilled(ImVec2 coord, float r, RGBA rgb)
+{
+	CircleFilled(coord.x, coord.y, r, rgb);
 }
 
 void Draw::CircleRange(Vector3 Pos, float points, float r, RGBA color, float thickness)
