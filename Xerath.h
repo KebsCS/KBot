@@ -1,6 +1,5 @@
 #pragma once
 
-
 #ifndef _XERATH_H
 #define _XERATH_H
 
@@ -21,11 +20,7 @@ private:
 public:
 	Xerath() : champion(Champion::Xerath)
 	{
-
 	}
-
-
 };
-
 
 #endif

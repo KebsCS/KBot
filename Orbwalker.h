@@ -15,14 +15,10 @@ private:
 public:
 	Orbwalker()
 	{
-
 	}
 	~Orbwalker() = default;
 
 	void Move();
-
-
-
 };
 
 extern Orbwalker* orbwalk;

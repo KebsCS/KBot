@@ -1,9 +1,8 @@
 // for fun xor string encryption
-#pragma once 
+#pragma once
 
 #ifndef _XOR_H_
 #define _XOR_H_
-
 
 #include <string>
 #include <array>
@@ -92,16 +91,14 @@ public:
 	}
 };
 
-
 //-- Note: XorStr will __NOT__ work directly with functions like printf.
 //         To work with them you need a wrapper function that takes a const char*
 //         as parameter and passes it to printf and alike.
 //
-//         The Microsoft Compiler/Linker is not working correctly with variadic 
+//         The Microsoft Compiler/Linker is not working correctly with variadic
 //         templates!
-//  
+//
 //         Use the functions below or use std::cout (and similar)!
-
 
 static auto w_printf = [](const char* fmt, ...)
 {
@@ -152,7 +149,7 @@ static bool w_strcmp(const char* str1, const char* str2)
 #endif*/
 
 #ifdef ENABLE_XOR
-#define XorStr _xor_ 
+#define XorStr _xor_
 #else
 #define XorStr
 #endif

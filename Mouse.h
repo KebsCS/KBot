@@ -15,9 +15,8 @@ private:
 	float MouseSpeed = 1.0; //Speed range: 0.1 -> 1.0
 	int deviation = RandomInt(240, 260); //amount of arc path deviation  (E.g. 250pixels  will deviate the path in an arc randomly maxing at (-250 to 250)
 	LARGE_INTEGER frequency, startCount, endCount; // for timer
-	int PrevX = 0, PrevY = 0; // for storing previous coords 
+	int PrevX = 0, PrevY = 0; // for storing previous coords
 public:
-	
 
 	Mouse()
 	{
@@ -32,13 +31,13 @@ public:
 	//Moves mouse to an random pixel within area
 	bool MouseMoveArea(Area region);
 
-	//Deviates Randomly!! mouse move - recieves pixel coordinates. change mouse position to those coords EXACTLY (!WARNING! SAME PIXEL CLICK DANGER)
+	//Deviates Randomly!! mouse move - receives pixel coordinates. change mouse position to those coords EXACTLY (!WARNING! SAME PIXEL CLICK DANGER)
 	bool MouseMove(int x, int y);
 
 	//same as above, just takes in a point
 	bool MouseMove(POINT coord);
 
-	//STRAIGHT LINE DISTANCE mouse move - recieves pixel coordinates. change mouse position to those coords
+	//STRAIGHT LINE DISTANCE mouse move - receives pixel coordinates. change mouse position to those coords
 	bool MouseMoveSLD(int x, int y);
 
 	//instantly moves mouse
@@ -50,13 +49,13 @@ public:
 	//left clicks and holds it
 	bool MouseLeftDown();
 
-	//Releases left mouse button 
+	//Releases left mouse button
 	bool MouseLeftUp();
 
 	//right clicks and holds it
 	bool MouseRightDown();
 
-	//Releases right mouse button 
+	//Releases right mouse button
 	bool MouseRightUp();
 
 	//Presses scroll and holds it
@@ -71,7 +70,7 @@ public:
 	//single left click
 	bool LeftClick();
 
-	//left clicks and holds it for given ammount of time
+	//left clicks and holds it for given amount of time
 	bool LeftClickHold(int t);
 
 	//holds key and left clicks (e.g shift+click)
@@ -91,7 +90,7 @@ public:
 	//Speed range: 0.1 -> 1.0
 	void ChangeSpeed(float speed);
 
-	//changes path deviations. Deviation Min is minimum amount deviated, deviation is the random fluctuations from that minimum point. 
+	//changes path deviations. Deviation Min is minimum amount deviated, deviation is the random fluctuations from that minimum point.
 	//E.G. deviationMin = 250, deviation = 500. The path will deviate the path from (-250,250) pixels
 	void SetDeviation(int dev);
 
@@ -109,9 +108,8 @@ public:
 
 	POINT GetStoredPos() const;
 
-	//returns execution time im milliseconds
+	//returns execution time in milliseconds
 	double GetExecutionTime();
-
 
 	inline Vector3 GetMouseWorldPosition()
 	{
@@ -127,7 +125,6 @@ public:
 
 		return Vector3{ X, Y, Z };
 	}
-
 };
 
 extern Mouse* mouse;

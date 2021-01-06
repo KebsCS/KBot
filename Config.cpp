@@ -1,10 +1,7 @@
 #include "Config.h"
 
-
 void CConfig::Setup()
 {
-
-
 	SetupValue(M.MenuOpen, 1, "Main", "MenuOpen");
 	SetupValue(M.ConsoleOpen, 0, "Main", "ConsoleOpen");
 	SetupValue(M.Debug, 0, "Main", "Debug");
@@ -31,10 +28,8 @@ void CConfig::Setup()
 	SetupValue(M.AARange.LocalColor[2], 0.842365f, "AARange", "LocalColorB");
 	SetupValue(M.AARange.LocalColor[3], 1.f, "AARange", "LocalColorA");
 
-
 	SetupValue(M.Tracers.Master, 0, "Tracers", "Master");
 	SetupValue(M.Tracers.Thickness, 1.f, "Tracers", "Thickness");
-
 
 	SetupValue(M.Cooldowns.Master, 0, "Cooldowns", "Master");
 	SetupValue(M.Cooldowns.Type[0], 0, "Cooldowns", "Type0");
@@ -50,14 +45,11 @@ void CConfig::Setup()
 	SetupValue(M.Cooldowns.Scoreboard.Exp, 1, "Scoreboard", "Exp");
 	SetupValue(M.Cooldowns.Scoreboard.Items, 0, "Scoreboard", "Items");
 
-
-
 	SetupValue(M.LastHit.Master, 0, "LastHit", "Master");
 	SetupValue(M.LastHit.Color[0], 0.f, "LastHit", "ColorR");
 	SetupValue(M.LastHit.Color[1], 1.f, "LastHit", "ColorG");
 	SetupValue(M.LastHit.Color[2], 0.f, "LastHit", "ColorB");
 	SetupValue(M.LastHit.Color[3], 1.f, "LastHit", "ColorA");
-
 
 	SetupValue(M.GankAlerter.Master, 0, "GankAlerter", "Master");
 
@@ -65,7 +57,6 @@ void CConfig::Setup()
 	SetupValue(M.AutoSmite.Slot, 1, "AutoSmite", "Slot");
 	SetupValue(M.AutoSmite.Mode, 0, "AutoSmite", "Mode");
 	SetupValue(M.AutoSmite.MouseSpeed, 1.f, "AutoSmite", "MouseSpeed");
-
 
 	SetupValue(M.Wards.Master, 0, "Wards", "Master");
 
@@ -76,7 +67,6 @@ void CConfig::Setup()
 	SetupValue(M.Talon.JumpsKey, VK_LSHIFT, "Talon", "JumpsKey");
 	for (int i = 0; i < 5; i++)
 		SetupValue(M.Talon.JumpsType[i], 1, "Talon", "JumpsType" + std::to_string(i));
-
 }
 
 void CConfig::SetupValue(int& value, int def, std::string category, std::string name)
@@ -97,23 +87,21 @@ void CConfig::SetupValue(bool& value, bool def, std::string category, std::strin
 	bools.push_back(new ConfigValue< bool >(category, name, &value));
 }
 
-
 void CConfig::Save(std::string fileName)
 {
 	static CHAR path[MAX_PATH];
 	std::string folder, file;
 
-//	if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, path)))
-//	{
+	//	if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, path)))
+	//	{
 	folder = std::string(path) + ".\\configs\\";
 	file = folder + fileName + ".ini";
-//	}
+	//	}
 
 	CreateDirectoryA(folder.c_str(), NULL);
-	
-	//save number of configs to default cfg
-	WritePrivateProfileStringA("Main", "Configs", std::to_string(M.Configs).c_str(), ".\\configs\\default.ini"); 
 
+	//save number of configs to default cfg
+	WritePrivateProfileStringA("Main", "Configs", std::to_string(M.Configs).c_str(), ".\\configs\\default.ini");
 
 	for (auto value : bools)
 		WritePrivateProfileStringA(value->category.c_str(), value->name.c_str(), *value->value ? "true" : "false", file.c_str());
@@ -134,10 +122,9 @@ void CConfig::Load(std::string fileName)
 //	{
 	folder = std::string(path) + ".\\configs\\";
 	file = folder + fileName + ".ini";
-//	}
+	//	}
 
 	CreateDirectoryA(folder.c_str(), NULL);
-
 
 	char value_l[32] = { '\0' };
 
@@ -159,14 +146,11 @@ void CConfig::Load(std::string fileName)
 		*value->value = atof(value_l);
 	}
 
-
 	for (auto value : bools)
 	{
 		GetPrivateProfileStringA(value->category.c_str(), value->name.c_str(), "", value_l, 32, file.c_str());
 		*value->value = !strcmp(value_l, "true");
 	}
-
-	
 }
 
 CConfig* Config = new CConfig();

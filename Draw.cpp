@@ -1,12 +1,11 @@
 #include "Draw.h"
 
-
 bool Draw::InitTextures()
 {
 	LPDIRECT3DTEXTURE9 my_texture = NULL;
 	HRESULT res;
 
-	//todo cleanup this 
+	//todo cleanup this
 	res = D3DXCreateTextureFromFileInMemory(g_pd3dDevice, &g_barrier, sizeof(g_barrier), &my_texture);
 	if (res != S_OK)
 		return false;
@@ -96,13 +95,11 @@ bool Draw::InitTextures()
 
 void Draw::ImageFromMemory(LPDIRECT3DTEXTURE9 texturename, int x, int y, std::string text, int index, int in_width, int in_height, bool inWindow)
 {
-
 	// todo it flickers when text is changing, probably smth to do with wnd name
 	//also drawing text over image
 	D3DSURFACE_DESC my_texture_desc;
 	HRESULT res = texturename->GetLevelDesc(0, &my_texture_desc);
 	IM_ASSERT(res == 0);
-
 
 	if (!inWindow)
 	{
@@ -135,9 +132,8 @@ void Draw::ImageFromMemory(LPDIRECT3DTEXTURE9 texturename, int x, int y, std::st
 	}
 }
 
-
 //not needed since now every texture is loaded from memory
-/* 
+/*
 LPDIRECT3DTEXTURE9 Draw::LoadTextureFromFile(const char* filename, LPDIRECT3DTEXTURE9* out_texture, int* out_width, int* out_height, LPDIRECT3DDEVICE9 xD)
 {
 	// Load texture from disk
@@ -154,7 +150,6 @@ LPDIRECT3DTEXTURE9 Draw::LoadTextureFromFile(const char* filename, LPDIRECT3DTEX
 	*out_height = (int)my_image_desc.Height;
 	return pTexture;
 }
-
 
 void Draw::Image(std::string _filename, int x, int y, std::string text, int index, int in_width, int in_height, bool inWindow)
 {
@@ -181,7 +176,6 @@ void Draw::Image(std::string _filename, int x, int y, std::string text, int inde
 		}
 
 		image_list.push_back(img_texture);
-
 	}
 	if (!inWindow)
 	{
@@ -198,7 +192,6 @@ void Draw::Image(std::string _filename, int x, int y, std::string text, int inde
 	//ImGui::Text("image_list size = %d", image_list.size());
 	//ImGui::Text("pointer = %p", img_texture.texture);
 	//ImGui::Text("file name = %s", img_texture.filename);
-
 
 	ImGui::Image((void*)img_texture.texture, ImVec2(in_width, in_height));
 	if (!text.empty())
@@ -235,8 +228,6 @@ void Draw::Line(ImVec2 pos1, ImVec2 pos2, RGBA rgb, float thickness)
 {
 	Line(pos1.x, pos1.y, pos2.x, pos2.y, rgb, thickness);
 }
-
-
 
 void Draw::String(std::string text, int x, int y, int orientation, RGBA color, ID3DXFont* font, bool bordered, RGBA bcolor)
 {
@@ -292,12 +283,10 @@ void Draw::String(std::string text, int x, int y, int orientation, RGBA color, I
 	}
 }
 
-
 void Draw::BoxFilled(int x, int y, int w, int h, RGBA rgb)
 {
 	D3DRECT rect = { x, y, x + w, y + h };
 	g_pd3dDevice->Clear(1, &rect, D3DCLEAR_TARGET, D3DCOLOR_ARGB(rgb.A, rgb.R, rgb.G, rgb.B), 0, 0);
-
 }
 
 void Draw::BoxBordered(int x, int y, int w, int h, RGBA color, int thickness)
@@ -312,13 +301,10 @@ void Draw::BoxOutlined(int x, int y, int w, int h, RGBA color, float thickness, 
 {
 	BoxFilled(x, y, w, h, color);
 	BoxBordered(x - thickness, y - thickness, w + thickness, h + thickness, bcolor, thickness);
-
 }
-
 
 void Draw::StringBoxed(std::string text, int x, int y, int orientation, RGBA color, ID3DXFont* font, RGBA bcolor, RGBA background)
 {
-
 	RECT rect = { x, y, x, y };
 
 	switch (orientation)
@@ -327,7 +313,7 @@ void Draw::StringBoxed(std::string text, int x, int y, int orientation, RGBA col
 		font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_CALCRECT | DT_LEFT, D3DCOLOR_ARGB(0, 0, 0, 0));
 
 		BoxOutlined(x - 5, rect.top - 5, rect.right - x + 10, rect.bottom - rect.top + 10, background, 1, bcolor);
-		SetRect(&rect, x, y, x, y);	
+		SetRect(&rect, x, y, x, y);
 
 		String(text, x, y, orientation, color, font, true);
 		break;
@@ -348,19 +334,16 @@ void Draw::StringBoxed(std::string text, int x, int y, int orientation, RGBA col
 		String(text, x, y, orientation, color, font, true);
 		break;
 	}
-
 }
-
 
 static const int CIRCLE_RESOLUTION = 32;
 
-struct VERTEX_2D_DIF 
-{ 
+struct VERTEX_2D_DIF
+{
 	float x, y, z, rhw;
 	D3DCOLOR color;
 	static const DWORD FVF = D3DFVF_XYZRHW | D3DFVF_DIFFUSE;
 };
-
 
 void Draw::Circle(int x, int y, float r, RGBA rgb)
 {
@@ -378,8 +361,6 @@ void Draw::Circle(int x, int y, float r, RGBA rgb)
 	g_pd3dDevice->SetFVF(VERTEX_2D_DIF::FVF);
 	g_pd3dDevice->DrawPrimitiveUP(D3DPT_LINESTRIP, CIRCLE_RESOLUTION, &verts, sizeof(VERTEX_2D_DIF));
 }
-
-
 
 void Draw::CircleFilled(int x, int y, float r, RGBA rgb)
 {
@@ -405,9 +386,7 @@ void Draw::CircleFilled(ImVec2 coord, float r, RGBA rgb)
 
 void Draw::CircleRange(Vector3 Pos, float points, float r, RGBA color, float thickness)
 {
-
 	float flPoint = M_PI_F * 2.0f / points;
-	
 
 	//r += 80;
 	bool first = true;
@@ -441,13 +420,11 @@ void Draw::CircleRange(Vector3 Pos, float points, float r, RGBA color, float thi
 			first = false;
 		}
 
-
 		Line(vStartScreen.x, vStartScreen.y, vEndScreen.x, vEndScreen.y, color, thickness);
 		Last = vEndScreen;
 	}
 
 	Line(First.x, First.y, Last.x, Last.y, color, thickness);
 }
-
 
 Draw* draw = new Draw();

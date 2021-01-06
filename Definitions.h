@@ -26,16 +26,13 @@
 #pragma comment(lib, "d3dx9.lib")
 #include <DirectXMath.h>
 
-
 #include "xor.h"
 #include "SpellDB.h"
 #include "Vector.h"
 
-
 // default screen size
 #define SCREENWIDTH ::GetSystemMetrics(SM_CXSCREEN)
 #define SCREENHEIGHT ::GetSystemMetrics(SM_CYSCREEN)
-
 
 #define M_PI 3.14159265358979323846	// pi
 #define M_PI_F ((float)(M_PI))	// Shouldn't collide with anything.
@@ -50,9 +47,9 @@
 #define INRANGE(x,a,b)    (x >= a && x <= b) //if a<=x<=b
 
 //calculate x coordinates for SendInput mouse movement
-#define SENDINPUTX(x) (x * 65536 / (SCREENWIDTH)+1) 
+#define SENDINPUTX(x) (x * 65536 / (SCREENWIDTH)+1)
 //calculate y coordinates for SendInput mouse movement
-#define SENDINPUTY(y) (y * 65536 / (SCREENHEIGHT)+1) 
+#define SENDINPUTY(y) (y * 65536 / (SCREENHEIGHT)+1)
 
 #ifndef RAD2DEG
 #define RAD2DEG( x  )  ( (float)(x) * (float)(180.f / M_PI_F) ) // Radians to degrees
@@ -64,20 +61,17 @@
 
 #define PressedKey( x ) ( GetAsyncKeyState (x) & 0x8000 )
 
-
 #define VERYFAST_REACTION_TIME RandomInt(1,10)
 #define FAST_REACTION_TIME RandomInt(9,11)
 #define AVERAGE_REACTION_TIME RandomInt(40,60)
 #define MEDIUM_REACTION_TIME RandomInt(90,110)
 #define SLOW_REACTION_TIME RandomInt(900,1100)
 
-
-
-enum text_alignment : int 
-{ 
-	lefted = 0, 
-	centered = 1, 
-	righted = 2 
+enum text_alignment : int
+{
+	lefted = 0,
+	centered = 1,
+	righted = 2
 };
 
 enum Arrow_Keys : int
@@ -86,8 +80,6 @@ enum Arrow_Keys : int
 	RIGHT = 2,
 	UP = 3,
 	DOWN = 4
-
-
 };
 
 enum WardType : int
@@ -113,10 +105,8 @@ enum SpellSlotID : int
 	Item6 = 11,
 	Trinket = 12,
 	Recall = 13,
-	Passive = 63, 
+	Passive = 63,
 };
-
-
 
 enum ObjectType : int
 {
@@ -139,7 +129,6 @@ enum ObjectType : int
 	Unknown2 = (1 << 18), //0x40000
 };
 
-
 struct RGBA
 {
 	int R, G, B, A;
@@ -147,7 +136,7 @@ struct RGBA
 	{
 		R = G = B = A = 255;
 	}
-	inline RGBA(const int r, const int g, const int b, const int a=255)
+	inline RGBA(const int r, const int g, const int b, const int a = 255)
 	{
 		R = r;
 		G = g;
@@ -177,7 +166,6 @@ struct RGBA
 		if (R == rgba.R && G == rgba.G && B == rgba.B && A == rgba.A)
 			return true;
 	}
-
 };
 
 struct Area
@@ -198,7 +186,6 @@ struct Area
 		y1 = _y1;
 		y2 = _y2;
 	}
-
 };
 
 struct Pixel
@@ -483,7 +470,6 @@ const char* const keyNames[] =
 "Reserved",
 "PA1 key",
 "Clear key",
-
 };
 
 //https://community.bistudio.com/wiki/DIK_KeyCodes
@@ -634,7 +620,6 @@ enum DirectInputKeys : int
 	DIK_MAIL = 0xEC,    /* Mail */
 	DIK_MEDIASELECT = 0xED    /* Media Select */
 };
-
 
 const std::vector<std::string>ChampNames = {
 	"Aatrox", "Ahri", "Akali", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios"

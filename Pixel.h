@@ -52,7 +52,7 @@ public:
 	//returns pixel color of a coordinate on screen
 	unsigned int GetPixelColor(int x, int y);
 
-	//sameas a bove but with points
+	//same as above but with points
 	unsigned int GetPixelColor(POINT coord);
 
 	//checks the color [HEX - RGBA] of a single pixel.
@@ -71,7 +71,7 @@ public:
 	//prints out color and (x,y) of mouse pointer. infinite while loop CTRL + C to leave.
 	unsigned int DEBUG();
 
-	//returns execution time im milliseconds
+	//returns execution time in milliseconds
 	double GetExecutionTime();
 
 	//todo

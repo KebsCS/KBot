@@ -2,9 +2,7 @@
 
 #ifndef _SCRIPT_H_
 
-
 #include "Vector.h"
-
 
 enum class Champion {
 	Aatrox,
@@ -173,10 +171,5 @@ public:
 };
 
 extern IScript* championScript;
-
-
-
-
-
 
 #endif // !_SCRIPT_H_

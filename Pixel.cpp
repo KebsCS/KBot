@@ -8,7 +8,7 @@ PixelHandler::PixelHandler()
 	if (!Initialize())
 		//LOG("!ERROR! could not initialize Pixel Checking!");
 
-	QueryPerformanceFrequency(&frequency);
+		QueryPerformanceFrequency(&frequency);
 	QueryPerformanceCounter(&startCount);
 }
 
@@ -20,13 +20,12 @@ PixelHandler::~PixelHandler()
 
 bool PixelHandler::Initialize()
 {
-	//_hDC = GetDC(NULL);      			//deprecated windows getpixel hdc   
+	//_hDC = GetDC(NULL);      			//deprecated windows getpixel hdc
 	hdc = GetDC(HWND_DESKTOP);
 	if (hdc == NULL)
 		return false;
 	return true;
 }
-
 
 /* INPUT: color - HEX (RGBA) color to be searched
 upper left boundary of search box
@@ -37,7 +36,6 @@ reading top left to bottom right - horizontally
 otherwise returns FALSE  */
 bool PixelHandler::SearchPixelArea(unsigned int color, int UpperLeftX, int UpperLeftY, int BottomRightX, int BottomRightY)
 {
-
 	//LOG("Searching for", color, "color");
 
 	int red, green, blue, alpha;
@@ -91,7 +89,6 @@ bool PixelHandler::SearchPixelArea(unsigned int color, int UpperLeftX, int Upper
 	return false;
 }
 
-
 //searches a given area for a color [HEX - RGBA] - returns true or false if found
 bool PixelHandler::SearchPixelArea(unsigned int color, Area region)
 {
@@ -107,7 +104,6 @@ reading bottom left to top right - horizontally
 otherwise returns FALSE  */
 bool PixelHandler::SearchPixelArea(unsigned int color, int UpperLeftX, int UpperLeftY, int BottomRightX, int BottomRightY, int tolerance)
 {
-
 	//LOG("Searching for", color, "color");
 
 	int red, green, blue, alpha;
@@ -168,11 +164,9 @@ bool PixelHandler::SearchPixelArea(unsigned int color, Area region, int toleranc
 	return SearchPixelArea(color, region.x1, region.y1, region.x2, region.y2, tolerance);
 }
 
-
 //returns coordinates by value not reference. Values = -1 if not found
 POINT PixelHandler::SearchPixelAreaForPoint(unsigned int color, int UpperLeftX, int UpperLeftY, int BottomRightX, int BottomRightY, int tolerance)
 {
-
 	//LOG("Searching for", color, "color coordinates");
 
 	POINT pix; //coordinates where the color is found
@@ -229,7 +223,6 @@ POINT PixelHandler::SearchPixelAreaForPoint(unsigned int color, int UpperLeftX, 
 			pix.x += UpperLeftX;
 			pix.y += UpperLeftY;
 
-
 			DeleteDC(hdcTemp);
 			DeleteObject(hBitmap2); //release memory
 
@@ -256,7 +249,6 @@ POINT PixelHandler::SearchPixelAreaForPoint(unsigned int color, Area region, int
 //returns coordinates by value not reference. Values = -1 if not found
 POINT PixelHandler::SearchPixelAreaForPoint(unsigned int color, int UpperLeftX, int UpperLeftY, int BottomRightX, int BottomRightY)
 {
-
 	//LOG("Searching for", color, "color coordinates");
 
 	POINT pix; //coordinates where the color is found
@@ -370,7 +362,6 @@ unsigned int PixelHandler::GetPixelColor(int x, int y)
 	DeleteDC(hdcTemp);
 	DeleteObject(hBitmap2); //release memory
 	return _color;
-
 }
 
 /* INPUT:	(x,y) coordinates of pixel to be checked
@@ -379,9 +370,7 @@ unsigned int PixelHandler::GetPixelColor(POINT coord)
 {
 	unsigned int color = GetPixelColor(coord.x, coord.y);
 	return color;
-
 }
-
 
 bool PixelHandler::VerifyPixelColor(unsigned int color, int x, int y)
 {
@@ -408,7 +397,6 @@ bool PixelHandler::VerifyPixelColor(unsigned int color, int x, int y, int tolera
 	if (((red < (_red + tolerance)) && (red > (_red - tolerance))) && ((green < (_green + tolerance)) && (green > (_green - tolerance))) && ((blue < (_blue + tolerance)) && (blue > (_blue - tolerance))))
 		return true;
 	return false;
-
 }
 
 bool PixelHandler::VerifyPixelColor(Pixel pix)
@@ -450,7 +438,6 @@ unsigned int PixelHandler::DEBUG()
 	}
 }
 
-
 double PixelHandler::GetExecutionTime()
 {
 	QueryPerformanceCounter(&endCount);
@@ -458,11 +445,8 @@ double PixelHandler::GetExecutionTime()
 	return(endCount.QuadPart - startCount.QuadPart) * 1000.0 / frequency.QuadPart;
 }
 
-
-
 bool PixelHandler::SearchforImage(LPCWSTR path, int x1, int y1, int x2, int y2)
 {
-
 	return false;
 }
 //
@@ -472,12 +456,8 @@ bool PixelHandler::SearchforImage(LPCWSTR path, int x1, int y1, int x2, int y2)
 //	return SearchforImage(path, coord.x, coord.y);
 //}
 
-
-
-
 bool PixelHandler::Screenshot(int UpperLeftX, int UpperLeftY, int BottomRightX, int BottomRightY, const char* fileName)
 {
-
 	int MAX_WIDTH = (BottomRightX - UpperLeftX) + 1; //area to be searched
 	int MAX_HEIGHT = (BottomRightY - UpperLeftY) + 1; //area to be searched
 
@@ -526,7 +506,6 @@ bool PixelHandler::Screenshot(Area region, const char* fileName)
 	return Screenshot(region.x1, region.y1, region.x2, region.y2, fileName);
 }
 
-
 void PixelHandler::SetScreenPixel(int x, int y, int r, int g, int b)
 {
 	HWND hWnd = GetDesktopWindow();
@@ -539,6 +518,5 @@ void PixelHandler::SetScreenPixel(POINT coord, int r, int g, int b)
 {
 	SetScreenPixel(coord.x, coord.y, r, g, b);
 }
-
 
 PixelHandler* pixel = new PixelHandler();

@@ -8,7 +8,6 @@
 #include "Lux.h"
 #include "Xerath.h"
 
-
 class ScriptUtils {
 public:
 	static IScript* GetScriptByChampionName(std::string championName)
@@ -17,7 +16,7 @@ public:
 		{
 			M.Talon.Master = true;
 			return new Talon();
-		}	
+		}
 		else if (championName == "Lux")
 		{
 			return new Lux();
@@ -28,7 +27,6 @@ public:
 		}
 
 		return nullptr;
-
 	}
 };
 

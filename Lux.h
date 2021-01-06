@@ -1,6 +1,5 @@
 #pragma once
 
-
 #ifndef _LUX_H
 #define _LUX_H
 
@@ -21,11 +20,7 @@ private:
 public:
 	Lux() : champion(Champion::Lux)
 	{
-
 	}
-
-
 };
-
 
 #endif

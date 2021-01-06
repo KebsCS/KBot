@@ -1,12 +1,9 @@
 #pragma once
 
-
 #ifndef _VECTOR_H
 #define _VECTOR_H
 
-
 #include <cmath>
-
 
 struct Vector3
 {
@@ -109,8 +106,6 @@ struct Vector3
 		float out = sqrtf(powf(X - A.X, 2) + powf(Y - A.Y, 2) + powf(Z - A.Z, 2));
 		return out < 0 ? out * -1 : out;
 	}
-
-
 };
 
 struct Vector4
@@ -126,9 +121,5 @@ struct Vector4
 		X = x; Y = y; Z = z; W = w;
 	}
 };
-
-
-
-
 
 #endif // !_VECTOR_H

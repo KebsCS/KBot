@@ -1,8 +1,5 @@
 #include "Visuals.h"
 
-
-
-
 //std::string Visuals::getSpellImg(std::string name)
 //{
 //	std::string ret = "";
@@ -61,9 +58,6 @@ LPDIRECT3DTEXTURE9 Visuals::GetSpellImg(std::string name)
 
 void Visuals::CooldownTimers(CObject obj)
 {
-
-
-
 	if (obj.GetTeam() == Local.GetTeam())
 		return;
 
@@ -83,9 +77,7 @@ void Visuals::CooldownTimers(CObject obj)
 	if (!((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1))))
 		return;
 
-
-
-	//todo clean this up and summoner icons instead of text 
+	//todo clean this up and summoner icons instead of text
 	//also spellclass with spell offsets
 	DWORD QSpell = obj.GetSpellByID(SpellSlotID::Q);
 	float GetQCooldownExpire = Memory.Read<float>(QSpell + oSpellSlotTime, sizeof(float));
@@ -108,7 +100,6 @@ void Visuals::CooldownTimers(CObject obj)
 
 	float GetDCooldownExpire = Memory.Read<float>(Summ1 + oSpellSlotTime, sizeof(float));
 	float GetFCooldownExpire = Memory.Read<float>(Summ2 + oSpellSlotTime, sizeof(float));
-
 
 	float GameTime = M.GameTime;
 
@@ -174,7 +165,6 @@ void Visuals::CooldownTimers(CObject obj)
 		draw->String(sRcd, RealPos.x + 40, RealPos.y + 15, centered, Rcolor, Direct3D9.fontTahoma);
 	}
 
-
 	int Dcooldown = GetDCooldownExpire - GameTime + 1;
 	std::string sDcd = std::to_string(Dcooldown);
 	RGBA Dcolor = colorDown;
@@ -195,70 +185,57 @@ void Visuals::CooldownTimers(CObject obj)
 		Fcolor = colorReady;
 	}
 
-
-
-	
-
 	if (M.Cooldowns.Type[0]) //text on champ
 	{
 		draw->String(sDcd, RealPos.x - 10, RealPos.y + 30, centered, Dcolor, Direct3D9.fontTahoma);
 		draw->String(sFcd, RealPos.x + 30, RealPos.y + 30, centered, Fcolor, Direct3D9.fontTahoma);
 
-		
-
-	if (obj.SummonerSpell1() == "summonersmite")
-	{
-		float SmiteDamage = Memory.Read<float>(Summ1 + oSpellSlotDamage);
-		draw->String(std::to_string((int)SmiteDamage), RealPos.x - 7, RealPos.y + 28, lefted, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
-		//int SmiteStacks = Memory.Read<int>(Summ1 + 0x58);
-
-		//if (SmiteStacks == 2)
-		//	draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x - 10, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
-		//else if (SmiteStacks == 0)
-		//	Dcolor = colorDown;
-		//else if (SmiteStacks == 1)
-		//{
-		//	draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x - 10, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
-		//	Dcolor = RGBA(255, 125, 0);
-		//}
-
-	}
-	else if (obj.SummonerSpell2() == "summonersmite")
-	{
-		//int SmiteStacks = Memory.Read<int>(Summ2 + oSpellSlotRemainingCharge);
-		float SmiteDamage = Memory.Read<float>(Summ2 + oSpellSlotDamage);
-		//clog.AddLog("%i", SmiteStacks);
-		draw->String(std::to_string((int)SmiteDamage), RealPos.x + 33, RealPos.y + 28, lefted, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
-		/*if (SmiteStacks == 2)
-			int a;
-		else if (SmiteStacks == 0)
-			Fcolor = colorDown;
-		else if (SmiteStacks == 1)
+		if (obj.SummonerSpell1() == "summonersmite")
 		{
-			draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x + 27, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
-			Fcolor = RGBA(255, 125, 0);
-		}*/
-	}
+			float SmiteDamage = Memory.Read<float>(Summ1 + oSpellSlotDamage);
+			draw->String(std::to_string((int)SmiteDamage), RealPos.x - 7, RealPos.y + 28, lefted, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+			//int SmiteStacks = Memory.Read<int>(Summ1 + 0x58);
+
+			//if (SmiteStacks == 2)
+			//	draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x - 10, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+			//else if (SmiteStacks == 0)
+			//	Dcolor = colorDown;
+			//else if (SmiteStacks == 1)
+			//{
+			//	draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x - 10, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+			//	Dcolor = RGBA(255, 125, 0);
+			//}
+		}
+		else if (obj.SummonerSpell2() == "summonersmite")
+		{
+			//int SmiteStacks = Memory.Read<int>(Summ2 + oSpellSlotRemainingCharge);
+			float SmiteDamage = Memory.Read<float>(Summ2 + oSpellSlotDamage);
+			//clog.AddLog("%i", SmiteStacks);
+			draw->String(std::to_string((int)SmiteDamage), RealPos.x + 33, RealPos.y + 28, lefted, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+			/*if (SmiteStacks == 2)
+				int a;
+			else if (SmiteStacks == 0)
+				Fcolor = colorDown;
+			else if (SmiteStacks == 1)
+			{
+				draw->StringOutlined(std::to_string((int)SmiteDamage), RealPos.x + 27, RealPos.y + 28, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+				Fcolor = RGBA(255, 125, 0);
+			}*/
+		}
 	}
 
 	if (M.Cooldowns.Type[1])//image on champ
 	{
-	//todo drawing over image
+		//todo drawing over image
 		std::string imgsumm1 = obj.SummonerSpell1();
 		std::string imgsumm2 = obj.SummonerSpell2();
 		draw->ImageFromMemory(GetSpellImg(imgsumm1), RealPos.x + 70, RealPos.y - 170, sDcd, obj.Address(), 32, 32, false);
 		draw->ImageFromMemory(GetSpellImg(imgsumm2), RealPos.x + 70, RealPos.y - 170 + 32, sFcd, obj.Address(), 32, 32, false);
 	}
-
-	
-	
-	
-
 }
 
 void Visuals::ScoreBoard(CObject obj)
 {
-
 	DWORD RSpell = obj.GetSpellByID(SpellSlotID::R);
 	float GetRCooldownExpire = Memory.Read<float>(RSpell + oSpellSlotTime, sizeof(float));
 	int GetRLevel = Memory.Read<int>(RSpell + oSpellSlotLevel, sizeof(int));
@@ -268,7 +245,6 @@ void Visuals::ScoreBoard(CObject obj)
 
 	float GetDCooldownExpire = Memory.Read<float>(Summ1 + oSpellSlotTime, sizeof(float));
 	float GetFCooldownExpire = Memory.Read<float>(Summ2 + oSpellSlotTime, sizeof(float));
-
 
 	float GameTime = M.GameTime;
 
@@ -288,7 +264,6 @@ void Visuals::ScoreBoard(CObject obj)
 		Rcolor = colorReady;
 	}
 
-
 	int Dcooldown = GetDCooldownExpire - GameTime + 1;
 	std::string sDcd = std::to_string(Dcooldown);
 	RGBA Dcolor = colorDown;
@@ -309,7 +284,6 @@ void Visuals::ScoreBoard(CObject obj)
 		Fcolor = colorReady;
 	}
 
-
 	DWORD Item1 = obj.GetSpellByID(SpellSlotID::Item1);
 	float GetItem1CooldownExpire = Memory.Read<float>(Item1 + oSpellSlotTime, sizeof(float));
 	int GetItem1Level = Memory.Read<int>(Item1 + oSpellSlotLevel, sizeof(int)); //if something in itemslot
@@ -317,16 +291,15 @@ void Visuals::ScoreBoard(CObject obj)
 	std::string sItem1cd = std::to_string(Item1cooldown);
 	RGBA Item1color = colorDown;
 
-	if (Item1cooldown <= 0.f || GetItem1Level !=1)
+	if (Item1cooldown <= 0.f || GetItem1Level != 1)
 	{
 		sItem1cd = "1";
 		Item1color = colorReady;
 	}
 
-
 	std::vector<DWORD>Items(6);
 	std::vector<float>GetItemsCooldownExpire(6);
-	std::vector<int>Itemscooldown(6); 
+	std::vector<int>Itemscooldown(6);
 	std::vector<std::string>sItemsCD(6);
 	std::vector<RGBA>ItemsColor(6);
 	if (M.Cooldowns.Scoreboard.Items)
@@ -350,7 +323,6 @@ void Visuals::ScoreBoard(CObject obj)
 		}
 	}
 
-
 	int playerLevel = obj.GetLevel();
 	float playerExp = obj.GetEXP();
 	float requiredForNext = LevelEXP[playerLevel] - LevelEXP[playerLevel - 1];
@@ -360,7 +332,6 @@ void Visuals::ScoreBoard(CObject obj)
 	std::string spercentLevel = std::to_string((int)percentLevel) + "%";
 	//clog.AddLog("%s , %d", obj.GetChampName().c_str(), (int)percentLevel);
 
-
 	//todo moveable instead of fixed scoreboard pos
 	//fix when there are 2 or more same champions (blind picks)
 	ImVec2 FirstSumm = ImVec2(M.Cooldowns.Scoreboard.Pos[0], M.Cooldowns.Scoreboard.Pos[1]);
@@ -368,10 +339,8 @@ void Visuals::ScoreBoard(CObject obj)
 	int Spacing = 38;
 	for (int i = 0; i < 10; i++)
 	{
-
 		if (ChampName == M.ScoreboardNames[i])
 		{
-
 			if (i % 2 == 0)
 			{
 				FirstSumm.x -= 575;
@@ -394,12 +363,10 @@ void Visuals::ScoreBoard(CObject obj)
 			if (M.Cooldowns.Scoreboard.Exp)
 				draw->String(spercentLevel, FirstSumm.x + 133, FirstSumm.y + 40 + Spacing * i, lefted, RGBA(0, 200, 255), Direct3D9.fontTahoma);
 
-
 			if (M.Cooldowns.Scoreboard.Summs)
 			{
 				draw->String(sDcd, FirstSumm.x, FirstSumm.y + Spacing * i, centered, Dcolor, Direct3D9.fontTahoma);
 				draw->String(sFcd, FirstSumm.x, FirstSumm.y + 30 + Spacing * i, centered, Fcolor, Direct3D9.fontTahoma);
-
 
 				if (obj.SummonerSpell1() == "summonersmite")
 				{
@@ -413,37 +380,25 @@ void Visuals::ScoreBoard(CObject obj)
 				}
 			}
 
-
 			if (i % 2 == 0)
 			{
 				FirstSumm.x += 575;
 				FirstSumm.y -= Spacing;
 			}
-
-		
 		}
-
-
 	}
-
-	
-
 }
 
 void Visuals::DrawAARanges(CObject obj, int points, float thickness, RGBA color, bool local, RGBA localcolor, bool turret)
 {
-
 	if (obj.IsDead())
 		return;
 
-
 	if (local && obj.Address() == Local.Address())
 	{
-
 		Vector3 Position = Local.GetPosition();
 		draw->CircleRange(Position, points, Local.GetAARange() + Local.GetBoundingRadius(), localcolor, thickness);
 		return;
-
 	}
 
 	if (local)
@@ -452,15 +407,13 @@ void Visuals::DrawAARanges(CObject obj, int points, float thickness, RGBA color,
 	if (obj.GetTeam() == Local.GetTeam())
 		return;
 
-
 	if (turret)
 	{
-
 		Vector3 Position = obj.GetPosition();
 
 		if (Position == Vector3(105.0, 33.0, 134.0) || Position == Vector3(14576.0, 466.0, 14693.0)) //if fountain
 			return;
-		draw->CircleRange(Position, points, 750+130, color, thickness);
+		draw->CircleRange(Position, points, 750 + 130, color, thickness);
 
 		return;
 	}
@@ -475,7 +428,6 @@ void Visuals::DrawAARanges(CObject obj, int points, float thickness, RGBA color,
 
 void Visuals::DrawTracers(CObject obj, float thickness)
 {
-
 	if (obj.GetTeam() == Local.GetTeam())
 		return;
 
@@ -487,7 +439,6 @@ void Visuals::DrawTracers(CObject obj, float thickness)
 
 	Vector3 LocalPosition = Local.GetPosition();
 	ImVec2 LocalRealPos = Direct3D9.WorldToScreen(LocalPosition);
-
 
 	if (RealPos.x == 0.f && RealPos.y == 0.f)
 		return;
@@ -513,18 +464,12 @@ void Visuals::DrawTracers(CObject obj, float thickness)
 
 		if ((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1)))
 			draw->String(obj.GetChampName(), RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
-
 	}
 
 	RGBA color(r, g, b);
 
-	
 	draw->Line(LocalRealPos.x, LocalRealPos.y, RealPos.x, RealPos.y, color, thickness);
-
-	
-
 }
-
 
 //todo bounding radius within smite range
 //https://www.unknowncheats.me/forum/league-of-legends/327917-incoming-damage-minions.html
@@ -547,7 +492,6 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 	if (obj.GetDistTo(Local) > 560.f)
 		return;
 
-	
 	DWORD SmiteSlot = 0;
 	int SpellKey = 0;
 	if (slot == 0)
@@ -557,7 +501,6 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 	}
 	else if (slot == 1)
 	{
-
 		SmiteSlot = Local.GetSpellByID(SpellSlotID::Summoner2);
 		SpellKey = DIK_F;
 	}
@@ -582,7 +525,6 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 		|| objName.find("Sru_Crab") != std::string::npos || objName.find("SRU_Krug1") != std::string::npos || objName.find("SRU_Krug5") != std::string::npos))
 		return;
 
-
 	Vector3 Position = obj.GetPosition();
 	ImVec2 RealPos = Direct3D9.WorldToScreen(Position);
 
@@ -594,8 +536,8 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 	if (obj.GetHealth() <= SmiteDamage)
 	{
 		//clog.AddLog("a");
-	
-		BlockInput(1);	
+
+		BlockInput(1);
 
 		mouse->ChangeSpeed(mouseSpeed);
 
@@ -630,12 +572,10 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 			}
 		}
 	}
-
 }
 
 void Visuals::LastHit(CObject obj, RGBA color)
 {
-
 	if (obj.GetTeam() == Local.GetTeam())
 		return;
 	if (obj.IsDead() || Local.IsDead())
@@ -667,12 +607,10 @@ void Visuals::LastHit(CObject obj, RGBA color)
 			draw->Circle(RealPos.x, RealPos.y, 11 * xd, RGBA(255, 255, 255));
 		draw->Circle(RealPos.x, RealPos.y, 11, color);
 	}
-
 }
 
 void Visuals::InhibTimers(CObject obj)
 {
-
 	//if (Local.IsDead())
 	//{
 	//	clog.AddLog("Dead %i , %f", Local.GetAlive(), Local.GetHealth());
@@ -704,14 +642,13 @@ void Visuals::InhibTimers(CObject obj)
 	//	}
 	//}
 
-
-
-
 	//if (obj.GetTeam() == Local.GetTeam())
 	//	return;
 	if (obj.IsDead())
 	{
 		ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+
+		//clog.AddLog("%x", obj.Address());
 
 		if (RealPos.x == 0.f && RealPos.y == 0.f)
 			return;
@@ -722,7 +659,6 @@ void Visuals::InhibTimers(CObject obj)
 			draw->String(std::to_string((int)RespawnTimer), RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
 		}
 	}
-
 }
 
 std::map<DWORD, float>wardTimer;
@@ -749,7 +685,6 @@ void Visuals::WardsRange(CObject obj)
 
 	if (type == NormalWard)
 	{
-		
 		if (!wardTimer.count(obj.Address()) || (wardTimer[obj.Address()] - M.GameTime) < -100) // if timer for a ward doesnt exist
 		{
 			wardTimer[obj.Address()] = M.GameTime + obj.GetMana();
@@ -761,7 +696,7 @@ void Visuals::WardsRange(CObject obj)
 			draw->String(std::to_string((int)(wardTimer[obj.Address()] - M.GameTime)), RealPos.x, RealPos.y + 10, centered, RGBA(255, 255, 255), Direct3D9.fontTahomaSmall);
 			RGBA WardColor(255, 170, 0);
 			draw->String("Ward", RealPos.x, RealPos.y, centered, WardColor, Direct3D9.fontTahomaSmall);
-			//draw->String(std::to_string(obj.Address()), RealPos.x, RealPos.y, centered, WardColor, Direct3D9.fontTahomaSmall);	
+			//draw->String(std::to_string(obj.Address()), RealPos.x, RealPos.y, centered, WardColor, Direct3D9.fontTahomaSmall);
 			draw->CircleRange(Pos, 14, 900, WardColor);
 		}
 	}
@@ -778,21 +713,14 @@ void Visuals::WardsRange(CObject obj)
 		draw->CircleRange(Pos, 14, 500, BlueWardColor);
 	}
 	//for testing
-	draw->String(obj.GetName(), RealPos.x, RealPos.y+30, centered, RGBA(255,255,255), Direct3D9.fontTahomaSmall);
-
-
-
-
+	draw->String(obj.GetName(), RealPos.x, RealPos.y + 30, centered, RGBA(255, 255, 255), Direct3D9.fontTahomaSmall);
 }
-
-
 
 std::map<DWORD, float>lastEXP;
 std::map<DWORD, float>expTimer;
 std::map<DWORD, int>howManyNearby;
 void Visuals::GankAlerter(CObject obj)
 {
-
 	if (obj.GetTeam() == Local.GetTeam())
 		return;
 
@@ -802,12 +730,9 @@ void Visuals::GankAlerter(CObject obj)
 		return;
 
 	float temp = lastEXP[obj.Address()];
-	
+
 	//solo exp:
 	//~60 melee ~30 caster
-
-
-
 
 	//todo when 3 nearby and melee is killed it shows as 1 nearby(caster)
 	if (obj.GetEXP() != lastEXP[obj.Address()])
@@ -855,13 +780,10 @@ void Visuals::GankAlerter(CObject obj)
 			expTimer[obj.Address()] = M.GameTime + 5;
 		}
 
-
 		lastEXP[obj.Address()] = obj.GetEXP();
-		
 	}
 	if (expTimer[obj.Address()] - M.GameTime > 0)
 	{
-
 		//todo better drawings
 		ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
 		if (RealPos.x == 0.f && RealPos.y == 0.f)
@@ -872,12 +794,7 @@ void Visuals::GankAlerter(CObject obj)
 
 		std::string str = std::to_string(howManyNearby[obj.Address()]) + (howManyNearby[obj.Address()] == 1 ? " CHAMPION" : " CHAMPIONS") + " NEARBY!";
 		draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 50, 50), Direct3D9.fontTahoma);
-
 	}
-	
-
-
-
 }
 
 //todo calculate runes items etc, more options like both W's hitting etc
@@ -896,7 +813,6 @@ void Visuals::TalonDamageCalc(CObject obj)
 
 	if (!((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1))))
 		return;
-	
 
 	int playerLevel = Local.GetLevel();
 	DWORD QSpell = Local.GetSpellByID(SpellSlotID::Q);
@@ -922,10 +838,9 @@ void Visuals::TalonDamageCalc(CObject obj)
 
 	//clog.AddLog("%s , %d , %d , %d , %d ,%d", obj.GetChampName().c_str(), (int)Local.GetTotalDamage(obj), PDamageTotal, QDamageTotal, WDamageTotal, RDamageTotal);
 	int TotalDamage = PDamageTotal + QDamageTotal + WDamageTotal + RDamageTotal;
-	
+
 	int iperecentDamage = TotalDamage / obj.GetHealth() * 100;
 	std::string spercentDamage = 100 - iperecentDamage > 0 ? std::to_string(100 - iperecentDamage) + "%" : "Dead";
 	std::string str = std::to_string(TotalDamage) + " ->" + spercentDamage;
-	draw->String(str, RealPos.x, RealPos.y-20, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
-
+	draw->String(str, RealPos.x, RealPos.y - 20, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
 }

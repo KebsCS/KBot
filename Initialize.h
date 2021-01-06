@@ -23,7 +23,7 @@ public:
 
 	bool Start();
 
-	//logs usefull info to console
+	//logs useful info to console
 	void StartupInfo();
 
 	//populates object lists
@@ -38,10 +38,6 @@ public:
 
 	//makes array of champions in game for GUI scoreboard
 	void CreateChampArray();
-
-	
-
-	
 };
 
 extern Initialize* init;

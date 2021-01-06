@@ -11,8 +11,6 @@ private:
 	//std::string getSpellImg(std::string name);
 	LPDIRECT3DTEXTURE9 GetSpellImg(std::string name);
 
-
-
 public:
 
 	void CooldownTimers(CObject obj);
@@ -35,7 +33,5 @@ public:
 
 	void TalonDamageCalc(CObject obj);
 };
-
-
 
 #endif // ! _VISUALS_H_

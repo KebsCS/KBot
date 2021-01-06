@@ -3,12 +3,10 @@
 
 void Xerath::OnKeyDown(int)
 {
-
 }
 
 void Xerath::OnKeyUp(int)
 {
-
 }
 
 Vector3 Calculate(CObject target, float range, float casttime)
@@ -18,8 +16,7 @@ Vector3 Calculate(CObject target, float range, float casttime)
 	//veloc.Y = 0.f;
 	Vector3 orientation = Vector3(0, 0, 0);//veloc.Normalize(); //target->GetAllShield->vVelocity.Normalized();
 
-
-	if (!(target.GetHealth() > 0.f && target.GetDistTo(Local) < range)) 
+	if (!(target.GetHealth() > 0.f && target.GetDistTo(Local) < range))
 	{
 		return Vector3(0.f, 0.f, 0.f);
 	}
@@ -34,7 +31,7 @@ Vector3 Calculate(CObject target, float range, float casttime)
 	return result;
 }
 
-Vector3 PredictCircular(CObject target, SpellSlotID slot, bool checkCharges = false) 
+Vector3 PredictCircular(CObject target, SpellSlotID slot, bool checkCharges = false)
 {
 	DWORD spell = Local.GetSpellByID(slot);
 	//if (checkCharges && (spell->GetCharges() < 1))
@@ -55,12 +52,11 @@ void Xerath::Harass()
 {
 	std::vector<CObject> possibleTargets;
 
-	for (auto pObject : init->herolist) 
+	for (auto pObject : init->herolist)
 	{
 		if (!pObject.IsDead() && pObject.GetTeam() != Local.GetTeam())
 		{
 			possibleTargets.push_back(pObject);
-
 		}
 	}
 	if (possibleTargets.empty())
@@ -85,7 +81,6 @@ void Xerath::Harass()
 		POINT LastMousePos = mouse->GetStoredPos();
 		mouse->MouseMoveInstant(LastMousePos.x, LastMousePos.y);
 	}
-
 }
 
 bool Xerath::Evade(Vector3 /*evadePos*/)

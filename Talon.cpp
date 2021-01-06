@@ -2,7 +2,7 @@
 #include "DirectX.h"
 #include "Draw.h"
 
-void Talon::OnKeyDown(int) 
+void Talon::OnKeyDown(int)
 {
 	if (M.Talon.Master)
 	{
@@ -12,22 +12,20 @@ void Talon::OnKeyDown(int)
 			{
 				Vector3 raptorJumpSpot = Vector3(6724.0, 48.527, 4908.0);
 
-
-
 				if (Local.GetPosition().DistTo(raptorJumpSpot) < 1000)
 				{
 					ImVec2 raptorJump = Direct3D9.WorldToScreen(raptorJumpSpot);
+					if (raptorJump.x == 0 && raptorJump.y == 0)
+						return;
 					draw->Circle(raptorJump.x, raptorJump.y, 75, RGBA(255, 255, 255));
 					if (Local.GetPosition().DistTo(raptorJumpSpot) < 400)
 					{
-
 						ImVec2 raptorJumpFinal = Direct3D9.WorldToScreen(Vector3(6190, 51.772114, 5634));
 						draw->Circle(raptorJumpFinal.x, raptorJumpFinal.y, 30, RGBA(255, 255, 0));
 						draw->Line(raptorJumpFinal.x, raptorJumpFinal.y, raptorJump.x, raptorJump.y, RGBA(255, 255, 0));
 
 						if (Local.GetPosition().DistTo(raptorJumpSpot) < 155 && PressedKey(VK_LSHIFT))
 						{
-
 							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
 							mouse->RightClick();
 							std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -57,7 +55,6 @@ void Talon::OnKeyDown(int)
 							mouse->MouseMoveInstant(raptorJumpFinal.x, raptorJumpFinal.y);
 						}
 					}
-
 				}
 			}
 
@@ -67,6 +64,8 @@ void Talon::OnKeyDown(int)
 				if (Local.GetPosition().DistTo(drakeJumpSpot) < 1000)
 				{
 					ImVec2 drakeJump = Direct3D9.WorldToScreen(drakeJumpSpot);
+					if (drakeJump.x == 0 && drakeJump.y == 0)
+						return;
 					draw->Circle(drakeJump.x, drakeJump.y, 75, RGBA(255, 255, 255));
 					if (Local.GetPosition().DistTo(drakeJumpSpot) < 400)
 					{
@@ -76,14 +75,12 @@ void Talon::OnKeyDown(int)
 
 						if (Local.GetPosition().DistTo(drakeJumpSpot) < 155 && PressedKey(VK_LSHIFT))
 						{
-
 							mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
 							mouse->RightClick();
 							std::this_thread::sleep_for(std::chrono::milliseconds(200));
 							Direct3D9.GetViewProjectionMatrix();
 							mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
 							mouse->RightClick();
-
 
 							ImVec2 drakeJumpCorrection = Direct3D9.WorldToScreen(Vector3(8600, 48.448730, 5214));
 							mouse->MouseMoveInstant(drakeJumpCorrection.x, drakeJumpCorrection.y);
@@ -95,13 +92,12 @@ void Talon::OnKeyDown(int)
 							mouse->MouseMoveInstant(drakeJumpCorrection.x, drakeJumpCorrection.y);
 							mouse->RightClick();
 
-
 							drakeJump = Direct3D9.WorldToScreen(drakeJumpSpot);
 							mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
 							mouse->RightClick();
 							std::this_thread::sleep_for(std::chrono::milliseconds(400));
 							Direct3D9.GetViewProjectionMatrix();
-							ImVec2 drakeJumpDestination = Direct3D9.WorldToScreen(Vector3(10048.0, -71.240601, 4408));//ImVec2(1920, 1080);// 
+							ImVec2 drakeJumpDestination = Direct3D9.WorldToScreen(Vector3(10048.0, -71.240601, 4408));//ImVec2(1920, 1080);//
 
 							mouse->MouseMoveInstant(drakeJumpDestination.x, drakeJumpDestination.y);
 							keyboard->GenerateKeyScancode(DIK_E, false);
@@ -116,6 +112,8 @@ void Talon::OnKeyDown(int)
 				if (Local.GetPosition().DistTo(botJumpSpot) < 800)
 				{
 					ImVec2 botJump = Direct3D9.WorldToScreen(botJumpSpot);
+					if (botJump.x == 0 && botJump.y == 0)
+						return;
 					draw->Circle(botJump.x, botJump.y, 75, RGBA(255, 255, 255));
 					if (Local.GetPosition().DistTo(botJumpSpot) < 400)
 					{
@@ -125,14 +123,12 @@ void Talon::OnKeyDown(int)
 
 						if (Local.GetPosition().DistTo(botJumpSpot) < 155 && PressedKey(VK_LSHIFT))
 						{
-
 							mouse->MouseMoveInstant(botJump.x, botJump.y);
 							mouse->RightClick();
 							std::this_thread::sleep_for(std::chrono::milliseconds(200));
 							Direct3D9.GetViewProjectionMatrix();
 							mouse->MouseMoveInstant(botJump.x, botJump.y);
 							mouse->RightClick();
-
 
 							ImVec2 botJumpDestination = Direct3D9.WorldToScreen(Vector3(13022, 51.366901, 3808));
 
@@ -149,6 +145,8 @@ void Talon::OnKeyDown(int)
 				if (Local.GetPosition().DistTo(topJumpSpot) < 800)
 				{
 					ImVec2 topJump = Direct3D9.WorldToScreen(topJumpSpot);
+					if (topJump.x == 0 && topJump.y == 0)
+						return;
 					draw->Circle(topJump.x, topJump.y, 75, RGBA(255, 255, 255));
 					if (Local.GetPosition().DistTo(topJumpSpot) < 400)
 					{
@@ -158,14 +156,12 @@ void Talon::OnKeyDown(int)
 
 						if (Local.GetPosition().DistTo(topJumpSpot) < 155 && PressedKey(VK_LSHIFT))
 						{
-
 							mouse->MouseMoveInstant(topJump.x, topJump.y);
 							mouse->RightClick();
 							std::this_thread::sleep_for(std::chrono::milliseconds(200));
 							Direct3D9.GetViewProjectionMatrix();
 							mouse->MouseMoveInstant(topJump.x, topJump.y);
 							mouse->RightClick();
-
 
 							ImVec2 topJumpDestination = Direct3D9.WorldToScreen(Vector3(1824, 52.8381, 11106));
 
@@ -175,9 +171,6 @@ void Talon::OnKeyDown(int)
 						}
 					}
 				}
-
-
-
 			}
 
 			if (M.Talon.JumpsType[4])
@@ -187,17 +180,17 @@ void Talon::OnKeyDown(int)
 				if (Local.GetPosition().DistTo(raptorJumpSpot) < 1000)
 				{
 					ImVec2 raptorJump = Direct3D9.WorldToScreen(raptorJumpSpot);
+					if (raptorJump.x == 0 && raptorJump.y == 0)
+						return;
 					draw->Circle(raptorJump.x, raptorJump.y, 75, RGBA(255, 255, 255));
 					if (Local.GetPosition().DistTo(raptorJumpSpot) < 400)
 					{
-
 						ImVec2 raptorJumpFinal = Direct3D9.WorldToScreen(Vector3(6190, 51.772114, 5634));
 						draw->Circle(raptorJumpFinal.x, raptorJumpFinal.y, 30, RGBA(255, 255, 0));
 						draw->Line(raptorJumpFinal.x, raptorJumpFinal.y, raptorJump.x, raptorJump.y, RGBA(255, 255, 0));
 
 						if (Local.GetPosition().DistTo(raptorJumpSpot) < 155 && PressedKey(VK_LSHIFT))
 						{
-
 							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
 							mouse->RightClick();
 							std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -227,22 +220,18 @@ void Talon::OnKeyDown(int)
 							mouse->MouseMoveInstant(raptorJumpFinal.x, raptorJumpFinal.y);
 						}
 					}
-
 				}
 			}
-
 		}
 	}
 }
 
-void Talon::OnKeyUp(int) 
+void Talon::OnKeyUp(int)
 {
-
 }
 
 void Talon::Harass()
 {
-
 }
 
 bool Talon::Evade(Vector3 /*evadePos*/)

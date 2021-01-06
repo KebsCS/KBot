@@ -1,6 +1,5 @@
 #pragma once
 
-
 #ifndef _KINTERFACE_H_
 #define _KINTERFACE_H_
 
@@ -10,13 +9,13 @@
 #include <apiquery2.h>
 #include <string>
 
-#define IO_GET_ID_REQUEST  CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6210, METHOD_BUFFERED, FILE_SPECIAL_ACCESS) 
+#define IO_GET_ID_REQUEST  CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6210, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 
-#define IO_READ_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6211, METHOD_BUFFERED, FILE_SPECIAL_ACCESS) 
+#define IO_READ_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6211, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 
-#define IO_WRITE_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6212, METHOD_BUFFERED, FILE_SPECIAL_ACCESS) 
+#define IO_WRITE_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6212, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 
-#define IO_GET_MODULE_REQUEST  CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6213, METHOD_BUFFERED, FILE_SPECIAL_ACCESS) 
+#define IO_GET_MODULE_REQUEST  CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6213, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 
 typedef struct _KERNEL_READ_REQUEST
 {
@@ -24,7 +23,6 @@ typedef struct _KERNEL_READ_REQUEST
 	ULONG Address; // address of memory to start reading from
 	PVOID pBuff; // return value
 	ULONG Size; // size of memory to read
-
 } KERNEL_READ_REQUEST, * PKERNEL_READ_REQUEST;
 
 typedef struct _KERNEL_WRITE_REQUEST
@@ -33,10 +31,7 @@ typedef struct _KERNEL_WRITE_REQUEST
 	ULONG Address; // address of memory to start reading from
 	PVOID pBuff; // return value
 	ULONG Size; // size of memory to read
-
 } KERNEL_WRITE_REQUEST, * PKERNEL_WRITE_REQUEST;
-
-
 
 class KInterface
 {
@@ -55,11 +50,9 @@ private:
 			float buf = Read<float>(ReadAddress + i, 4); //read bytes from address in memory
 			memcpy(&buff, (unsigned char*)(&buf), 4); // transforms float bytes char bytes
 
-
 			for (int j = 0; j < 4; j++)
 			{
-
-				bytes[i + j] = buff[j]; // adds chars to bytes array making a string 
+				bytes[i + j] = buff[j]; // adds chars to bytes array making a string
 				if ((char)buff[j] < 0 || (char)buff[j] >= 128)
 				{
 					memcpy(&buff[j], "\0", 1);
@@ -67,7 +60,7 @@ private:
 					break;
 				}
 			}
-			if(invalidChar)
+			if (invalidChar)
 				break;
 		}
 		char str[sizeof(bytes) + 1];
@@ -82,7 +75,7 @@ public:
 	HANDLE hDriver; // Handle to driver
 	DWORD ProcessID;
 
-					// Initializer
+	// Initializer
 	KInterface(LPCSTR RegistryPath)
 	{
 		hDriver = CreateFileA(RegistryPath,
@@ -103,7 +96,6 @@ public:
 				ProcessID = Id;
 			}
 		}
-
 	}
 
 	DWORD Process()
@@ -138,7 +130,6 @@ public:
 			return false;
 	}
 
-
 	template <typename type>
 	type Read(ULONG ReadAddress, SIZE_T Size = sizeof(type))
 	{
@@ -154,13 +145,11 @@ public:
 		//ReadRequest.pBuff = &cData;
 		ReadRequest.Size = Size;
 
-
 		if (DeviceIoControl(hDriver, IO_READ_REQUEST, &ReadRequest, sizeof(ReadRequest), &ReadRequest, sizeof(ReadRequest), 0, 0))
 			return  *(type*)&ReadRequest.pBuff;
-		
+
 		return (type)false;
 	}
-
 
 	std::string ReadString(DWORD address)
 	{
@@ -171,13 +160,11 @@ public:
 		int max2 = Read<int>(address + 0x08);
 		//clog.AddLog("%x : %i", address, max);
 
-		unsigned char buf = Read<unsigned char>(address , 1); 
-
+		unsigned char buf = Read<unsigned char>(address, 1);
 
 		if (max < 16 && max > 0 && (buf > 0 && buf <= 128) && !(max2 > 0 && max2 < 256))
 		{
 			strReturn = StrRead(address);
-
 		}
 		else
 		{
@@ -185,9 +172,7 @@ public:
 		}
 
 		return strReturn;
-
 	}
-
 
 	/*bool Write(ULONG WriteAddress, ULONG WriteValue, SIZE_T WriteSize)
 	{
@@ -207,9 +192,6 @@ public:
 		else
 			return false;
 	}*/
-
 };
-
-
 
 #endif //!_KINTERFACE_H_

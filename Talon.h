@@ -1,6 +1,5 @@
 #pragma once
 
-
 #ifndef _TALON_H
 #define _TALON_H
 
@@ -21,11 +20,7 @@ private:
 public:
 	Talon() : champion(Champion::Talon)
 	{
-
 	}
-
-
 };
-
 
 #endif

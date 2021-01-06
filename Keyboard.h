@@ -8,12 +8,11 @@
 #include <stdio.h>
 #include <string>
 
-
 class Keyboard
 {
 private:
 	LARGE_INTEGER frequency, startCount, endCount; // for timer
-	int pressTime = FAST_REACTION_TIME; //how long key is pressed in miliseconds
+	int pressTime = FAST_REACTION_TIME; //how long key is pressed in milliseconds
 
 public:
 
@@ -24,7 +23,7 @@ public:
 	}
 	~Keyboard() = default;
 
-	//Sets pressdown time
+	//Sets press down time
 	void SetDelay(int ms);
 
 	//presses special key, e.g arrows, shift
@@ -33,13 +32,13 @@ public:
 	//releases special key
 	void SpecialKeyUp(int vk);
 
-	//presses scancode key
+	//presses scan code key
 	void ScancodeKeyDown(int vk);
 
-	//releases scancode key
+	//releases scan code key
 	void ScancodeKeyUp(int vk);
 
-	//expects the key (as a capital letter), whether its held down, and whether to yield a capital letter. 
+	//expects the key (as a capital letter), whether its held down, and whether to yield a capital letter.
 	// example sending ('A',false,false) yields 'a'
 	// to achieve 'A', send ('A',false,true)
 	void GenerateKey(int vk, BOOL bExtended, bool shift);
@@ -48,7 +47,6 @@ public:
 
 	//types given text
 	void Type(std::string phrase);
-
 
 	//	1 = left
 	//	2 = right
@@ -66,10 +64,8 @@ public:
 	void HitKey(int vk);
 
 	double GetExecutionTime();
-
 };
 
 extern Keyboard* keyboard;
-
 
 #endif // !_KEYBOARD_H_

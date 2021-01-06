@@ -9,7 +9,6 @@
 #include <ShlObj.h>
 #include "Menu.h"
 
-
 template< typename T >
 class ConfigValue
 {

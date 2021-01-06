@@ -3,10 +3,8 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
-
 #include "Definitions.h"
 #include "Pixel.h"
-
 
 class Utils
 {
@@ -16,7 +14,6 @@ public:
 
 	Utils()
 	{
-
 	}
 
 	~Utils() = default;
@@ -36,10 +33,10 @@ public:
 	//Given three pixels, checks the environment to see if those pixels are where they should be
 	bool CheckLocation(Pixel pix1, Pixel pix2, Pixel pix3);
 
-	//retruns an Area struct with screen size
+	//returns an Area struct with screen size
 	Area GetDesktopArea() const;
 
-	//retruns an Area struct with foreground window size
+	//returns an Area struct with foreground window size
 	Area GetForegroundWindowArea() const;
 
 	//converts whole string to lowercase
@@ -50,10 +47,13 @@ public:
 
 	//check if strA contains strB
 	bool StringContains(std::string strA, std::string strB, bool ignore_case = false);
+
+	//string to wstring
+	std::wstring StringToWstring(std::string str);
+
+	std::string WstringToString(std::wstring wstr);
 };
 
 extern Utils* utils;
 
 #endif
-
-

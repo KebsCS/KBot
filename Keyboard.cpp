@@ -1,12 +1,10 @@
 #include "Keyboard.h"
 
-
 void Keyboard::SetDelay(int ms)
 {
 	pressTime = ms;
 	//clog.AddLog("[keyboard] Set delay to", ms, "ms");
 }
-
 
 void Keyboard::SpecialKeyDown(int vk)
 {
@@ -59,7 +57,6 @@ void Keyboard::ScancodeKeyUp(int vk)
 //https://www.asciitable.com
 void Keyboard::GenerateKey(int vk, BOOL bExtended, bool shift)
 {
-
 	KEYBDINPUT  kb = { 0 };
 	INPUT       Input = { 0 };
 
@@ -105,7 +102,6 @@ void Keyboard::GenerateKey(int vk, BOOL bExtended, bool shift)
 	{
 		// Press shift key
 		SpecialKeyDown(VK_SHIFT);
-
 	}
 
 	/* Generate a "key down" */
@@ -114,7 +110,7 @@ void Keyboard::GenerateKey(int vk, BOOL bExtended, bool shift)
 	kb.wVk = vk;
 	Input.type = INPUT_KEYBOARD;
 	Input.ki = kb;
-	
+
 	::SendInput(1, &Input, sizeof(Input));
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(FAST_REACTION_TIME));
@@ -129,12 +125,10 @@ void Keyboard::GenerateKey(int vk, BOOL bExtended, bool shift)
 	Input.ki = kb;
 	::SendInput(1, &Input, sizeof(Input));
 
-
 	if (shift) //release shift key if pressed
 	{
 		// Release shift key
 		SpecialKeyUp(VK_SHIFT);
-
 	}
 
 	return;
@@ -143,7 +137,6 @@ void Keyboard::GenerateKey(int vk, BOOL bExtended, bool shift)
 //http://www.philipstorr.id.au/pcbook/book3/scancode.htm
 void Keyboard::GenerateKeyScancode(int vk, bool shift)
 {
-
 	KEYBDINPUT  kb = { 0 };
 	INPUT       Input = { 0 };
 
@@ -178,7 +171,6 @@ void Keyboard::GenerateKeyScancode(int vk, bool shift)
 	Input.ki = kb;
 	::SendInput(1, &Input, sizeof(Input));
 
-
 	//if (shift) //release shift key if pressed
 	//{
 	//	// Release shift key
@@ -188,8 +180,6 @@ void Keyboard::GenerateKeyScancode(int vk, bool shift)
 
 	return;
 }
-
-
 
 void Keyboard::Type(std::string phrase)
 {
@@ -206,7 +196,7 @@ void Keyboard::Type(std::string phrase)
 		letter = phrase[i];
 
 		GenerateKey(toupper(letter), false, Uppercase);
-		std::this_thread::sleep_for(std::chrono::milliseconds(RandomInt(50,100)));
+		std::this_thread::sleep_for(std::chrono::milliseconds(RandomInt(50, 100)));
 	}
 	//LOG("Typed:", phrase);
 	return;
@@ -234,7 +224,6 @@ void Keyboard::Arrow(int arrow)
 	//LOG("Pressed:", sarrow, "arrow");
 }
 
-
 void Keyboard::HitSpecialKey(int vk)
 {
 	SpecialKeyDown(vk);
@@ -243,7 +232,6 @@ void Keyboard::HitSpecialKey(int vk)
 	//LOG("Pressed ", vk);
 	return;
 }
-
 
 void Keyboard::TypeNum(int number)
 {
@@ -255,7 +243,6 @@ void Keyboard::HitKey(int vk)
 	GenerateKey(vk, false, false);
 	//LOG("Pressed:", vk);
 }
-
 
 double Keyboard::GetExecutionTime()
 {

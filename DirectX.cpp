@@ -1,6 +1,5 @@
 #include "Visuals.h"
 
-
 LPDIRECT3D9              g_pD3D = NULL;
 LPDIRECT3DDEVICE9        g_pd3dDevice = NULL;
 D3DPRESENT_PARAMETERS    g_d3dpp = {};
@@ -10,8 +9,7 @@ LPDIRECT3DVERTEXBUFFER9  g_pVB = NULL;
 RECT rc;
 ID3DXFont* pFont;
 
-
-Visuals *vis;
+Visuals* vis;
 
 extern std::vector<CObject>minionList;
 extern std::vector<CObject>missileList;
@@ -22,11 +20,11 @@ extern DWORD GetNext(DWORD a2);
 DirectX::XMMATRIX Direct3D9Render::ReadMatrix(DWORD address)
 {
 
+	
 	DirectX::XMMATRIX tmp;
-	for (int i = 0; i < 16; i++) //todo 1 read instaed of 16 (performance)
+	for (int i = 0; i < 16; i++) //todo 1 read instead of 16 (performance)
 	{
 		tmp.r->m128_f32[i] = Memory.Read<float>((address + sizeof(float) * i), sizeof(float));
-
 	}
 	//tmp.r->m128_f32[0] = Memory.Read<float>((address + sizeof(float) * 0), sizeof(float));
 	//tmp.r->m128_f32[1] = Memory.Read<float>((address + sizeof(float) * 1), sizeof(float));
@@ -48,27 +46,22 @@ DirectX::XMMATRIX Direct3D9Render::ReadMatrix(DWORD address)
 	//tmp.r->m128_f32[14] = Memory.Read<float>((address + sizeof(float) * 14), sizeof(float));
 	//tmp.r->m128_f32[15] = Memory.Read<float>((address + sizeof(float) * 15), sizeof(float));
 
-	
 	//clog.AddLog("[matrix] %f, %f, %f ,%f", tmp.r->m128_f32[0], tmp.r->m128_f32[1], tmp.r->m128_f32[2], tmp.r->m128_f32[3]);
 	//clog.AddLog("[matrix] %f, %f, %f ,%f", tmp.r->m128_f32[4], tmp.r->m128_f32[5], tmp.r->m128_f32[6], tmp.r->m128_f32[7]);
 	//clog.AddLog("[matrix] %f, %f, %f ,%f", tmp.r->m128_f32[8], tmp.r->m128_f32[9], tmp.r->m128_f32[10], tmp.r->m128_f32[11]);
 	//clog.AddLog("[matrix] %f, %f, %f ,%f", tmp.r->m128_f32[12], tmp.r->m128_f32[13], tmp.r->m128_f32[14], tmp.r->m128_f32[15]);
 
 	return tmp;
-
 }
 DirectX::XMMATRIX Direct3D9Render::GetViewMatrix()
 {
-	
-
 	//DWORD Renderer = Memory.Read<DWORD>(ClientAddress + oRenderer, sizeof(DWORD));
 	return ReadMatrix(ClientAddress + oViewMatrix);
 }
 DirectX::XMMATRIX Direct3D9Render::GetProjectionMatrix()
 {
-
 	//DWORD Renderer = Memory.Read<DWORD>(ClientAddress + oRenderer, sizeof(DWORD));
-	return ReadMatrix(ClientAddress + oViewMatrix +0x40);
+	return ReadMatrix(ClientAddress + oViewMatrix + 0x40);
 }
 
 void Direct3D9Render::GetViewProjectionMatrix()
@@ -80,17 +73,14 @@ void Direct3D9Render::GetViewProjectionMatrix()
 #endif // !NOLEAGUE
 }
 
-
 bool Direct3D9Render::DirectXInit(HWND hWnd)
 {
-
 	if ((g_pD3D = Direct3DCreate9(D3D_SDK_VERSION)) == NULL)
 	{
 		MessageBoxA(0, " Direct3DCreate9 Failed", 0, 0);
 
 		return false;
 	}
-
 
 	ZeroMemory(&g_d3dpp, sizeof(D3DPRESENT_PARAMETERS));
 	g_d3dpp.Windowed = TRUE;
@@ -104,7 +94,6 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 	g_d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
 	g_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE; //D3DPRESENT_INTERVAL_ONE - vsync D3DPRESENT_INTERVAL_IMMEDIATE - no vsync
 	g_d3dpp.MultiSampleType = D3DMULTISAMPLE_NONMASKABLE;
-
 
 	if (g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &g_d3dpp, &g_pd3dDevice) < 0)
 	{
@@ -121,23 +110,20 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 		return false;
 	}
 
-
 	g_Line->SetWidth(1.0f);
 	g_Line->SetPattern(0xFFFFFFFF);
 	g_Line->SetAntialias(false);
 
 	InitializeFonts();
-	
+
 	Renderimgui(hWnd);
 
 	if (draw->InitTextures())
 		clog.AddLog("[start] Initialized textures");
 	else clog.AddLog("[error] Failed to initialize textures");
 
-
 	if (!init->Start())
 		return false;
-	
 
 	return true;
 }
@@ -156,7 +142,6 @@ void Direct3D9Render::HelpMarker(const char* desc)
 		ImGui::EndTooltip();
 	}
 }
-
 
 //bool IsTroyFunc(DWORD a1)todo
 //{
@@ -198,7 +183,6 @@ void Direct3D9Render::HelpMarker(const char* desc)
 //	return a1 == ClientAddress + 0x3508318;
 //}
 
-
 void Direct3D9Render::HeroLoop()
 {
 	//hero loop
@@ -214,17 +198,14 @@ void Direct3D9Render::HeroLoop()
 				//if master + tab /  scoreboard window + show scoreboard
 				if ((M.Cooldowns.Type[2] && ((PressedKey(VK_TAB))) || (M.Cooldowns.ScoreboardWnd && M.Cooldowns.Scoreboard.ShowScoreboard)))
 					vis->ScoreBoard(obj);
-
 			}
 
 			if (M.AARange.Master)
 				vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
 					false, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]), false);
 
-
 			if (M.Tracers.Master)
 				vis->DrawTracers(obj, M.Tracers.Thickness);
-
 
 			if (M.GankAlerter.Master)
 				vis->GankAlerter(obj);
@@ -235,7 +216,6 @@ void Direct3D9Render::HeroLoop()
 					vis->TalonDamageCalc(obj);
 			}
 
-
 			//clog.AddLog("%s %i", obj.GetChampName().c_str(), obj.GetNetworkID());
 
 			//float dist = obj.GetDistToMe(Local);
@@ -244,10 +224,8 @@ void Direct3D9Render::HeroLoop()
 			//ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
 			//std::string str = obj.GetName() + " , " + std::to_string(dmg);
 			//draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
-
 		}
 	}
-
 }
 
 void Direct3D9Render::TurretLoop()
@@ -257,7 +235,6 @@ void Direct3D9Render::TurretLoop()
 	{
 		for (auto obj : init->turretlist)
 		{
-
 			if (M.AARange.Turrets)
 				vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
 					false, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]), true);
@@ -267,20 +244,16 @@ void Direct3D9Render::TurretLoop()
 			//draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
 		}
 	}
-
 }
-	
+
 void Direct3D9Render::Loops()
 {
-
 	if (M.Debug)
 		MissileThread();
 
 	if (M.AARange.Local)
 		vis->DrawAARanges(Local, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
 			M.AARange.Local, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]), false);
-
-	
 
 	//std::thread HeroLoopThread(&Direct3D9Render::HeroLoop, this);
 	//std::thread TurretLoopThread(&Direct3D9Render::TurretLoop, this);
@@ -306,7 +279,6 @@ void Direct3D9Render::Loops()
 			//float dmg = Local.GetTotalDamage(obj);
 			//std::string str = obj.GetName() + " , " + std::to_string(dmg) + " , " + std::to_string(obj.Address());
 			//draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
-
 		}
 	}
 
@@ -319,11 +291,8 @@ void Direct3D9Render::Loops()
 			{
 				vis->InhibTimers(obj);
 			}
-
 		}
 	}
-
-
 
 	//if (!missileList.empty())
 	//{
@@ -332,7 +301,7 @@ void Direct3D9Render::Loops()
 	//		if (!obj.Address())
 	//			continue;
 	//		ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
-	//		
+	//
 	//		if (RealPos.x == 0 && RealPos.y == 0)
 	//			continue;
 
@@ -353,11 +322,9 @@ void Direct3D9Render::Loops()
 	//		if (RealEndPos.x == 0 && RealEndPos.y == 0)
 	//			continue;
 
-
-
 	//		draw->Line(RealStartPos.x, RealStartPos.y, RealEndPos.x, RealEndPos.y, RGBA(255, 255, 255));
 
-	//		
+	//
 	//		float missileWidth = Memory.Read<float>(Memory.Read<DWORD>(Memory.Read<DWORD>(obj.Address() + 0x230) + 0x44) + 0x458);
 
 	//		std::string str = name + " , " + std::to_string(obj.Address()) + " , " +  std::to_string(missileWidth);
@@ -365,8 +332,6 @@ void Direct3D9Render::Loops()
 	//		draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
 	//	}
 	//}
-
-	
 
 	//HeroLoopThread.join();
 	//TurretLoopThread.join();
@@ -386,7 +351,6 @@ void Direct3D9Render::MissileThread()
 	//	{
 	//		if (cobj.IsMissile())
 	//		{
-
 	//			CObject source = ObjManager->GetObjByIndex(cobj.GetMissileSourceIndex());
 	//			//DWORD spellinfo = Memory.Read<DWORD>(cobj.Address() + 0x230);
 	//			//DWORD spelldata = Memory.Read<DWORD>(spellinfo + 0x44);
@@ -398,13 +362,10 @@ void Direct3D9Render::MissileThread()
 	//			{
 	//				if (cobj.GetName().find("basic") == std::string::npos)
 	//				{
-
 	//					Vector3 StartPos = cobj.GetMissileStartPos();
 	//					ImVec2 RealStartPos = Direct3D9.WorldToScreen(StartPos);
 	//					Vector3 EndPos = cobj.GetMissileEndPos();
 	//					ImVec2 RealEndPos = Direct3D9.WorldToScreen(EndPos);
-
-
 
 	//					/*DWORD spellinfo = Memory.Read<DWORD>(cobj.Address() + 0x230);
 	//					DWORD spelldata = Memory.Read<DWORD>(spellinfo + 0x44);
@@ -430,7 +391,6 @@ void Direct3D9Render::MissileThread()
 	//	obj = GetNext(obj);
 	//}
 
-
 	//std::vector<CObject> missiles;
 	int numMissiles = Memory.Read<int>(MissileMap + 0x78);
 	int rootNode = Memory.Read<int>(MissileMap + 0x74);
@@ -450,7 +410,6 @@ void Direct3D9Render::MissileThread()
 		childNode2 = Memory.Read<int>(node + 4);
 		childNode3 = Memory.Read<int>(node + 8);
 
-
 		if (visitedNodes.find(childNode1) == visitedNodes.end())
 			nodesToVisit.push(childNode1);
 		if (visitedNodes.find(childNode2) == visitedNodes.end())
@@ -459,7 +418,6 @@ void Direct3D9Render::MissileThread()
 			nodesToVisit.push(childNode3);
 
 		unsigned int netId = Memory.Read<int>(node + 0x10);
-
 
 		// Actual missiles net_id start from 0x40000000 and throught the game this id will be incremented by 1 for each missile.
 		// So we use this information to check if missiles are valid.
@@ -482,7 +440,7 @@ void Direct3D9Render::MissileThread()
 		// At this point addr is the address of the MissileClient
 		MissileClient obj(addr); //std::unique_ptr<CObject>(new CObject());
 	   // m->LoadFromMem(addr, hProcess);
-		
+
 		// Check one more time that we read a valid missile
 		if (obj.GetNetworkID() != netId)
 			continue;
@@ -498,7 +456,6 @@ void Direct3D9Render::MissileThread()
 			{
 				if (!utils->StringContains(obj.GetName(), "basic", true))
 				{
-
 					Vector3 StartPos = obj.GetMissileStartPos();
 					ImVec2 RealStartPos = WorldToScreen(StartPos);
 					if (RealStartPos.x == 0 || RealStartPos.y == 0)
@@ -530,22 +487,16 @@ void Direct3D9Render::MissileThread()
 					std::string str = obj.GetName() + " , " + std::to_string(obj.Address());
 					draw->String(str, RealEndPos.x, RealEndPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
 					draw->Line(RealStartPos, RealEndPos, RGBA(255, 255, 255));
-				
 				}
 			}
-
 		}
-
 	}
-
-
 }
-
 
 int Direct3D9Render::Render()
 {
 	//read vieprojwmatrix for w2s
-	
+
 	//M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
 
 	// Start the Dear ImGui frame
@@ -557,7 +508,6 @@ int Direct3D9Render::Render()
 
 	if (M.MenuOpen)
 	{
-
 		char buf[128];
 		sprintf(buf, XorStr("KBot %.1f FPS ###AnimatedTitle"), ImGui::GetIO().Framerate);
 		ImGui::SetNextWindowPos(ImVec2(904, 349), ImGuiCond_FirstUseEver);
@@ -571,7 +521,6 @@ int Direct3D9Render::Render()
 				M.ExitBot = true;
 			ImGui::EndPopup();
 		}
-
 
 		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable;
 		ImGuiTreeNodeFlags collapsing_header_flags = ImGuiTreeNodeFlags_DefaultOpen;
@@ -607,9 +556,6 @@ int Direct3D9Render::Render()
 					ImGui::ColorEdit4("AARangeColor##3", (float*)&M.AARange.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
 					ImGui::SameLine();
 
-
-
-
 					ImGui::SliderInt2("", M.AARange.Slider, 10, 60, "%d");
 					ImGui::Separator();
 
@@ -640,7 +586,6 @@ int Direct3D9Render::Render()
 
 						if (ImGui::Begin("Scoreboard##Window", &M.Cooldowns.ScoreboardWnd))
 						{
-							
 							ImGui::Columns(2, 0, false);
 							ImGui::Checkbox("Summoner spells", &M.Cooldowns.Scoreboard.Summs);
 							ImGui::Checkbox("Experience", &M.Cooldowns.Scoreboard.Exp);
@@ -680,7 +625,6 @@ int Direct3D9Render::Render()
 										std::string tmp = M.ScoreboardNames[n];
 										M.ScoreboardNames[n] = M.ScoreboardNames[payload_n];
 										M.ScoreboardNames[payload_n] = tmp;
-
 									}
 									ImGui::EndDragDropTarget();
 								}
@@ -706,13 +650,9 @@ int Direct3D9Render::Render()
 							const int u16_one = 1;
 							ImGui::InputScalar("Position X", ImGuiDataType_U16, &M.Cooldowns.Scoreboard.Pos[0], &u16_one, NULL, "%u");
 							ImGui::InputScalar("Position Y", ImGuiDataType_U16, &M.Cooldowns.Scoreboard.Pos[1], &u16_one, NULL, "%u");
-
-						
-
 						}
 						ImGui::End();
 					}
-
 				}
 
 				if (ImGui::CollapsingHeader("Local", collapsing_header_flags))
@@ -726,13 +666,10 @@ int Direct3D9Render::Render()
 					ImGui::SameLine(); HelpMarker("Visual indicator, when to lasthit");
 					ImGui::SameLine();
 					ImGui::ColorEdit4("LastHitColor##3", (float*)&M.LastHit.Color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha);
-
-
 				}
 
 				if (ImGui::CollapsingHeader("Structures", collapsing_header_flags))
 				{
-
 					ImGui::Checkbox("Turrets Range", &M.AARange.Turrets);
 					ImGui::Separator();
 
@@ -740,17 +677,12 @@ int Direct3D9Render::Render()
 					ImGui::Separator();
 
 					ImGui::Checkbox("Inhib Respawn Time", &M.Inhibs.Master);
-
-
 				}
-
-
 
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Evade"))
 			{
-
 				draw->ImageFromMemory(draw->textureKEKW, 0, 0, "", 99, 256, 256, true);
 
 				ImGui::EndTabItem();
@@ -770,7 +702,6 @@ int Direct3D9Render::Render()
 					ImGui::Columns(2, 0, false);
 					ImGui::Checkbox("Enable ##AutoSmite", &M.AutoSmite.Master);
 
-
 					ImGui::NextColumn();
 					ImGui::Text("Slot:");
 					ImGui::SameLine();
@@ -784,7 +715,6 @@ int Direct3D9Render::Render()
 					ImGui::RadioButton("Extra legit", &M.AutoSmite.Mode, 2);
 
 					ImGui::SliderFloat("##AutoSmiteMouseSpeed", &M.AutoSmite.MouseSpeed, 0.1f, 1.f, "Mouse Speed: %lg", 1.f);
-
 				}
 
 				ImGui::Separator();
@@ -795,18 +725,13 @@ int Direct3D9Render::Render()
 				ImGui::Separator();
 				ImGui::Combo("Menu Key", &M.Misc.MenuKey, keyNames, ARRAYSIZE(keyNames));
 
-
 				ImGui::Separator();
-
-
 
 				ImGui::EndTabItem();
 			}
 
 			if (ImGui::BeginTabItem(M.Champion.c_str()))
 			{
-
-
 				if (M.Champion == "Talon")
 				{
 					ImGui::Checkbox("Damage Calculator", &M.Talon.DmgCalc);
@@ -819,9 +744,8 @@ int Direct3D9Render::Render()
 						ImGui::Selectable("Blue-side Raptors", &M.Talon.JumpsType[1]);
 						ImGui::Selectable("Botlane", &M.Talon.JumpsType[2]);
 						ImGui::Selectable("Toplane", &M.Talon.JumpsType[3]);
-						ImGui::Selectable("Red-side Raptors", &M.Talon.JumpsType[4]);
+						ImGui::Selectable("Red-side Raptors TODO", &M.Talon.JumpsType[4]);
 					}
-
 				}
 				else
 					ImGui::Text("Only Talon for now");
@@ -850,7 +774,7 @@ int Direct3D9Render::Render()
 							if (returned == bufcfg) //check if config already exists
 							{
 								exists = true;
-								Config->Save(bufcfg); //save to it 
+								Config->Save(bufcfg); //save to it
 								break;
 							}
 						}
@@ -888,10 +812,7 @@ int Direct3D9Render::Render()
 						Config->Load(returned);
 					ImGui::Columns(1);
 					ImGui::Separator();
-
 				}
-
-
 
 				ImGui::EndTabItem();
 			}
@@ -901,15 +822,12 @@ int Direct3D9Render::Render()
 		ImGui::End();
 
 		//ImGui::ShowDemoWindow();
-
 	}
 
 	if (M.ConsoleOpen)
 	{
 		clog.Draw("Console Log", &M.ConsoleOpen);
 	}
-
-
 
 	// Rendering
 
@@ -924,7 +842,6 @@ int Direct3D9Render::Render()
 #ifndef NOLEAGUE
 		//std::thread MissileLoopThread;
 
-
 		Loops();
 
 		if (championScript)
@@ -935,17 +852,11 @@ int Direct3D9Render::Render()
 
 #endif // !NOLEAGUE
 
-		
-
-
 		//draw->ImageFromMemory(draw->textureIgnite, mouse->GetPos().x, mouse->GetPos().y, "abc", 3213, 120, 120, false);
 
 		ImGui::EndFrame();
 		ImGui::Render();
 		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-
-
-
 
 		//
 		//DWORD testList = Memory.Read<DWORD>(ClientAddress + 0x34F848C);
@@ -965,8 +876,6 @@ int Direct3D9Render::Render()
 		//	ImVec2 RealStartPos = WorldToScreen(StartPos);
 		//	ImVec2 RealEndPos = WorldToScreen(EndPos);
 
-
-
 		//	draw->Line(RealStartPos.x, RealStartPos.y, RealEndPos.x, RealEndPos.y, RGBA(255, 255, 255));
 
 		//
@@ -976,7 +885,6 @@ int Direct3D9Render::Render()
 
 		//}
 
-
 		//float GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
 		//if (xd)
 		//{
@@ -985,16 +893,14 @@ int Direct3D9Render::Render()
 
 		//}
 		//draw->String(std::to_string(xdtimer - GameTime), 100, 100, centered, RGBA(255, 255, 255),fontTahoma);
-		
 
-		if (M.DrawServerInfo )
+		if (M.DrawServerInfo)
 		{
-			if (M.StartTime + 10 - M.GameTime > 0) //draw text on script start
+			if (M.StartTime + 10 - M.GameTime > 0 && !M.ServerInfo.empty()) //draw text on script start
 				draw->StringBoxed(M.ServerInfo, 10, 10, lefted, RGBA(255, 255, 255), fontTahoma, RGBA(255, 255, 255), RGBA(1, 0, 0));
 			else
 				M.DrawServerInfo = false;
 		}
-
 
 		//drawings test
 		//draw->BoxFilled(200, 500, 100, 100, RGBA(255, 0, 0));
@@ -1003,8 +909,6 @@ int Direct3D9Render::Render()
 		//draw->StringBoxed("asdfsdgSVX123!_", 700, 200, lefted, RGBA(255, 255, 255), fontTahoma, RGBA(1,0,0),RGBA(255,0,0));
 		//draw->Circle(1100, 500, 100, RGBA(255, 0, 0));
 		//draw->CircleFilled(1400, 500, 100, RGBA(255, 0, 0));
-		
-		
 
 		g_pd3dDevice->EndScene();
 	}
@@ -1017,44 +921,36 @@ int Direct3D9Render::Render()
 	return 0;
 }
 
-
-
 void Direct3D9Render::Shutdown()
 {
-    if (g_pd3dDevice) { g_pd3dDevice->Release(); g_pd3dDevice = NULL; }
-    if (g_pD3D) { g_pD3D->Release(); g_pD3D = NULL; }
+	if (g_pd3dDevice) { g_pd3dDevice->Release(); g_pd3dDevice = NULL; }
+	if (g_pD3D) { g_pD3D->Release(); g_pD3D = NULL; }
 	if (g_Line != NULL) { g_Line->Release(); }
 	if (g_pVB != NULL) { g_pVB->Release(); }
 	ImGui_ImplDX9_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
-
 }
-
 
 void Direct3D9Render::InitializeFonts()
 {
-
 	D3DXCreateFontA(g_pd3dDevice, 14, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial", &fontArial);
 	D3DXCreateFontA(g_pd3dDevice, 16, 0, FW_BOLD, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Tahoma", &fontTahoma);
 	D3DXCreateFontA(g_pd3dDevice, 12, 0, FW_BOLD, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Tahoma", &fontTahomaSmall);
 }
 
-
 void Direct3D9Render::Renderimgui(HWND hWnd)
 {
-
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	
+
 	// Setup Dear ImGui style
 	MenuInit();
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX9_Init(g_pd3dDevice);
-
 }
 
 void Direct3D9Render::ResetDevice()
@@ -1066,21 +962,17 @@ void Direct3D9Render::ResetDevice()
 	ImGui_ImplDX9_CreateDeviceObjects();
 }
 
-
-
-
 ImVec2 Direct3D9Render::WorldToScreen(Vector3 pos)
 {
 	DirectX::XMMATRIX matrix = M.Matrix;
-	
-	ImVec2 returnVec = ImVec2(0,0);
+
+	ImVec2 returnVec = ImVec2(0, 0);
 
 	Vector4 clipCoords;
 	clipCoords.X = pos.X * matrix.r->m128_f32[0] + pos.Y * matrix.r->m128_f32[4] + pos.Z * matrix.r->m128_f32[8] + matrix.r->m128_f32[12];
 	clipCoords.Y = pos.X * matrix.r->m128_f32[1] + pos.Y * matrix.r->m128_f32[5] + pos.Z * matrix.r->m128_f32[9] + matrix.r->m128_f32[13];
 	clipCoords.Z = pos.X * matrix.r->m128_f32[2] + pos.Y * matrix.r->m128_f32[6] + pos.Z * matrix.r->m128_f32[10] + matrix.r->m128_f32[14];
 	clipCoords.W = pos.X * matrix.r->m128_f32[3] + pos.Y * matrix.r->m128_f32[7] + pos.Z * matrix.r->m128_f32[11] + matrix.r->m128_f32[15];
-
 
 	//clipCoords.X = pos.X * matrix.r->m128_f32[0] + pos.Y * matrix.r->m128_f32[1] + pos.Z * matrix.r->m128_f32[2] + matrix.r->m128_f32[3];
 	//clipCoords.Y = pos.X * matrix.r->m128_f32[4] + pos.Y * matrix.r->m128_f32[5] + pos.Z * matrix.r->m128_f32[6] + matrix.r->m128_f32[7];
@@ -1102,7 +994,6 @@ ImVec2 Direct3D9Render::WorldToScreen(Vector3 pos)
 
 void Direct3D9Render::MenuInit()
 {
-
 	ImGuiIO& io = ImGui::GetIO();
 	io.IniFilename = ".\\configs\\imgui.ini";
 	io.IniSavingRate = 7.f;
@@ -1111,7 +1002,7 @@ void Direct3D9Render::MenuInit()
 	ImGuiStyle& style = ImGui::GetStyle();
 
 	//Main
-	style.WindowPadding = ImVec2(4.f,4.f);
+	style.WindowPadding = ImVec2(4.f, 4.f);
 	style.FramePadding = ImVec2(3.f, 3.f);
 	style.ItemSpacing = ImVec2(5.f, 5.f);
 	style.ItemInnerSpacing = ImVec2(5.f, 5.f);
@@ -1139,7 +1030,6 @@ void Direct3D9Render::MenuInit()
 	style.ColorButtonPosition = 1;
 	style.ButtonTextAlign = ImVec2(0.5f, 0.5f);
 	style.SelectableTextAlign = ImVec2(0.5f, 0.5f);
-
 
 	ImVec4* colors = ImGui::GetStyle().Colors;
 	colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -1190,6 +1080,4 @@ void Direct3D9Render::MenuInit()
 	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
-
-
 }

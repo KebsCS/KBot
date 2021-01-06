@@ -1,15 +1,12 @@
 #ifndef _API_H_
 #define _API_H_
 
-
-
 #include<Windows.h>
 #include<WinInet.h>
 #pragma comment(lib,"WinInet.lib")
 #include <string>
 
 #include "html_parser.hpp"
-
 
 class API
 {
@@ -68,7 +65,6 @@ public:
 			INTERNET_FLAG_PRAGMA_NOCACHE |
 			INTERNET_FLAG_RELOAD | INTERNET_FLAG_SECURE;
 
-
 		HINTERNET hRequest = HttpOpenRequestA(hConnect, "GET", params.c_str(), (LPCSTR)HTTP_VERSION, NULL, NULL, RequestFlg, NULL);
 		if (!hRequest)
 		{
@@ -84,7 +80,6 @@ public:
 			dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA | SECURITY_FLAG_IGNORE_REVOCATION;
 			InternetSetOptionA(hRequest, INTERNET_OPTION_SECURITY_FLAGS, &dwFlags, sizeof(dwFlags));
 		}
-
 
 		BOOL status = HttpSendRequestA(hRequest, NULL, 0, nullptr, NULL);
 		if (!status)
@@ -113,7 +108,6 @@ public:
 		delete[]pResultData;
 		delete[]pTmpQuery;
 		return ResultData;
-
 	}
 };
 

@@ -26,7 +26,6 @@ bool Mouse::MouseMoveArea(Area region)
 	return MouseMoveArea(region.x1, region.y1, region.x2, region.y2);
 }
 
-
 //Deviates PATH Randomly!! mouse move - recieves pixel coordinates. change mouse position to those coords: DEVIATION CHOOSING
 bool Mouse::MouseMove(int x, int y)
 {
@@ -38,11 +37,9 @@ bool Mouse::MouseMove(int x, int y)
 	int deviatePathY = RandomInt(deviation * (-1), deviation); //rand() % (deviation*2) - deviation; //deviate -250 to 250 (max 250 pixels from path) or specified deviation
 	int deviatePathx = RandomInt(deviation * (-1), deviation); //deviate -250 to 250 (max 250 pixels from path) or specified deviation
 
-
 	int stepSize = RandomInt(70, 220);
 	float speed = MouseSpeed * stepSize;
 	stepSize = static_cast<int>(speed) * 2;
-
 
 	stepX = (x - curMouse.x) / static_cast<float>(stepSize);
 	stepY = (y - curMouse.y) / static_cast<float>(stepSize);
@@ -51,7 +48,6 @@ bool Mouse::MouseMove(int x, int y)
 	::ZeroMemory(&Input, sizeof(INPUT));
 	Input.type = INPUT_MOUSE;
 	Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK;
-
 
 	for (int i = 1; i <= stepSize; i++)
 	{
@@ -93,7 +89,6 @@ bool Mouse::MouseMoveSLD(int x, int y)
 	int stepSize = RandomInt(70, 240) * 2; //rand() % 170 + 70; //generate random number between 70 and 240
 	stepX = (x - curMouse.x) / static_cast<float>(stepSize);
 	stepY = (y - curMouse.y) / static_cast<float>(stepSize);
-
 
 	INPUT Input = { 0 };
 	::ZeroMemory(&Input, sizeof(INPUT));
@@ -146,7 +141,7 @@ bool Mouse::MouseMoveSLD(POINT coord)
 bool Mouse::MouseLeftDown()
 {
 	INPUT    Input = { 0 };
-	// left down 
+	// left down
 	::ZeroMemory(&Input, sizeof(INPUT));
 	Input.type = INPUT_MOUSE;
 	Input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
@@ -171,7 +166,7 @@ bool Mouse::MouseLeftUp()
 bool Mouse::MouseRightDown()
 {
 	INPUT    Input = { 0 };
-	// left down 
+	// left down
 	::ZeroMemory(&Input, sizeof(INPUT));
 	Input.type = INPUT_MOUSE;
 	Input.mi.dwFlags = MOUSEEVENTF_RIGHTDOWN;
@@ -195,7 +190,7 @@ bool Mouse::MouseRightUp()
 bool Mouse::MouseMiddleDown()
 {
 	INPUT    Input = { 0 };
-	// left down 
+	// left down
 	Input.type = INPUT_MOUSE;
 	Input.mi.dwFlags = MOUSEEVENTF_MIDDLEDOWN;
 	::SendInput(1, &Input, sizeof(INPUT));
@@ -226,11 +221,10 @@ bool Mouse::RightClick()
 bool Mouse::LeftClick()
 {
 	MouseLeftDown();
-	std::this_thread::sleep_for(std::chrono::milliseconds(RandomInt(13,15)));
+	std::this_thread::sleep_for(std::chrono::milliseconds(RandomInt(13, 15)));
 	MouseLeftUp();
 	return true;
 }
-
 
 bool Mouse::LeftClickHold(int t)
 {
@@ -304,9 +298,7 @@ bool Mouse::Scroll(int ammount)
 	::SendInput(1, &Input, sizeof(INPUT));
 
 	return true;
-
 }
-
 
 POINT Mouse::GetPos() const
 {
@@ -344,7 +336,6 @@ void Mouse::DragAndDrop(int x1, int y1, int x2, int y2, bool SLD)
 	std::this_thread::sleep_for(std::chrono::milliseconds(FAST_REACTION_TIME));
 	MouseLeftUp();
 	//LOG("Dropped on", x2, y2);
-
 }
 
 void Mouse::DragAndDrop(POINT start, POINT end, bool SLD)
@@ -352,7 +343,7 @@ void Mouse::DragAndDrop(POINT start, POINT end, bool SLD)
 	DragAndDrop(start.x, start.y, end.x, end.y, SLD);
 }
 
-void Mouse::StoreCurrentPos() 
+void Mouse::StoreCurrentPos()
 {
 	POINT current = GetPos();
 	PrevX = current.x;
@@ -360,7 +351,7 @@ void Mouse::StoreCurrentPos()
 	//LOG("Stored mose position", current.x, current.y);
 }
 
-void Mouse::ClearStoredPos() 
+void Mouse::ClearStoredPos()
 {
 	PrevX = 0;
 	PrevY = 0;
@@ -379,6 +370,5 @@ double Mouse::GetExecutionTime()
 
 	return(endCount.QuadPart - startCount.QuadPart) * 1000.0 / frequency.QuadPart;
 }
-
 
 Mouse* mouse = new Mouse();
