@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef _SPELLDB_H_
+#define _SPELLDB_H_
+
 //Talon
 
 //+200% bonus ad
@@ -16,3 +19,26 @@ const float TalonW2Dmg[6] = { 0, 45, 70, 95, 120, 145 };
 
 //+100% bonus ad
 const float TalonRDmg[4] = { 0, 90, 135, 180 };
+
+struct SpellInfo
+{
+	bool bCircular = false;
+	float fRange = -1;
+	float fWidth = -1;
+	float fCastTime = 0;
+	float fSpeed = -1;
+	bool bUseList = 0;
+	bool bTargeted = 0;
+	bool bCone = 0;
+	bool bLocal = 0;
+};
+
+struct ChampSpells
+{
+	SpellInfo Q;
+	SpellInfo W;
+	SpellInfo E;
+	SpellInfo R;
+};
+
+#endif

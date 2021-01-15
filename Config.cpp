@@ -9,6 +9,8 @@ void CConfig::Setup()
 	SetupValue(M.Misc.AntiLag, 1, "Misc", "AntiLag");
 	SetupValue(M.Misc.MenuKey, VK_INSERT, "Misc", "MenuKey");
 
+	SetupValue(M.Evade.Master, 0, "Evade", "Master");
+
 	SetupValue(M.Orbwalker.Master, 0, "Orbwalker", "Master");
 	SetupValue(M.Orbwalker.HoldKey, 0, "Orbwalker", "HoldKey");
 

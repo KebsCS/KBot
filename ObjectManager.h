@@ -13,8 +13,7 @@ static DWORD ClientAddress = Memory.GetClientModule();
 
 class CObject
 {
-protected:
-
+private:
 	int IsFunc(DWORD param_1, int param_2)
 	{
 		if (!param_1)
@@ -31,6 +30,7 @@ protected:
 
 		return  ((param_2 & uStack4) != 0);
 	}
+protected:
 
 	DWORD base = 0;
 	DWORD spellbook = 0;
@@ -48,6 +48,7 @@ public:
 	//{
 	//    return 0;//;IsTroyFunc(base);
 	//}
+	ChampSpells spell;
 
 	DWORD Address() const
 	{
@@ -151,6 +152,10 @@ public:
 			spellbook = (oObjSpellBook + 0x478);
 		return Memory.Read<DWORD>(base + spellbook + (0x4 * id), sizeof(DWORD));
 	}
+	DWORD GetSpellCastInfo()
+	{
+		return Memory.Read<DWORD>(base + oObjSpellBook + 0x20);
+	}
 	std::string GetChampName()
 	{
 		if (champ.empty())
@@ -252,10 +257,14 @@ public:
 		return Memory.Read<float>(base + oObjCritChance, sizeof(float));
 	}
 
-	// Return the Distance to your player
+	// Return the distance from object to another
 	float GetDistTo(CObject obj)
 	{
-		return this->GetPosition().DistTo(obj.GetPosition());
+		return this->GetPosition().Distance(obj.GetPosition());
+	}
+	float GetDistTo(Vector3 pos)
+	{
+		return this->GetPosition().Distance(pos);
 	}
 	int IsWard()
 	{
@@ -264,7 +273,7 @@ public:
 			float maxHP = this->GetMaxHealth();
 			if (maxHP == 1.f || maxHP == 3.f || maxHP == 4.f)
 			{
-				std::string name = this->GetName();
+				std::string sName = this->GetName();
 				if (maxHP == 3.f)
 				{
 					wardType = NormalWard;
@@ -275,10 +284,10 @@ public:
 					wardType = ControlWard;
 					return wardType;
 				}
-				else if (maxHP == 1.f && this->GetHealth() == 1.f && name.find("Plant") == std::string::npos
-					&& name.find("Shen") == std::string::npos && name.find("Unused") == std::string::npos && name.find("Honey") == std::string::npos
-					&& name.find("Bard") == std::string::npos && name.find("Chime") == std::string::npos && name.find("Nunu") == std::string::npos
-					&& name.find("Ivern") == std::string::npos)
+				else if (maxHP == 1.f && this->GetHealth() == 1.f && sName.find("Plant") == std::string::npos
+					&& sName.find("Shen") == std::string::npos && sName.find("Unused") == std::string::npos && sName.find("Honey") == std::string::npos
+					&& sName.find("Bard") == std::string::npos && sName.find("Chime") == std::string::npos && sName.find("Nunu") == std::string::npos
+					&& sName.find("Ivern") == std::string::npos)
 				{
 					wardType = BlueWard;
 					return wardType;
@@ -354,9 +363,9 @@ public:
 	{
 		name = this->GetName();
 	}
-	int GetNetworkID()
+	unsigned int GetNetworkID()
 	{
-		return Memory.Read<int>(base + oObjNetworkID);
+		return Memory.Read<unsigned int>(base + oObjNetworkID);
 	}
 
 	inline bool operator == (const CObject& A) const
@@ -438,10 +447,10 @@ public:
 	}
 };
 
-extern CObject Local;// (Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD)), true);
-extern DWORD OBJManager; //OBJManager = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
-extern DWORD OBJManagerArray; //Memory.Read<DWORD>(OBJManager + 0x14, sizeof(DWORD));
-extern DWORD MissileMap;
+inline CObject Local;// (Memory.Read<DWORD>(ClientAddress + oLocalPlayer, sizeof(DWORD)), true);
+inline DWORD OBJManager; //OBJManager = Memory.Read<DWORD>(ClientAddress + oObjManager, sizeof(DWORD));
+inline DWORD OBJManagerArray; //Memory.Read<DWORD>(OBJManager + 0x14, sizeof(DWORD));
+inline DWORD MissileMap;
 
 class CObjectManager
 {

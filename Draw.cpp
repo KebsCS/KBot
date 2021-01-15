@@ -95,11 +95,14 @@ bool Draw::InitTextures()
 
 void Draw::ImageFromMemory(LPDIRECT3DTEXTURE9 texturename, int x, int y, std::string text, int index, int in_width, int in_height, bool inWindow)
 {
+	if (!texturename)
+		return;
+
 	// todo it flickers when text is changing, probably smth to do with wnd name
 	//also drawing text over image
 	D3DSURFACE_DESC my_texture_desc;
-	HRESULT res = texturename->GetLevelDesc(0, &my_texture_desc);
-	IM_ASSERT(res == 0);
+	/*HRESULT res = texturename->GetLevelDesc(0, &my_texture_desc);
+	IM_ASSERT(res == 0);*/
 
 	if (!inWindow)
 	{
@@ -289,7 +292,7 @@ void Draw::BoxFilled(int x, int y, int w, int h, RGBA rgb)
 	g_pd3dDevice->Clear(1, &rect, D3DCLEAR_TARGET, D3DCOLOR_ARGB(rgb.A, rgb.R, rgb.G, rgb.B), 0, 0);
 }
 
-void Draw::BoxBordered(int x, int y, int w, int h, RGBA color, int thickness)
+void Draw::BoxBorder(int x, int y, int w, int h, RGBA color, int thickness)
 {
 	this->BoxFilled(x, y, w, thickness, color);
 	this->BoxFilled(x, y, thickness, h, color);
@@ -300,7 +303,7 @@ void Draw::BoxBordered(int x, int y, int w, int h, RGBA color, int thickness)
 void Draw::BoxOutlined(int x, int y, int w, int h, RGBA color, float thickness, RGBA bcolor)
 {
 	BoxFilled(x, y, w, h, color);
-	BoxBordered(x - thickness, y - thickness, w + thickness, h + thickness, bcolor, thickness);
+	BoxBorder(x - thickness, y - thickness, w + thickness, h + thickness, bcolor, thickness);
 }
 
 void Draw::StringBoxed(std::string text, int x, int y, int orientation, RGBA color, ID3DXFont* font, RGBA bcolor, RGBA background)
@@ -336,23 +339,14 @@ void Draw::StringBoxed(std::string text, int x, int y, int orientation, RGBA col
 	}
 }
 
-static const int CIRCLE_RESOLUTION = 32;
-
-struct VERTEX_2D_DIF
-{
-	float x, y, z, rhw;
-	D3DCOLOR color;
-	static const DWORD FVF = D3DFVF_XYZRHW | D3DFVF_DIFFUSE;
-};
-
 void Draw::Circle(int x, int y, float r, RGBA rgb)
 {
 	VERTEX_2D_DIF verts[CIRCLE_RESOLUTION + 1];
 
 	for (int i = 0; i < CIRCLE_RESOLUTION + 1; i++)
 	{
-		verts[i].x = x + r * cos(M_PI_F * (i / (CIRCLE_RESOLUTION / 2.0f)));
-		verts[i].y = y + r * sin(M_PI_F * (i / (CIRCLE_RESOLUTION / 2.0f)));
+		verts[i].x = x + r * cos(M_PI * (i / (CIRCLE_RESOLUTION / 2.0f)));
+		verts[i].y = y + r * sin(M_PI * (i / (CIRCLE_RESOLUTION / 2.0f)));
 		verts[i].z = 0;
 		verts[i].rhw = 1;
 		verts[i].color = D3DCOLOR_ARGB(rgb.A, rgb.R, rgb.G, rgb.B);
@@ -368,8 +362,8 @@ void Draw::CircleFilled(int x, int y, float r, RGBA rgb)
 
 	for (int i = 0; i < CIRCLE_RESOLUTION + 1; i++)
 	{
-		verts[i].x = x + r * cos(M_PI_F * (i / (CIRCLE_RESOLUTION / 2.0f)));
-		verts[i].y = y + r * sin(M_PI_F * (i / (CIRCLE_RESOLUTION / 2.0f)));
+		verts[i].x = x + r * cos(M_PI * (i / (CIRCLE_RESOLUTION / 2.0f)));
+		verts[i].y = y + r * sin(M_PI * (i / (CIRCLE_RESOLUTION / 2.0f)));
 		verts[i].z = 0;
 		verts[i].rhw = 1;
 		verts[i].color = D3DCOLOR_ARGB(rgb.A, rgb.R, rgb.G, rgb.B);
@@ -386,23 +380,23 @@ void Draw::CircleFilled(ImVec2 coord, float r, RGBA rgb)
 
 void Draw::CircleRange(Vector3 Pos, float points, float r, RGBA color, float thickness)
 {
-	float flPoint = M_PI_F * 2.0f / points;
+	float flPoint = M_PI * 2.0f / points;
 
 	//r += 80;
 	bool first = true;
 	ImVec2 First, Last;
-	for (float flAngle = flPoint; flAngle < (M_PI_F * 2.0f); flAngle += flPoint)
+	for (float flAngle = flPoint; flAngle < (M_PI * 2.0f); flAngle += flPoint)
 	{
-		Vector3 vStart(r * cosf(flAngle) + Pos.X, r * sinf(flAngle) + Pos.Z, Pos.Y);
-		Vector3 vEnd(r * cosf(flAngle + flPoint) + Pos.X, r * sinf(flAngle + flPoint) + Pos.Z, Pos.Y);
+		Vector3 vStart(r * cosf(flAngle) + Pos.x, r * sinf(flAngle) + Pos.z, Pos.y);
+		Vector3 vEnd(r * cosf(flAngle + flPoint) + Pos.x, r * sinf(flAngle + flPoint) + Pos.z, Pos.y);
 
-		float z_temp = vStart.Z;
-		vStart.Z = vStart.Y;
-		vStart.Y = z_temp;
+		float z_temp = vStart.z;
+		vStart.z = vStart.y;
+		vStart.y = z_temp;
 
-		z_temp = vEnd.Z;
-		vEnd.Z = vEnd.Y;
-		vEnd.Y = z_temp;
+		z_temp = vEnd.z;
+		vEnd.z = vEnd.y;
+		vEnd.y = z_temp;
 
 		ImVec2 vStartScreen, vEndScreen;
 
@@ -425,6 +419,43 @@ void Draw::CircleRange(Vector3 Pos, float points, float r, RGBA color, float thi
 	}
 
 	Line(First.x, First.y, Last.x, Last.y, color, thickness);
+}
+
+void Draw::Bar(int x, int y, float value)
+{
+	int g = value * 2.55;
+	int r = 255 - g;
+	int l = value / 3;
+	FillRGB(x - (l / 2) - 1, y - 1, l + 2 + 13, 5, RGBA(1, 0, 0));
+	FillRGB(x - (l / 2), y, l + 13, 3, RGBA(r, g, 0));
+}
+
+void Draw::FillRGB(float x, float y, float w, float h, RGBA color)
+{
+	D3DXVECTOR2 vLine[2];
+
+	vLine[0].x = x + w / 2;
+	vLine[0].y = y;
+	vLine[1].x = x + w / 2;
+	vLine[1].y = y + h;
+
+	Line(vLine[0].x, vLine[0].y, vLine[1].x, vLine[1].y, color, w);
+}
+
+void Draw::GradientBox(int x, int y, int w, int h, RGBA rgb, RGBA rgb2, bool vertical)
+{
+	VERTEX_2D_DIF pVertex[4] = { { x, y, 0.0f, 1.0f, D3DCOLOR_ARGB(rgb.A, rgb.R, rgb.G, rgb.B) },
+		{ x + w, y, 0.0f, 1.0f, vertical ? D3DCOLOR_ARGB(rgb.A, rgb.R, rgb.G, rgb.B) : D3DCOLOR_ARGB(rgb2.A, rgb2.R, rgb2.G, rgb2.B) },
+		{ x, y + h, 0.0f, 1.0f, vertical ? D3DCOLOR_ARGB(rgb2.A, rgb2.R, rgb2.G, rgb2.B) : D3DCOLOR_ARGB(rgb.A, rgb.R, rgb.G, rgb.B) },
+		{ x + w, y + h, 0.0f, 1.0f, D3DCOLOR_ARGB(rgb2.A, rgb2.R, rgb2.G, rgb2.B) } };
+	g_pd3dDevice->SetFVF(VERTEX_2D_DIF::FVF);
+	g_pd3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &pVertex, sizeof(VERTEX_2D_DIF));
+}
+
+void Draw::GradientBoxOutlined(int x, int y, int w, int h, RGBA rgb, RGBA rgb2, bool vertical, float thickness, RGBA bcolor)
+{
+	GradientBox(x, y, w, h, rgb, rgb2, vertical);
+	BoxBorder(x, y, w, h, bcolor, thickness);
 }
 
 Draw* draw = new Draw();

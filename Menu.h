@@ -11,7 +11,6 @@ struct Menu
 	{};
 
 	//globals
-	//todo make a global namespace
 	bool MenuOpen = 1;
 	bool ConsoleOpen = 0;
 	bool Debug = 0;
@@ -19,11 +18,10 @@ struct Menu
 	bool ExitBot = 0;
 
 	float GameTime = 0;
-	float StartTime = 0;
+	DWORD StartTime = 0;
 	DirectX::XMMATRIX Matrix;
 
 	std::string ServerInfo;
-	bool DrawServerInfo = 0;
 
 	std::string Champion;
 	std::string ScoreboardNames[10]; //for GUI scoreboard
@@ -34,6 +32,13 @@ struct Menu
 		int MenuKey = VK_INSERT;
 	}Misc;
 	int Configs = 0;
+
+
+	struct
+	{
+		bool Master = 0;
+
+	}Evade;
 
 	struct
 	{

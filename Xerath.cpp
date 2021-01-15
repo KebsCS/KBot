@@ -12,7 +12,7 @@ void Xerath::OnKeyUp(int)
 Vector3 Calculate(CObject target, float range, float casttime)
 {
 	//auto aim = target->GetAIManager();
-	auto veloc = Vector3(0, 0, 0); //aim->GetVelocity();
+	Vector3 veloc = Vector3(0, 0, 0); //aim->GetVelocity();
 	//veloc.Y = 0.f;
 	Vector3 orientation = Vector3(0, 0, 0);//veloc.Normalize(); //target->GetAllShield->vVelocity.Normalized();
 
@@ -21,7 +21,7 @@ Vector3 Calculate(CObject target, float range, float casttime)
 		return Vector3(0.f, 0.f, 0.f);
 	}
 
-	if (veloc.X == 0.f && veloc.Z == 0.f)
+	if (veloc.x == 0.f && veloc.z == 0.f)
 	{
 		return target.GetPosition();
 	}
@@ -42,7 +42,7 @@ Vector3 PredictCircular(CObject target, SpellSlotID slot, bool checkCharges = fa
 	//auto spellData = spell->GetSpellInfo()->GetSpellData();
 	//if (spellData->GetManaCostByLevel(spell->GetLevel()) > localObj->GetMana())
 	//	return Vector(0.f, 0.f, 0.f);
-	DWORD spellData = Memory.Read<DWORD>(Memory.Read<DWORD>(spell + 0x134) + 0x44);
+	//DWORD spellData = Memory.Read<DWORD>(Memory.Read<DWORD>(spell + 0x134) + 0x44);
 	auto vec = Calculate(target, 1000.f/*spellData.GetSpellRange()*/, 0.f);
 
 	return vec;
@@ -83,7 +83,7 @@ void Xerath::Harass()
 	}
 }
 
-bool Xerath::Evade(Vector3 /*evadePos*/)
+bool Xerath::Evade(Vector3 evadePos)
 {
 	return false;
 }

@@ -12,15 +12,11 @@ ID3DXFont* pFont;
 Visuals* vis;
 
 extern std::vector<CObject>minionList;
-extern std::vector<CObject>missileList;
-extern std::vector<DWORD> objList;
 
 extern DWORD GetFirst();
 extern DWORD GetNext(DWORD a2);
 DirectX::XMMATRIX Direct3D9Render::ReadMatrix(DWORD address)
 {
-
-	
 	DirectX::XMMATRIX tmp;
 	for (int i = 0; i < 16; i++) //todo 1 read instead of 16 (performance)
 	{
@@ -82,7 +78,7 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 		return false;
 	}
 
-	ZeroMemory(&g_d3dpp, sizeof(D3DPRESENT_PARAMETERS));
+	ZeroMemory(&g_d3dpp, sizeof(g_d3dpp));
 	g_d3dpp.Windowed = TRUE;
 	g_d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	g_d3dpp.hDeviceWindow = hWnd;
@@ -119,8 +115,8 @@ bool Direct3D9Render::DirectXInit(HWND hWnd)
 	Renderimgui(hWnd);
 
 	if (draw->InitTextures())
-		clog.AddLog("[start] Initialized textures");
-	else clog.AddLog("[error] Failed to initialize textures");
+		clog.AddLog(XorStr("[start] Initialized textures"));
+	else clog.AddLog(XorStr("[error] Failed to initialize textures"));
 
 	if (!init->Start())
 		return false;
@@ -224,6 +220,148 @@ void Direct3D9Render::HeroLoop()
 			//ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
 			//std::string str = obj.GetName() + " , " + std::to_string(dmg);
 			//draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+
+			//on spell cast
+			if (M.Evade.Master)
+				if (SpellCastInfo spell(obj.GetSpellCastInfo()); spell.Address() != 0)
+				{
+					/*for (int i = 0; i < 2000; i += 4)
+					{
+						float temp = Memory.Read<float>(spell.GetSpellData() + i);
+						clog.AddLog("%x ,  %s : %f , %x", spell.Address(), spell.GetName().c_str(), temp, i);
+					}*/
+
+					//data
+					//3b4 range
+					//268 to 280 cooldown in seconds per lvl
+					//518 to 52c mana cost per lvl
+					//244 cast time
+					//440 maybe speed
+					//ac to c4 damage
+					//1dc ad/ap scaling
+					//c8 to e0 slow maybe
+
+					if (utils->StringContains(spell.GetName(), "basic", true))
+						continue;
+
+					clog.AddLog("%d", spell.GetIndex());
+					Vector3 StartPos = spell.GetMissileStartPos();
+					ImVec2 RealStartPos = WorldToScreen(StartPos);
+					if (RealStartPos.x == 0 || RealStartPos.y == 0)
+						continue;
+					Vector3 EndPos = spell.GetMissileEndPos();
+
+					//todo if bUseList don't draw here but
+					//enable missile map for x seconds and draw there
+					float SpellRange = -1;
+					bool Circular = 0;
+					float SpellWidth = -1;
+					float Speed = -1;
+					bool Targeted = 0;
+					bool Cone = 0;
+					//todo idk if all champs are correct
+					int Slot = spell.GetSlot();
+					bool UseLocal = 0;
+
+					if (Slot == 0) // q
+					{
+						SpellRange = obj.spell.Q.fRange;
+						Circular = obj.spell.Q.bCircular;
+						SpellWidth = obj.spell.Q.fWidth;
+						Speed = obj.spell.Q.fSpeed;
+						Targeted = obj.spell.Q.bTargeted;
+						Cone = obj.spell.Q.bCone;
+						UseLocal = obj.spell.Q.bLocal;
+					}
+					else if (Slot == 1) // W
+					{
+						SpellRange = obj.spell.W.fRange;
+						Circular = obj.spell.W.bCircular;
+						SpellWidth = obj.spell.W.fWidth;
+						Speed = obj.spell.W.fSpeed;
+						Targeted = obj.spell.W.bTargeted;
+						Cone = obj.spell.W.bCone;
+						UseLocal = obj.spell.W.bLocal;
+					}
+					else if (Slot == 2)// e
+					{
+						SpellRange = obj.spell.E.fRange;
+						Circular = obj.spell.E.bCircular;
+						SpellWidth = obj.spell.E.fWidth;
+						Speed = obj.spell.E.fSpeed;
+						Targeted = obj.spell.E.bTargeted;
+						Cone = obj.spell.E.bCone;
+						UseLocal = obj.spell.E.bLocal;
+					}
+					else if (Slot == 3)//r
+					{
+						SpellRange = obj.spell.R.fRange;
+						Circular = obj.spell.R.bCircular;
+						SpellWidth = obj.spell.R.fWidth;
+						Speed = obj.spell.R.fSpeed;
+						Targeted = obj.spell.R.bTargeted;
+						Cone = obj.spell.R.bCone;
+						UseLocal = obj.spell.R.bLocal;
+					}
+					EndPos = Circular ? EndPos : StartPos.Extend(EndPos, SpellRange == -1 ? spell.GetRange() : SpellRange);
+					if (UseLocal)
+						EndPos = obj.GetPosition();
+					ImVec2 RealEndPos = WorldToScreen(EndPos);
+					if (RealEndPos.x == 0 || RealEndPos.y == 0)
+						continue;
+
+					/*	std::string str = spell.GetName() + " , " + std::to_string(spell.Address());
+						draw->String(str, RealEndPos.x, RealEndPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);*/
+					if (!Targeted)
+						if (Circular)
+						{
+							if (!UseLocal)
+							{
+								EndPos.y -= 100;
+								SpellWidth -= 50;
+							}
+							SpellWidth += 50;
+							draw->CircleRange(EndPos, 12, SpellWidth == -1 ? 50/*todo get width*/ : SpellWidth, RGBA(255, 255, 255));
+						}
+						else
+						{
+							draw->Line(RealStartPos, RealEndPos, RGBA(255, 255, 255), 1);
+							SpellWidth = SpellWidth ? SpellWidth : 100;
+							if (!Cone)
+							{
+								Vector3 direction = EndPos - StartPos;
+								Vector3 pos1 = StartPos + Vector3(direction.z * -1.0f, direction.y, direction.x * 1.0f).Normalized() * SpellWidth;
+								ImVec2 RealPos1 = Direct3D9.WorldToScreen(pos1);
+								//draw->String("1", RealPos1.x, RealPos1.y, centered, RGBA(255, 255, 255), fontTahoma);
+								Vector3 pos2 = StartPos + Vector3(direction.z * 1.0f, direction.y, direction.x * -1.0f).Normalized() * SpellWidth;
+								ImVec2 RealPos2 = Direct3D9.WorldToScreen(pos2);
+								//draw->String("2", RealPos2.x, RealPos2.y, centered, RGBA(255, 255, 255), fontTahoma);
+								Vector3 pos3 = EndPos + Vector3(direction.z * -1.0f, direction.y, direction.x * 1.0f).Normalized() * SpellWidth;
+								ImVec2 RealPos3 = Direct3D9.WorldToScreen(pos3);
+								//draw->String("3", RealPos3.x, RealPos3.y, centered, RGBA(255, 255, 255), fontTahoma);
+								Vector3 pos4 = EndPos + Vector3(direction.z * 1.0f, direction.y, direction.x * -1.0f).Normalized() * SpellWidth;
+								ImVec2 RealPos4 = Direct3D9.WorldToScreen(pos4);
+								//draw->String("4", RealPos4.x, RealPos4.y, centered, RGBA(255, 255, 255), fontTahoma);
+								draw->Line(RealPos1, RealPos2, RGBA(255, 255, 255));
+								draw->Line(RealPos3, RealPos4, RGBA(255, 255, 255));
+								draw->Line(RealPos1, RealPos3, RGBA(255, 255, 255));
+								draw->Line(RealPos2, RealPos4, RGBA(255, 255, 255));
+							}
+							else
+							{
+								Vector3 direction = EndPos - StartPos;
+								Vector3 pos3 = EndPos + Vector3(direction.z * -1.0f, direction.y, direction.x * 1.0f).Normalized() * SpellWidth;
+								ImVec2 RealPos3 = Direct3D9.WorldToScreen(pos3);
+								//draw->String("3", RealPos3.x, RealPos3.y, centered, RGBA(255, 255, 255), fontTahoma);
+								Vector3 pos4 = EndPos + Vector3(direction.z * 1.0f, direction.y, direction.x * -1.0f).Normalized() * SpellWidth;
+								ImVec2 RealPos4 = Direct3D9.WorldToScreen(pos4);
+								//draw->String("4", RealPos4.x, RealPos4.y, centered, RGBA(255, 255, 255), fontTahoma);
+								draw->Line(RealPos3, RealPos4, RGBA(255, 255, 255));
+								draw->Line(RealStartPos, RealPos3, RGBA(255, 255, 255));
+								draw->Line(RealStartPos, RealPos4, RGBA(255, 255, 255));
+							}
+						}
+				}
 		}
 	}
 }
@@ -293,45 +431,6 @@ void Direct3D9Render::Loops()
 			}
 		}
 	}
-
-	//if (!missileList.empty())
-	//{
-	//	for (CObject obj : missileList)
-	//	{
-	//		if (!obj.Address())
-	//			continue;
-	//		ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
-	//
-	//		if (RealPos.x == 0 && RealPos.y == 0)
-	//			continue;
-
-	//		if (!((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1))))
-	//			continue;
-	//		std::string name = obj.GetName();
-	//		if (name.find("Minion") != std::string::npos || name.empty())
-	//			continue;
-
-	//		Vector3 StartPos = obj.GetMissileStartPos();
-	//		Vector3 EndPos = obj.GetMissileEndPos();
-	//		ImVec2 RealStartPos = WorldToScreen(StartPos);
-	//		ImVec2 RealEndPos = WorldToScreen(EndPos);
-
-	//		if (RealStartPos.x == 0 && RealStartPos.y == 0)
-	//			continue;
-
-	//		if (RealEndPos.x == 0 && RealEndPos.y == 0)
-	//			continue;
-
-	//		draw->Line(RealStartPos.x, RealStartPos.y, RealEndPos.x, RealEndPos.y, RGBA(255, 255, 255));
-
-	//
-	//		float missileWidth = Memory.Read<float>(Memory.Read<DWORD>(Memory.Read<DWORD>(obj.Address() + 0x230) + 0x44) + 0x458);
-
-	//		std::string str = name + " , " + std::to_string(obj.Address()) + " , " +  std::to_string(missileWidth);
-	//		//clog.AddLog("%s , %x", obj.GetName().c_str(), obj.Address());
-	//		draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
-	//	}
-	//}
 
 	//HeroLoopThread.join();
 	//TurretLoopThread.join();
@@ -454,6 +553,7 @@ void Direct3D9Render::MissileThread()
 			CObject source = obj.GetSource();
 			if (source.IsHero())
 			{
+				clog.AddLog("%x", obj.Address());
 				if (!utils->StringContains(obj.GetName(), "basic", true))
 				{
 					Vector3 StartPos = obj.GetMissileStartPos();
@@ -465,40 +565,38 @@ void Direct3D9Render::MissileThread()
 					if (RealEndPos.x == 0 || RealEndPos.y == 0)
 						continue;
 
-					/*Vector3 direction = EndPos - StartPos;
+					draw->Line(RealStartPos, RealEndPos, RGBA(255, 255, 255), 1);
 
-					Vector3 pos1 = StartPos + Vector3(direction.Z * -1.0f, direction.Y, direction.X * 1.0f).Normalize();
+					Vector3 direction = EndPos - StartPos;
+					Vector3 pos1 = StartPos + Vector3(direction.z * -1.0f, direction.y, direction.x * 1.0f).Normalized() * 100;
 					ImVec2 RealPos1 = Direct3D9.WorldToScreen(pos1);
-					draw->Circle(RealPos1.x, RealPos1.y, 5, RGBA(255, 255, 255));
-					Vector3 pos2 = StartPos + Vector3(direction.Z * 1.0f, direction.Y, direction.X * -1.0f).Normalize();
+					//draw->String("1", RealPos1.x, RealPos1.y, centered, RGBA(255, 255, 255), fontTahoma);
+					Vector3 pos2 = StartPos + Vector3(direction.z * 1.0f, direction.y, direction.x * -1.0f).Normalized() * 100;
 					ImVec2 RealPos2 = Direct3D9.WorldToScreen(pos2);
-					draw->Circle(RealPos2.x, RealPos2.y, 5, RGBA(255, 255, 255));
-					Vector3 pos3 = EndPos + Vector3(direction.Z * -1.0f, direction.Y, direction.X * 1.0f).Normalize();
+					//draw->String("2", RealPos2.x, RealPos2.y, centered, RGBA(255, 255, 255), fontTahoma);
+					Vector3 pos3 = EndPos + Vector3(direction.z * -1.0f, direction.y, direction.x * 1.0f).Normalized() * 100;
 					ImVec2 RealPos3 = Direct3D9.WorldToScreen(pos3);
-					draw->Circle(RealPos3.x, RealPos3.y, 5, RGBA(255, 255, 255));
-					Vector3 pos4 = EndPos + Vector3(direction.Z * 1.0f, direction.Y, direction.X * -1.0f).Normalize();
+					//draw->String("3", RealPos3.x, RealPos3.y, centered, RGBA(255, 255, 255), fontTahoma);
+					Vector3 pos4 = EndPos + Vector3(direction.z * 1.0f, direction.y, direction.x * -1.0f).Normalized() * 100;
 					ImVec2 RealPos4 = Direct3D9.WorldToScreen(pos4);
-					draw->Circle(RealPos4.x, RealPos4.y, 5, RGBA(255, 255, 255));
+					//draw->String("4", RealPos4.x, RealPos4.y, centered, RGBA(255, 255, 255), fontTahoma);
 					draw->Line(RealPos1, RealPos2, RGBA(255, 255, 255));
 					draw->Line(RealPos3, RealPos4, RGBA(255, 255, 255));
 					draw->Line(RealPos1, RealPos3, RGBA(255, 255, 255));
-					draw->Line(RealPos1, RealPos4, RGBA(255, 255, 255));*/
-
-					std::string str = obj.GetName() + " , " + std::to_string(obj.Address());
-					draw->String(str, RealEndPos.x, RealEndPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
-					draw->Line(RealStartPos, RealEndPos, RGBA(255, 255, 255));
+					draw->Line(RealPos2, RealPos4, RGBA(255, 255, 255));
 				}
 			}
 		}
 	}
 }
 
+float ftest = 1;
+
+Vector3 Test1;
+Vector3 Test2;
+
 int Direct3D9Render::Render()
 {
-	//read vieprojwmatrix for w2s
-
-	//M.Matrix = DirectX::XMMatrixMultiply(GetViewMatrix(), GetProjectionMatrix());
-
 	// Start the Dear ImGui frame
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -509,15 +607,18 @@ int Direct3D9Render::Render()
 	if (M.MenuOpen)
 	{
 		char buf[128];
-		sprintf(buf, XorStr("KBot %.1f FPS ###AnimatedTitle"), ImGui::GetIO().Framerate);
+		if (M.Debug)
+			sprintf(buf, XorStr("KBot %.1f FPS ###AnimatedTitle"), ImGui::GetIO().Framerate);
+		else
+			sprintf(buf, XorStr("KBot"));
 		ImGui::SetNextWindowPos(ImVec2(904, 349), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(419, 421), ImGuiCond_FirstUseEver);
 		ImGui::Begin(buf);// , ImGuiWindowFlags_AlwaysAutoResize);
 		if (ImGui::BeginPopupContextItem())
 		{
-			if (ImGui::MenuItem("Open Console"))
+			if (ImGui::MenuItem(XorStr("Open Console")))
 				M.ConsoleOpen = true;
-			if (ImGui::MenuItem("Exit"))
+			if (ImGui::MenuItem(XorStr("Exit")))
 				M.ExitBot = true;
 			ImGui::EndPopup();
 		}
@@ -683,6 +784,7 @@ int Direct3D9Render::Render()
 			}
 			if (ImGui::BeginTabItem("Evade"))
 			{
+				ImGui::Checkbox("Enable ##Evade", &M.Evade.Master);
 				draw->ImageFromMemory(draw->textureKEKW, 0, 0, "", 99, 256, 256, true);
 
 				ImGui::EndTabItem();
@@ -850,9 +952,26 @@ int Direct3D9Render::Render()
 		//if(M.Debug)
 		//	MissileLoopThread.join();
 
+		if (PressedKey(VK_END))
+			Test1 = Local.GetPosition();
+
+		if (PressedKey(VK_HOME))
+			Test2 = Local.GetPosition();
+
+		draw->Line(WorldToScreen(Test1), WorldToScreen(Test2), RGBA(255, 255, 255));
+
+		//Vector3 TempVec2 = Test1.Extend(Test2, 2.f);
+		auto start_position = Test1;
+		auto end_position = Test2;
+		//end_position = end_position.Extend(start_position, -fmin(50, 100 - end_position.Distance(start_position)));
+		//end_position = end_position.Extend(start_position, 100);
+		draw->Line(WorldToScreen(start_position), WorldToScreen(end_position), RGBA(0, 0, 255));
+
 #endif // !NOLEAGUE
 
 		//draw->ImageFromMemory(draw->textureIgnite, mouse->GetPos().x, mouse->GetPos().y, "abc", 3213, 120, 120, false);
+
+		//ImGui::DragFloat("asd", &ftest, 1, 1, 1000);
 
 		ImGui::EndFrame();
 		ImGui::Render();
@@ -892,21 +1011,21 @@ int Direct3D9Render::Render()
 		//	xdtimer = GameTime + 300;
 
 		//}
-		//draw->String(std::to_string(xdtimer - GameTime), 100, 100, centered, RGBA(255, 255, 255),fontTahoma);
 
-		if (M.DrawServerInfo)
-		{
-			if (M.StartTime + 10 - M.GameTime > 0 && !M.ServerInfo.empty()) //draw text on script start
+		if (M.StartTime + 5000 > GetTickCount())
+			if (!M.ServerInfo.empty())
 				draw->StringBoxed(M.ServerInfo, 10, 10, lefted, RGBA(255, 255, 255), fontTahoma, RGBA(255, 255, 255), RGBA(1, 0, 0));
 			else
-				M.DrawServerInfo = false;
-		}
+				M.ServerInfo = "";
 
-		//drawings test
+		////drawings test
+		//draw->Bar(50, 50, ftest);
+		//draw->GradientBox(300, 300, 50, 50, RGBA(255, 0, 0), RGBA(0, 0, 255), false);
+		//draw->GradientBoxOutlined(400, 300, 50, 50, RGBA(255, 0, 0), RGBA(0, 0, 255), true);
 		//draw->BoxFilled(200, 500, 100, 100, RGBA(255, 0, 0));
-		//draw->BoxBordered(500, 500, 100, 100,RGBA(255, 0, 0));
+		//draw->BoxBorder(500, 500, 100, 100, RGBA(255, 0, 0));
 		//draw->BoxOutlined(800, 500, 100, 100, RGBA(255, 0, 0));
-		//draw->StringBoxed("asdfsdgSVX123!_", 700, 200, lefted, RGBA(255, 255, 255), fontTahoma, RGBA(1,0,0),RGBA(255,0,0));
+		//draw->StringBoxed("asdfsdgSVX123!_", 700, 200, lefted, RGBA(255, 255, 255), fontTahoma, RGBA(1, 0, 0), RGBA(255, 0, 0));
 		//draw->Circle(1100, 500, 100, RGBA(255, 0, 0));
 		//draw->CircleFilled(1400, 500, 100, RGBA(255, 0, 0));
 
@@ -969,25 +1088,25 @@ ImVec2 Direct3D9Render::WorldToScreen(Vector3 pos)
 	ImVec2 returnVec = ImVec2(0, 0);
 
 	Vector4 clipCoords;
-	clipCoords.X = pos.X * matrix.r->m128_f32[0] + pos.Y * matrix.r->m128_f32[4] + pos.Z * matrix.r->m128_f32[8] + matrix.r->m128_f32[12];
-	clipCoords.Y = pos.X * matrix.r->m128_f32[1] + pos.Y * matrix.r->m128_f32[5] + pos.Z * matrix.r->m128_f32[9] + matrix.r->m128_f32[13];
-	clipCoords.Z = pos.X * matrix.r->m128_f32[2] + pos.Y * matrix.r->m128_f32[6] + pos.Z * matrix.r->m128_f32[10] + matrix.r->m128_f32[14];
-	clipCoords.W = pos.X * matrix.r->m128_f32[3] + pos.Y * matrix.r->m128_f32[7] + pos.Z * matrix.r->m128_f32[11] + matrix.r->m128_f32[15];
+	clipCoords.x = pos.x * matrix.r->m128_f32[0] + pos.y * matrix.r->m128_f32[4] + pos.z * matrix.r->m128_f32[8] + matrix.r->m128_f32[12];
+	clipCoords.y = pos.x * matrix.r->m128_f32[1] + pos.y * matrix.r->m128_f32[5] + pos.z * matrix.r->m128_f32[9] + matrix.r->m128_f32[13];
+	clipCoords.z = pos.x * matrix.r->m128_f32[2] + pos.y * matrix.r->m128_f32[6] + pos.z * matrix.r->m128_f32[10] + matrix.r->m128_f32[14];
+	clipCoords.w = pos.x * matrix.r->m128_f32[3] + pos.y * matrix.r->m128_f32[7] + pos.z * matrix.r->m128_f32[11] + matrix.r->m128_f32[15];
 
 	//clipCoords.X = pos.X * matrix.r->m128_f32[0] + pos.Y * matrix.r->m128_f32[1] + pos.Z * matrix.r->m128_f32[2] + matrix.r->m128_f32[3];
 	//clipCoords.Y = pos.X * matrix.r->m128_f32[4] + pos.Y * matrix.r->m128_f32[5] + pos.Z * matrix.r->m128_f32[6] + matrix.r->m128_f32[7];
 	//clipCoords.Z = pos.X * matrix.r->m128_f32[8] + pos.Y * matrix.r->m128_f32[9] + pos.Z * matrix.r->m128_f32[10] + matrix.r->m128_f32[11];
 	//clipCoords.W = pos.X * matrix.r->m128_f32[12] + pos.Y * matrix.r->m128_f32[13] + pos.Z * matrix.r->m128_f32[14] + matrix.r->m128_f32[15];
 
-	if (clipCoords.W < 0.1f) return returnVec;
+	if (clipCoords.w < 0.1f) return returnVec;
 
-	Vector3 M;
-	M.X = clipCoords.X / clipCoords.W;
-	M.Y = clipCoords.Y / clipCoords.W;
-	M.Z = clipCoords.Z / clipCoords.W;
+	Vector3 temp;
+	temp.x = clipCoords.x / clipCoords.w;
+	temp.y = clipCoords.y / clipCoords.w;
+	temp.z = clipCoords.z / clipCoords.w;
 
-	returnVec.x = (SCREENWIDTH / 2.0f * M.X) + (M.X + SCREENWIDTH / 2.0f);
-	returnVec.y = -(SCREENHEIGHT / 2.0f * M.Y) + (M.Y + SCREENHEIGHT / 2.0f);
+	returnVec.x = (SCREENWIDTH / 2.0f * temp.x) + (temp.x + SCREENWIDTH / 2.0f);
+	returnVec.y = -(SCREENHEIGHT / 2.0f * temp.y) + (temp.y + SCREENHEIGHT / 2.0f);
 
 	return returnVec;
 }
@@ -1024,12 +1143,16 @@ void Direct3D9Render::MenuInit()
 	style.GrabRounding = 0.f;
 	style.LogSliderDeadzone = 5.f;
 	style.TabRounding = 0.f;
-	//Aligment
+	//Alignment
 	style.WindowTitleAlign = ImVec2(0.f, 0.f);
 	style.WindowMenuButtonPosition = 0;
 	style.ColorButtonPosition = 1;
 	style.ButtonTextAlign = ImVec2(0.5f, 0.5f);
 	style.SelectableTextAlign = ImVec2(0.5f, 0.5f);
+	//AntiAliasing
+	style.AntiAliasedLines = false;
+	style.AntiAliasedLinesUseTex = false;
+	style.AntiAliasedFill = false;
 
 	ImVec4* colors = ImGui::GetStyle().Colors;
 	colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);

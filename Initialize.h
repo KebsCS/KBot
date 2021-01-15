@@ -8,6 +8,7 @@
 
 #include "ObjectManager.h"
 #include "CMissileClient.h"
+#include "CSpellCastInfo.h"
 
 class Initialize
 {
@@ -35,6 +36,9 @@ public:
 	void MakeStructureList();
 
 	void MakeTestList();
+
+
+	void InitSpells();
 
 	//makes array of champions in game for GUI scoreboard
 	void CreateChampArray();

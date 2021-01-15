@@ -41,9 +41,9 @@ public:
 	//expects the key (as a capital letter), whether its held down, and whether to yield a capital letter.
 	// example sending ('A',false,false) yields 'a'
 	// to achieve 'A', send ('A',false,true)
-	void GenerateKey(int vk, BOOL bExtended, bool shift);
+	void GenerateKey(int vk, BOOL bExtended, bool shift = false);
 
-	void GenerateKeyScancode(int vk, bool shift);
+	void GenerateKeyScancode(int vk, bool shift = false);
 
 	//types given text
 	void Type(std::string phrase);

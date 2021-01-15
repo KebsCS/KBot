@@ -9,6 +9,140 @@
 #include <apiquery2.h>
 #include <string>
 
+#pragma pack( push, 4 )
+template<class Type = DWORD>
+class CObfuscation
+{
+public:
+	unsigned char	m_bIsFilled;
+	unsigned char	m_bLengthXor32;
+	unsigned char	m_bLengthXor8;
+	Type			m_tKey;
+	unsigned char	m_bIndex;
+	Type			m_atValues[sizeof(Type) == 1 ? 3 : 4];
+public:
+	Type get()
+	{
+		__try
+		{
+			if (m_bIsFilled != 1)
+				return Type(0);
+
+			Type tResult = sizeof(Type) == 1 ? this->m_atValues[(this->m_bIndex + 1) & 3] : this->m_atValues[this->m_bIndex];
+			if (this->m_bLengthXor32)
+			{
+				for (unsigned char i = 0; i < this->m_bLengthXor32; i++)
+				{
+					reinterpret_cast<PDWORD>(&tResult)[i] ^= ~(reinterpret_cast<PDWORD>(&this->m_tKey)[i]);
+				}
+			}
+			if (this->m_bLengthXor8 && sizeof(Type) == 1)
+			{
+				for (unsigned char i = sizeof(Type) - this->m_bLengthXor8; i < sizeof(Type); i++)
+				{
+					reinterpret_cast<PBYTE>(&tResult)[i] ^= ~(reinterpret_cast<PBYTE>(&this->m_tKey)[i]);
+				}
+			}
+			return tResult;
+		}
+		__except (true)
+		{
+			return Type(0);
+		}
+	}
+};
+#pragma pack( pop )
+
+
+#pragma once
+#include <inttypes.h>
+#include <intrin.h>
+
+#pragma pack( push, 4 )
+template <typename t>
+class xor_value {
+	bool xor_key_was_init = 0;
+	unsigned char bytes_xor_count;
+	unsigned char bytes_xor_count_8;
+	t xor_key;
+	unsigned char value_index = 0;
+	t values_table[4];
+public:
+	t decrypt() {
+		if (xor_key_was_init != 1)
+			return 0;
+
+		auto xored_value = values_table[value_index];
+		auto xor_key_value = xor_key;
+
+		{
+			auto xor_value_ptr = reinterpret_cast<uint32_t*>(&xor_key_value);
+			for (auto i = 0; i < bytes_xor_count; i++)
+				*(reinterpret_cast<uint32_t*>(&xored_value) + i) ^= ~xor_value_ptr[i];
+		}
+
+		{
+			auto xor_value_ptr = reinterpret_cast<unsigned char*>(&xor_key_value);
+
+			for (auto i = sizeof(t) - bytes_xor_count_8; i < sizeof(t); ++i)
+				*(reinterpret_cast<unsigned char*>(&xored_value) + i) ^= ~xor_value_ptr[i];
+		}
+
+		return xored_value;
+	}
+
+	void encrypt(t value) {
+		if (!xor_key_was_init) {
+			if (sizeof(t) <= 2) {
+				bytes_xor_count_8 = sizeof(t);
+				bytes_xor_count = 0;
+			}
+			else {
+				bytes_xor_count_8 = sizeof(t) % 4;
+				bytes_xor_count = (sizeof(t) - bytes_xor_count_8) / 4;
+			}
+
+			auto key = __rdtsc();
+			auto key_index = 0;
+
+			for (auto i = 0; i < sizeof(t); i++) {
+				*(reinterpret_cast<unsigned char*>(&xor_key) + i) = *(reinterpret_cast<unsigned char*>(&key) + key_index++);
+
+				if (key_index == 8) {
+					key = __rdtsc();
+					key_index = 0;
+				}
+			}
+
+			value_index = 0;
+			xor_key_was_init = 1;
+		}
+
+		auto xored_value = value;
+		auto xor_key_value = xor_key;
+
+		{
+			auto xor_value_ptr = reinterpret_cast<uint32_t*>(&xor_key_value);
+			for (auto i = 0; i < bytes_xor_count; i++)
+				*(reinterpret_cast<uint32_t*>(&xored_value) + i) ^= ~xor_value_ptr[i];
+		}
+
+		{
+			auto xor_value_ptr = reinterpret_cast<unsigned char*>(&xor_key_value);
+
+			for (auto i = sizeof(t) - bytes_xor_count_8; i < sizeof(t); ++i)
+				*(reinterpret_cast<unsigned char*>(&xored_value) + i) ^= ~xor_value_ptr[i];
+		}
+
+		auto new_value_index = uint8_t(value_index + 1) & 3;
+
+		values_table[new_value_index] = xored_value;
+
+		value_index = new_value_index;
+	}
+};
+#pragma pack( pop )
+
 #define IO_GET_ID_REQUEST  CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6210, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 
 #define IO_READ_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6211, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
@@ -36,44 +170,31 @@ typedef struct _KERNEL_WRITE_REQUEST
 class KInterface
 {
 private:
+	HANDLE hDriver; // Handle to driver
+	DWORD ProcessID = 0;
 
 	std::string StrRead(ULONG ReadAddress)
 	{
-		BYTE bytes[24];
-		ZeroMemory(&bytes, sizeof(bytes));
-		bool invalidChar = false;
+		//24 + null terminator
+		//only 24 to save memory and most of the strings won't go above it
+		char buff[25];
+		ZeroMemory(buff, 25);
+		buff[24] = '\0';
 		for (int i = 0; i < 24; i += 4)
 		{
-			//todo rewrite to only read addres once for all the bytes / read string instantly
-			BYTE buff[4];
-			ZeroMemory(&buff, sizeof(buff));
-			float buf = Read<float>(ReadAddress + i, 4); //read bytes from address in memory
-			memcpy(&buff, (unsigned char*)(&buf), 4); // transforms float bytes char bytes
-
-			for (int j = 0; j < 4; j++)
+			DWORD addy = Read<DWORD>(ReadAddress + i);
+			memcpy(&buff[i], &addy, 4);
+			//if last read char is null terminator or wrong char
+			//wont always work with special chars in player names
+			if (buff[i + 3] <= 0 || buff[i + 3] > 127)
 			{
-				bytes[i + j] = buff[j]; // adds chars to bytes array making a string
-				if ((char)buff[j] < 0 || (char)buff[j] >= 128)
-				{
-					memcpy(&buff[j], "\0", 1);
-					invalidChar = true;
-					break;
-				}
-			}
-			if (invalidChar)
+				buff[i + 3] = '\0';
 				break;
+			}
 		}
-		char str[sizeof(bytes) + 1];
-		memcpy(str, bytes, sizeof(bytes)); // transforms bytes char array to actual char string
-		if (str == NULL)
-			return "Unknown";
-		str[sizeof(bytes)] = '\0';
-		//std::string sString = str;
-		return str;
+		return std::string(buff);
 	}
 public:
-	HANDLE hDriver; // Handle to driver
-	DWORD ProcessID;
 
 	// Initializer
 	KInterface(LPCSTR RegistryPath)
@@ -86,31 +207,22 @@ public:
 			0,
 			0);
 
-		if (hDriver != INVALID_HANDLE_VALUE)
-		{
-			ULONG Id;
-			DWORD Bytes;
-
-			if (DeviceIoControl(hDriver, IO_GET_ID_REQUEST, &Id, sizeof(Id), &Id, sizeof(Id), &Bytes, NULL))
-			{
-				ProcessID = Id;
-			}
-		}
+		ProcessID = Process();
 	}
 
 	DWORD Process()
 	{
+		if (ProcessID)
+			return ProcessID;
+
 		if (hDriver == INVALID_HANDLE_VALUE)
 			return false;
 
-		ULONG Id;
-		DWORD Bytes;
+		ULONG Id = 0;
+		DWORD Bytes = 0;
 
 		if (DeviceIoControl(hDriver, IO_GET_ID_REQUEST, &Id, sizeof(Id), &Id, sizeof(Id), &Bytes, NULL))
-		{
-			//ProcessID = Id;
 			return Id;
-		}
 		else
 			return false;
 	}
@@ -120,8 +232,8 @@ public:
 		if (hDriver == INVALID_HANDLE_VALUE)
 			return false;
 
-		ULONG Address;
-		DWORD Bytes;
+		ULONG Address = 0;
+		DWORD Bytes = 0;
 
 		if (DeviceIoControl(hDriver, IO_GET_MODULE_REQUEST, &Address, sizeof(Address),
 			&Address, sizeof(Address), &Bytes, NULL))
@@ -151,8 +263,47 @@ public:
 		return (type)false;
 	}
 
-	std::string ReadString(DWORD address)
+	DWORD DeobfuscateMember(DWORD ReadAddress)
 	{
+		if (hDriver == INVALID_HANDLE_VALUE)
+			return 0;
+		KERNEL_READ_REQUEST ReadRequest;
+		ReadRequest.ProcessId = ProcessID;
+		ReadRequest.Address = ReadAddress;
+		ReadRequest.Size = sizeof(CObfuscation<DWORD>);
+
+		if (DeviceIoControl(hDriver, IO_READ_REQUEST, &ReadRequest, sizeof(ReadRequest), &ReadRequest, sizeof(ReadRequest), 0, 0))
+		{
+			CObfuscation<DWORD> oObfuscation = *(CObfuscation<DWORD>*)&ReadRequest.pBuff;
+			DWORD temp = oObfuscation.get();
+			return Read<DWORD>(temp + 0x08);
+		}
+		return 0;
+	}
+
+	DWORD DeobfuscateMember2(DWORD ReadAddress)
+	{
+		if (hDriver == INVALID_HANDLE_VALUE)
+			return 0;
+		KERNEL_READ_REQUEST ReadRequest;
+		ReadRequest.ProcessId = ProcessID;
+		ReadRequest.Address = ReadAddress;
+		ReadRequest.Size = sizeof(xor_value<DWORD>);
+
+		if (DeviceIoControl(hDriver, IO_READ_REQUEST, &ReadRequest, sizeof(ReadRequest), &ReadRequest, sizeof(ReadRequest), 0, 0))
+		{
+			xor_value<DWORD> oObfuscation = *(xor_value<DWORD>*)&ReadRequest.pBuff;
+			DWORD temp = oObfuscation.decrypt();
+			return Read<DWORD>(temp + 0x08);
+		}
+		return 0;
+	}
+
+	std::string ReadString(DWORD address, bool noPtr = false)
+	{
+		if (noPtr)
+			return StrRead(address);
+
 		std::string strReturn;
 
 		//todo string offsets from string class instead of memory read
@@ -168,7 +319,7 @@ public:
 		}
 		else
 		{
-			strReturn = StrRead(Read<int>(address, sizeof(int)));
+			strReturn = StrRead(Read<DWORD>(address, sizeof(DWORD)));
 		}
 
 		return strReturn;

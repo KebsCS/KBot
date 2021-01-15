@@ -75,7 +75,7 @@ public:
 	double GetExecutionTime();
 
 	//todo
-	bool SearchforImage(LPCWSTR path, int x1, int y1, int x2, int y2);
+	//bool SearchforImage(LPCWSTR path, int x1, int y1, int x2, int y2);
 
 	//searches given area for image returns true if found, coords of top left corner as parameters
 	//bool SearchforImage(LPCWSTR path, POINT coord);
@@ -86,9 +86,9 @@ public:
 	//screenshots given area and saves it as screenshot.bmp in bot directory
 	bool Screenshot(Area region, const char* fileName = "screenshot.bmp");
 
-	void SetScreenPixel(int x, int y, int r, int g, int b);
+	//void SetScreenPixel(int x, int y, int r, int g, int b);
 
-	void SetScreenPixel(POINT coord, int r, int g, int b);
+	//void SetScreenPixel(POINT coord, int r, int g, int b);
 };
 
 extern PixelHandler* pixel;

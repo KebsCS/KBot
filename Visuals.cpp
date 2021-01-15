@@ -238,7 +238,6 @@ void Visuals::ScoreBoard(CObject obj)
 {
 	DWORD RSpell = obj.GetSpellByID(SpellSlotID::R);
 	float GetRCooldownExpire = Memory.Read<float>(RSpell + oSpellSlotTime, sizeof(float));
-	int GetRLevel = Memory.Read<int>(RSpell + oSpellSlotLevel, sizeof(int));
 
 	DWORD Summ1 = obj.GetSpellByID(SpellSlotID::Summoner1);
 	DWORD Summ2 = obj.GetSpellByID(SpellSlotID::Summoner2);
@@ -254,7 +253,7 @@ void Visuals::ScoreBoard(CObject obj)
 	int Rcooldown = GetRCooldownExpire - GameTime + 1;
 	std::string sRcd = std::to_string(Rcooldown);
 	RGBA Rcolor = colorDown;
-	if (GetRLevel < 1)
+	if (int GetRLevel = Memory.Read<int>(RSpell + oSpellSlotLevel, sizeof(int)); GetRLevel < 1)
 	{
 		sRcd = "-";
 	}
@@ -297,13 +296,13 @@ void Visuals::ScoreBoard(CObject obj)
 		Item1color = colorReady;
 	}
 
-	std::vector<DWORD>Items(6);
-	std::vector<float>GetItemsCooldownExpire(6);
-	std::vector<int>Itemscooldown(6);
 	std::vector<std::string>sItemsCD(6);
 	std::vector<RGBA>ItemsColor(6);
 	if (M.Cooldowns.Scoreboard.Items)
 	{
+		std::vector<DWORD>Items(6);
+		std::vector<float>GetItemsCooldownExpire(6);
+		std::vector<int>Itemscooldown(6);
 		for (int i = 0; i < 6; i++)
 		{
 			Items[i] = obj.GetSpellByID(SpellSlotID::Item1 + i);

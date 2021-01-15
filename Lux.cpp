@@ -13,7 +13,7 @@ void Lux::Harass()
 {
 }
 
-bool Lux::Evade(Vector3 /*evadePos*/)
+bool Lux::Evade(Vector3 evadePos)
 {
 	return false;
 }

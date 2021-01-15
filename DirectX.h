@@ -15,6 +15,7 @@
 #include "Config.h"
 #include "ScriptUtils.h"
 
+
 extern LPDIRECT3D9              g_pD3D;
 extern LPDIRECT3DDEVICE9        g_pd3dDevice;
 extern D3DPRESENT_PARAMETERS    g_d3dpp;
@@ -77,86 +78,6 @@ public:
 };
 extern Direct3D9Render Direct3D9;
 
-//bool ObjectMenu = true;
-static ImGuiTextFilter       FilterObjMenu;
-// Demonstrate create a window with multiple child windows.
-static void ShowObjectMenu(bool* p_open)
-{
-	ImGui::SetNextWindowSize(ImVec2(500, 600), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin("Object List", p_open))
-	{
-		FilterObjMenu.Draw("Filter", 180);
-		ImGui::Separator();
-
-		extern std::vector<DWORD>objList;
-		// Left
-		static int selected = 0;
-		static CObject selectedObj = 0;
-		{
-			ImGui::BeginChild("left pane", ImVec2(175, 0), true);
-			for (auto i : objList)
-			{
-				CObject obj(i);
-				if (!FilterObjMenu.PassFilter(obj.GetName().c_str()))
-					continue;
-				char label[128];
-				sprintf(label, "%s", obj.GetName().c_str());
-				if (ImGui::Selectable(label, selected == obj.Address()))
-				{
-					selected = obj.Address();
-					selectedObj = obj;
-				}
-			}
-			ImGui::EndChild();
-		}
-		ImGui::SameLine();
-
-		// Right
-		{
-			ImGui::BeginGroup();
-			ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
-			ImGui::Text("Address: %x", selected);
-			ImGui::Separator();
-
-			ImGui::Columns(2, 0, true);
-
-			ImGui::Text("Name: %s", selectedObj.GetName().c_str());
-			ImGui::Text("NetworkID: %d", selectedObj.GetNetworkID());
-			//ImGui::Text("IsAttacking: %d", selectedObj.IsAttacking());
-			ImGui::Text("IsVisible: %d", selectedObj.IsVisible());
-			ImGui::Text("GetTeam: %d", selectedObj.GetTeam());
-			ImGui::Text("HP: %f", selectedObj.GetHealth());
-			ImGui::Text("MaxHP: %f", selectedObj.GetMaxHealth());
-			ImGui::Text("Mana: %f", selectedObj.GetMana());
-			ImGui::Text("MaxMana: %f", selectedObj.GetMaxMana());
-			ImGui::Text("Armor: %f", selectedObj.GetArmor());
-			ImGui::Text("MR: %f", selectedObj.GetMR());
-			ImGui::Text("MS: %f", selectedObj.GetMS());
-
-			ImGui::NextColumn();
-
-			ImGui::Text("BaseAD: %f", selectedObj.GetBaseAD());
-			ImGui::Text("BonusAD: %f", selectedObj.GetBonusAD());
-			ImGui::Text("AP: %f", selectedObj.GetAP());
-			ImGui::Text("AARange: %f", selectedObj.GetAARange());
-			ImGui::Text("Lethality: %f", selectedObj.GetLethality());
-			ImGui::Text("Crit: %f", selectedObj.GetCrit());
-			ImGui::Text("ChampName: %s", selectedObj.GetChampName().c_str());
-			ImGui::Text("SummonerSpell1: %s", selectedObj.SummonerSpell1().c_str());
-			ImGui::Text("SummonerSpell2: %s", selectedObj.SummonerSpell2().c_str());
-			ImGui::Text("KeystoneName: %s", selectedObj.KeystoneName().c_str());
-			ImGui::Text("GetLevel: %i", selectedObj.GetLevel());
-
-			ImGui::Columns(1);
-
-			ImGui::EndChild();
-
-			ImGui::EndGroup();
-		}
-	}
-	ImGui::End();
-}
-
 // Demonstrate creating a simple console window, with scrolling, filtering, completion and history.
 // For the console example, we are using a more C++ like approach of declaring a class to hold both data and functions.
 struct ConsoleLog
@@ -171,7 +92,6 @@ struct ConsoleLog
 	bool                  ScrollToBottom;
 	bool                  StopPrinting;
 	bool                  IgnoreStopPrint;
-	bool                  ObjectMenuOpen;
 
 	ConsoleLog()
 	{
@@ -188,14 +108,13 @@ struct ConsoleLog
 		Commands.push_back("REINIT");
 		Commands.push_back("LOADCFG");
 		Commands.push_back("SAVECFG");
-		//Commands.push_back("OBJECTS");
+
 		Commands.push_back("INFO");
 
 		AutoScroll = true;
 		ScrollToBottom = false;
 		StopPrinting = false;
 		IgnoreStopPrint = false;
-		ObjectMenuOpen = false;
 	}
 	~ConsoleLog()
 	{
@@ -366,7 +285,6 @@ struct ConsoleLog
 			ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
 
 		ImGui::End();
-		//ShowObjectMenu(&ObjectMenuOpen); todo
 	}
 
 	void    ExecCommand(const char* command_line)
@@ -445,12 +363,6 @@ struct ConsoleLog
 			AddLog("Loaded config");
 			Config->Load("default");
 		}
-		/* else if (Stricmp(command_line, "OBJECTS") == 0)
-		 {
-			 ObjectMenuOpen = !ObjectMenuOpen;
-
-			 AddLog("Showed objects");
-		 }*/
 		else if (Stricmp(command_line, "INFO") == 0)
 		{
 			IgnoreStopPrint = true;

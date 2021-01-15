@@ -425,7 +425,8 @@ unsigned int PixelHandler::DEBUG()
 		color = GetPixelColor(curMouse.x, curMouse.y);
 		RGBA colorRGB(color);
 		//clog.AddLog("")
-		if (PressedKey(VK_LBUTTON))
+		//todo just use clog
+		/*if (PressedKey(VK_LBUTTON))
 		{
 			std::fstream hFile("debug.txt", std::ios::out | std::ios::app);
 			if (hFile.is_open())
@@ -434,7 +435,7 @@ unsigned int PixelHandler::DEBUG()
 				hFile.close();
 			}
 			while (PressedKey(VK_LBUTTON)) { std::this_thread::sleep_for(std::chrono::milliseconds(1));; }
-		}
+		}*/
 	}
 }
 
@@ -445,10 +446,10 @@ double PixelHandler::GetExecutionTime()
 	return(endCount.QuadPart - startCount.QuadPart) * 1000.0 / frequency.QuadPart;
 }
 
-bool PixelHandler::SearchforImage(LPCWSTR path, int x1, int y1, int x2, int y2)
-{
-	return false;
-}
+//bool PixelHandler::SearchforImage(LPCWSTR path, int x1, int y1, int x2, int y2)
+//{
+//	return false;
+//}
 //
 //
 //bool PixelHandler::SearchforImage(LPCWSTR path, POINT coord)
@@ -506,17 +507,17 @@ bool PixelHandler::Screenshot(Area region, const char* fileName)
 	return Screenshot(region.x1, region.y1, region.x2, region.y2, fileName);
 }
 
-void PixelHandler::SetScreenPixel(int x, int y, int r, int g, int b)
-{
-	HWND hWnd = GetDesktopWindow();
-	HDC hdc = GetDC(hWnd);
-	SetPixel(hdc, x, y, RGBA(r, g, b).HEX());
-	ReleaseDC(hWnd, hdc);
-}
+//void PixelHandler::SetScreenPixel(int x, int y, int r, int g, int b)
+//{
+//	HWND hWnd = GetDesktopWindow();
+//	HDC hdc = GetDC(hWnd);
+//	SetPixel(hdc, x, y, RGBA(r, g, b).HEX());
+//	ReleaseDC(hWnd, hdc);
+//}
 
-void PixelHandler::SetScreenPixel(POINT coord, int r, int g, int b)
-{
-	SetScreenPixel(coord.x, coord.y, r, g, b);
-}
+//void PixelHandler::SetScreenPixel(POINT coord, int r, int g, int b)
+//{
+//	SetScreenPixel(coord.x, coord.y, r, g, b);
+//}
 
 PixelHandler* pixel = new PixelHandler();

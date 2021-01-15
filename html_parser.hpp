@@ -17,24 +17,24 @@
 #include <map>
 #include <set>
 #include <unordered_set>
-
-#if __cplusplus <= 199711L
-#if linux
-#include <tr1/memory>
-#else
-#include <memory>
-#endif
-using std::tr1::enable_shared_from_this;
-using std::tr1::shared_ptr;
-using std::tr1::weak_ptr;
-#else
+ //
+ //#if __cplusplus <= 199711L
+ //#if linux
+ //#include <tr1/memory>
+ //#else
+ //#include <memory>
+ //#endif
+ //using std::tr1::enable_shared_from_this;
+ //using std::tr1::shared_ptr;
+ //using std::tr1::weak_ptr;
+ //#else
 
 #include <memory>
 
 using std::enable_shared_from_this;
 using std::shared_ptr;
 using std::weak_ptr;
-#endif
+//#endif
 
 /**
  * class HtmlElement

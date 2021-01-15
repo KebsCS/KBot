@@ -134,4 +134,14 @@ std::wstring Utils::StringToWstring(std::string str)
 	}
 }
 
+std::string Utils::RandomString(int size)
+{
+	std::string str = "";
+
+	for (int i = 0; i < size; i++)
+		str += RandomInt(0, 1) ? RandomInt(48, 57) : RandomInt(97, 122);
+
+	return str;
+}
+
 Utils* utils = new Utils();

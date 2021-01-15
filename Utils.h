@@ -52,6 +52,8 @@ public:
 	std::wstring StringToWstring(std::string str);
 
 	std::string WstringToString(std::wstring wstr);
+
+	std::string RandomString(int size);
 };
 
 extern Utils* utils;

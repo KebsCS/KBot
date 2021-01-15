@@ -2,10 +2,6 @@
 
 #include "DirectX.h"
 
-CObject Local;
-DWORD OBJManager;
-DWORD OBJManagerArray;
-DWORD MissileMap;
 IScript* championScript;
 
 bool Initialize::Start()
@@ -44,12 +40,14 @@ bool Initialize::Start()
 	AddObjects();
 	CreateChampArray();
 
+	InitSpells();
+
 	if (M.Debug)
 		StartupInfo();
 
 	//std::string strAPI = api->GET("https://127.0.0.1", "/liveclientdata/allgamedata", 2999);
 
-#elif
+#else
 	M.Champion = "Empty";
 
 #endif // !NOLEAGUE
@@ -58,7 +56,7 @@ bool Initialize::Start()
 
 void Initialize::StartupInfo()
 {
-	clog.AddLog("ProcessId: %d", Memory.ProcessID);
+	clog.AddLog("ProcessId: %d", Memory.Process());
 	clog.AddLog("ClientAddress: %x", ClientAddress);
 	clog.AddLog("OBJManager: %x", OBJManager);
 
@@ -358,6 +356,187 @@ void Initialize::CreateChampArray()
 	for (int i = 0; i < 10; i++)
 	{
 		M.ScoreboardNames[i] = scoreboardnames[i];
+	}
+}
+
+void Initialize::InitSpells()
+{
+	for (auto& obj : herolist)
+	{
+		std::string champ = obj.GetChampName();
+
+		if (champ == XorStr("Xerath"))
+		{
+			obj.spell.Q.fRange = 750;
+			obj.spell.Q.fWidth = 290;
+			obj.spell.Q.fCastTime = 0;
+			obj.spell.Q.bCircular = 0;
+			obj.spell.Q.fSpeed = 0;
+			obj.spell.Q.bUseList = 0;
+
+			obj.spell.W.fRange = 1000;
+			obj.spell.W.fWidth = 200;
+			obj.spell.W.fCastTime = 0.25;
+			obj.spell.W.bCircular = 1;
+			obj.spell.W.fSpeed = 0;
+			obj.spell.W.bUseList = 0;
+
+			obj.spell.E.fRange = 1125;
+			obj.spell.E.fWidth = 120;
+			obj.spell.E.fCastTime = 0.25;
+			obj.spell.E.bCircular = 0;
+			obj.spell.E.fSpeed = 1400;
+			obj.spell.E.bUseList = 0;
+
+			obj.spell.R.fRange = 5000;
+			obj.spell.R.fWidth = 135;
+			obj.spell.R.fCastTime = 0;
+			obj.spell.R.bCircular = 1;
+			obj.spell.R.fSpeed = 0; // idk
+			obj.spell.R.bUseList = 1;
+		}
+		else if (champ == XorStr("Lux"))
+		{
+			obj.spell.Q.fRange = 1300;
+			obj.spell.Q.fWidth = 140;
+			obj.spell.Q.fCastTime = 0.25;
+			obj.spell.Q.bCircular = 0;
+			obj.spell.Q.fSpeed = 1200;
+			obj.spell.Q.bUseList = 0;
+
+			obj.spell.W.fRange = 1175;
+			obj.spell.W.fWidth = 220;
+			obj.spell.W.fCastTime = 0.25;
+			obj.spell.W.bCircular = 0;
+			obj.spell.W.fSpeed = 2400;
+			obj.spell.W.bUseList = 0;
+
+			obj.spell.E.fRange = 1100;
+			obj.spell.E.fWidth = 310;
+			obj.spell.E.fCastTime = 0.25;
+			obj.spell.E.bCircular = 1;
+			obj.spell.E.fSpeed = 1200;
+			obj.spell.E.bUseList = 0;
+
+			obj.spell.R.fRange = 3400;
+			obj.spell.R.fWidth = 200;
+			obj.spell.R.fCastTime = 1;
+			obj.spell.R.bCircular = 0;
+			obj.spell.R.fSpeed = 0;//instant
+			obj.spell.R.bUseList = 0;
+		}
+		else if (champ == XorStr("Cassiopeia"))
+		{
+			obj.spell.Q.fRange = 850;
+			obj.spell.Q.fWidth = 125;
+			obj.spell.Q.fCastTime = 0.25;
+			obj.spell.Q.bCircular = 1;
+			obj.spell.Q.fSpeed = 0;
+			obj.spell.Q.bUseList = 0;
+
+			obj.spell.W.fRange = 700;
+			obj.spell.W.fWidth = 160; //todo correct range
+			obj.spell.W.fCastTime = 0.25;
+			obj.spell.W.bCircular = 1;
+			obj.spell.W.fSpeed = 0;
+			obj.spell.W.bUseList = 0;
+
+			obj.spell.E.fRange = 700;
+			obj.spell.E.fWidth = 0;
+			obj.spell.E.fCastTime = 0.125;
+			obj.spell.E.bCircular = 0;
+			obj.spell.E.fSpeed = 0;
+			obj.spell.E.bUseList = 0;
+			obj.spell.E.bTargeted = 1;
+
+			obj.spell.R.fRange = 825;
+			obj.spell.R.fWidth = 600;
+			obj.spell.R.fCastTime = 0.5;
+			obj.spell.R.bCircular = 0;
+			obj.spell.R.fSpeed = 0;//instant
+			obj.spell.R.bUseList = 0;
+			obj.spell.R.bCone = 1;
+		}
+		else if (champ == XorStr("Ashe"))
+		{
+			obj.spell.Q.fRange = 0;
+			obj.spell.Q.fWidth = 0;
+			obj.spell.Q.fCastTime = 0;
+			obj.spell.Q.bCircular = 0;
+			obj.spell.Q.fSpeed = 0;
+			obj.spell.Q.bUseList = 0;
+			obj.spell.Q.bTargeted = 1;
+			obj.spell.Q.bCone = 0;
+
+			obj.spell.W.fRange = 1200;
+			obj.spell.W.fWidth = 450; //todo correct range
+			obj.spell.W.fCastTime = 0.25;
+			obj.spell.W.bCircular = 0;
+			obj.spell.W.fSpeed = 2000;
+			obj.spell.W.bUseList = 0; //maybe 1
+			obj.spell.W.bTargeted = 0;
+			obj.spell.W.bCone = 1;
+
+			obj.spell.E.fRange = 999999;
+			obj.spell.E.fWidth = 1000;
+			obj.spell.E.fCastTime = 0.25;
+			obj.spell.E.bCircular = 1;
+			obj.spell.E.fSpeed = 1400;
+			obj.spell.E.bUseList = 0;
+			obj.spell.E.bTargeted = 0;
+			obj.spell.E.bCone = 0;
+
+			obj.spell.R.fRange = 999999;
+			obj.spell.R.fWidth = 125;
+			obj.spell.R.fCastTime = 0.25;
+			obj.spell.R.bCircular = 0;
+			obj.spell.R.fSpeed = 1600;
+			obj.spell.R.bUseList = 0;
+			obj.spell.E.bTargeted = 0;
+			obj.spell.R.bCone = 0;
+		}
+		else if (champ == XorStr("Zac"))
+		{
+			//todo dont detect 2nd part
+			obj.spell.Q.fRange = 951;
+			obj.spell.Q.fWidth = 100;
+			obj.spell.Q.fCastTime = 0.25;
+			obj.spell.Q.bCircular = 0;
+			obj.spell.Q.fSpeed = 2800;
+			obj.spell.Q.bUseList = 0;
+			obj.spell.Q.bTargeted = 0;
+			obj.spell.Q.bCone = 0;
+
+			obj.spell.W.fRange = 0;
+			obj.spell.W.fWidth = 350;
+			obj.spell.W.fCastTime = 0;
+			obj.spell.W.bCircular = 1;
+			obj.spell.W.fSpeed = 0;
+			obj.spell.W.bUseList = 0;
+			obj.spell.W.bTargeted = 0;
+			obj.spell.W.bCone = 0;
+			obj.spell.W.bLocal = 1;
+
+			obj.spell.E.fRange = 1800; //1200-1800
+			obj.spell.E.fWidth = 250;
+			obj.spell.E.fCastTime = 0;
+			obj.spell.E.bCircular = 1;
+			obj.spell.E.fSpeed = 1400; //idk
+			obj.spell.E.bUseList = 0;
+			obj.spell.E.bTargeted = 0;
+			obj.spell.E.bCone = 0;
+			obj.spell.E.bLocal = 0;
+
+			obj.spell.R.fRange = 0;
+			obj.spell.R.fWidth = 250;
+			obj.spell.R.fCastTime = 0.25;
+			obj.spell.R.bCircular = 1;
+			obj.spell.R.fSpeed = 0;
+			obj.spell.R.bUseList = 0;
+			obj.spell.E.bTargeted = 0;
+			obj.spell.R.bCone = 0;
+			obj.spell.R.bLocal = 1;
+		}
 	}
 }
 

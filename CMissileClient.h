@@ -32,7 +32,7 @@ public:
 		Vector3 startPos = Vector3(Memory.Read<float>(base + oMissileStartPos, sizeof(float)),
 			Memory.Read<float>(base + oMissileStartPos + 0x4, sizeof(float)),
 			Memory.Read<float>(base + oMissileStartPos + 0x8, sizeof(float)));
-		startPos.Y += 100;
+		startPos.y += 100;
 		return startPos;
 	}
 
@@ -41,7 +41,7 @@ public:
 		Vector3 startPos = Vector3(Memory.Read<float>(base + oMissileEndPos, sizeof(float)),
 			Memory.Read<float>(base + oMissileEndPos + 0x4, sizeof(float)),
 			Memory.Read<float>(base + oMissileEndPos + 0x8, sizeof(float)));
-		startPos.Y += 100;
+		startPos.y += 100;
 		return startPos;
 	}
 

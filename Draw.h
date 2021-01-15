@@ -24,6 +24,16 @@ class Draw
 {
 private:
 	//LPDIRECT3DTEXTURE9 LoadTextureFromFile(const char* filename, LPDIRECT3DTEXTURE9* out_texture, int* out_width, int* out_height, LPDIRECT3DDEVICE9 xD);
+
+	static const int CIRCLE_RESOLUTION = 32;
+
+	struct VERTEX_2D_DIF
+	{
+		float x, y, z, rhw;
+		D3DCOLOR color;
+		static const DWORD FVF = D3DFVF_XYZRHW | D3DFVF_DIFFUSE;
+	};
+
 public:
 
 	//todo use image class
@@ -62,10 +72,10 @@ public:
 	//draws filled box
 	void BoxFilled(int x, int y, int w, int h, RGBA rgb);
 
-	//draws box with a border
-	void BoxBordered(int x, int y, int w, int h, RGBA color, int thickness = 1);
+	//draws only box border
+	void BoxBorder(int x, int y, int w, int h, RGBA color, int thickness = 1);
 
-	//draws only box outline
+	//draws box with a outline
 	void BoxOutlined(int x, int y, int w, int h, RGBA color, float thickness = 1, RGBA bcolor = RGBA(1, 0, 0));
 
 	//draws string in a box
@@ -80,6 +90,14 @@ public:
 
 	//draws game's circle range
 	void CircleRange(Vector3 Pos, float points, float r, RGBA color, float thickness = 1.f);
+
+	void Bar(int x, int y, float value);
+
+	void FillRGB(float x, float y, float w, float h, RGBA color);
+
+	void GradientBox(int x, int y, int w, int h, RGBA rgb, RGBA rgb2, bool vertical);
+
+	void GradientBoxOutlined(int x, int y, int w, int h, RGBA rgb, RGBA rgb2, bool vertical, float thickness = 1, RGBA bcolor = RGBA(1, 0, 0));
 };
 extern Draw* draw;
 

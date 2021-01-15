@@ -17,25 +17,25 @@
 #include <set>
 #include <queue>
 
-#include "imgui.h"
-#include "imgui_impl_dx9.h"
-#include "imgui_impl_win32.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_dx9.h"
+#include "imgui/imgui_impl_win32.h"
 #include <d3d9.h>
 #include <d3dx9.h>
+#include <DirectXMath.h>
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "d3dx9.lib")
-#include <DirectXMath.h>
+
 
 #include "xor.h"
 #include "SpellDB.h"
 #include "Vector.h"
 
+
 // default screen size
 #define SCREENWIDTH ::GetSystemMetrics(SM_CXSCREEN)
 #define SCREENHEIGHT ::GetSystemMetrics(SM_CYSCREEN)
 
-#define M_PI 3.14159265358979323846	// pi
-#define M_PI_F ((float)(M_PI))	// Shouldn't collide with anything.
 #define M_PHI		1.61803398874989484820 // golden ratio
 
 //rand() isnt really random, todo
@@ -145,10 +145,10 @@ struct RGBA
 	}
 	inline RGBA(const float r, const float g, const float b, const float a = 1.f)
 	{
-		R = r * 255;
-		G = g * 255;
-		B = b * 255;
-		A = a * 255;
+		R = static_cast<int>(r * 255);
+		G = static_cast<int>(g * 255);
+		B = static_cast<int>(b * 255);
+		A = static_cast<int>(a * 255);
 	}
 	inline RGBA(const unsigned hex) // HEX to RGB
 	{
@@ -620,25 +620,25 @@ enum DirectInputKeys : int
 	DIK_MAIL = 0xEC,    /* Mail */
 	DIK_MEDIASELECT = 0xED    /* Media Select */
 };
-
-const std::vector<std::string>ChampNames = {
-	"Aatrox", "Ahri", "Akali", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios"
-	"Ashe", "Aurelion Sol", "AurelionSol","Azir", "Bard", "Blitzcrank", "Brand", "Braum", "Caitlyn",
-	"Camille", "Cassiopeia", "Cho'Gath", "Chogath", "Corki", "Darius", "Diana", "Dr. Mundo", "Drmundo", "Draven",
-	"Ekko", "Elise", "Evelynn", "Ezreal", "FiddleSticks", "Fiora", "Fizz", "Galio",
-	"Gangplank", "Garen", "Gnar", "Gragas", "Graves", "Hecarim", "Heimerdinger", "Illaoi", "Irelia",
-	"Ivern", "Janna", "Jarvan IV","JarvanIV", "Jax", "Jayce", "Jhin", "Jinx", "Kai'sa", "Kaisa", "Kalista", "Karma",
-	"Karthus", "Kassadin", "Katarina", "Kayle", "Kayn", "Kennen", "Kha'zix", "Kindred", "Kled", "Kog'maw", "KogMaw",
-	"LeBlanc", "Lee Sin", "Leona", "Lillia", "Lissandra", "Lucian", "Lulu", "Lux", "Malphite", "Malzahar", "Maokai",
-	"Master Yi", "MasterYi", "Miss Fortune", "MissFortune", "Mordekaiser", "Morgana", "Nami", "Nasus", "Nautilus", "Neeko",
-	"Nidalee", "Nocturne", "Nunu" , "Nunu & Willump", "Olaf", "Orianna", "Ornn", "Pantheon", "Poppy", "Pyke", "Qiyana", "Quinn",
-	"Rakan", "Rammus", "Rek'Sai", "RekSai", "Renekton", "Rengar", "Riven", "Rumble", "Ryze", "Samira", "Sejuani", "Senna", "Seraphine", "Sett", "Shaco",
-	"Shen", "Shyvana", "Singed", "Sion", "Sivir", "Skarner", "Sona", "Soraka", "Swain", "Sylas", "Syndra", "Tahm Kench", "TahmKench",
-	"Taliyah", "Talon", "Taric", "Teemo", "Thresh", "Tristana", "Trundle", "Tryndamere", "Twisted Fate", "TwistedFate", "Twitch",
-	"Udyr", "Urgot", "Varus", "Vayne", "Veigar", "Vel'Koz", "Velkoz","Vi", "Viktor", "Vladimir", "Volibear",
-	"Warwick", "Wukong", "Xayah", "Xerath", "Xin Zhao", "XinZhao","Yasuo", "Yone", "Yorick", "Yuumi", "Zac", "Zed", "Ziggs", "Zilean", "Zoe", "Zyra",
-	"MonkeyKing", "Mega Gnar", "MegaGnar", "Target Dummy", "TargetDummy"
-};
+//
+//const std::vector<std::string>ChampNames = {
+//	"Aatrox", "Ahri", "Akali", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios"
+//	"Ashe", "Aurelion Sol", "AurelionSol","Azir", "Bard", "Blitzcrank", "Brand", "Braum", "Caitlyn",
+//	"Camille", "Cassiopeia", "Cho'Gath", "Chogath", "Corki", "Darius", "Diana", "Dr. Mundo", "Drmundo", "Draven",
+//	"Ekko", "Elise", "Evelynn", "Ezreal", "FiddleSticks", "Fiora", "Fizz", "Galio",
+//	"Gangplank", "Garen", "Gnar", "Gragas", "Graves", "Hecarim", "Heimerdinger", "Illaoi", "Irelia",
+//	"Ivern", "Janna", "Jarvan IV","JarvanIV", "Jax", "Jayce", "Jhin", "Jinx", "Kai'sa", "Kaisa", "Kalista", "Karma",
+//	"Karthus", "Kassadin", "Katarina", "Kayle", "Kayn", "Kennen", "Kha'zix", "Kindred", "Kled", "Kog'maw", "KogMaw",
+//	"LeBlanc", "Lee Sin", "Leona", "Lillia", "Lissandra", "Lucian", "Lulu", "Lux", "Malphite", "Malzahar", "Maokai",
+//	"Master Yi", "MasterYi", "Miss Fortune", "MissFortune", "Mordekaiser", "Morgana", "Nami", "Nasus", "Nautilus", "Neeko",
+//	"Nidalee", "Nocturne", "Nunu" , "Nunu & Willump", "Olaf", "Orianna", "Ornn", "Pantheon", "Poppy", "Pyke", "Qiyana", "Quinn",
+//	"Rakan", "Rammus", "Rek'Sai", "RekSai", "Renekton", "Rengar", "Riven", "Rumble", "Ryze", "Samira", "Sejuani", "Senna", "Seraphine", "Sett", "Shaco",
+//	"Shen", "Shyvana", "Singed", "Sion", "Sivir", "Skarner", "Sona", "Soraka", "Swain", "Sylas", "Syndra", "Tahm Kench", "TahmKench",
+//	"Taliyah", "Talon", "Taric", "Teemo", "Thresh", "Tristana", "Trundle", "Tryndamere", "Twisted Fate", "TwistedFate", "Twitch",
+//	"Udyr", "Urgot", "Varus", "Vayne", "Veigar", "Vel'Koz", "Velkoz","Vi", "Viktor", "Vladimir", "Volibear",
+//	"Warwick", "Wukong", "Xayah", "Xerath", "Xin Zhao", "XinZhao","Yasuo", "Yone", "Yorick", "Yuumi", "Zac", "Zed", "Ziggs", "Zilean", "Zoe", "Zyra",
+//	"MonkeyKing", "Mega Gnar", "MegaGnar", "Target Dummy", "TargetDummy"
+//};
 
 const float LevelEXP[18] = { 0,280,660,1140,1720,2400,3180,4060,5040,6120,7300,8580,9960,11440,13020,14700,16480,18360 };
 

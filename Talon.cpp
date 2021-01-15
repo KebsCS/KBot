@@ -4,6 +4,7 @@
 
 void Talon::OnKeyDown(int)
 {
+	//TODO CHECKING PLAYER POSITION INSTEAD OF SLEEPS
 	if (M.Talon.Master)
 	{
 		if (M.Talon.Jumps)
@@ -12,19 +13,19 @@ void Talon::OnKeyDown(int)
 			{
 				Vector3 raptorJumpSpot = Vector3(6724.0, 48.527, 4908.0);
 
-				if (Local.GetPosition().DistTo(raptorJumpSpot) < 1000)
+				if (Local.GetPosition().Distance(raptorJumpSpot) < 1000)
 				{
 					ImVec2 raptorJump = Direct3D9.WorldToScreen(raptorJumpSpot);
 					if (raptorJump.x == 0 && raptorJump.y == 0)
 						return;
 					draw->Circle(raptorJump.x, raptorJump.y, 75, RGBA(255, 255, 255));
-					if (Local.GetPosition().DistTo(raptorJumpSpot) < 400)
+					if (Local.GetPosition().Distance(raptorJumpSpot) < 400)
 					{
 						ImVec2 raptorJumpFinal = Direct3D9.WorldToScreen(Vector3(6190, 51.772114, 5634));
 						draw->Circle(raptorJumpFinal.x, raptorJumpFinal.y, 30, RGBA(255, 255, 0));
 						draw->Line(raptorJumpFinal.x, raptorJumpFinal.y, raptorJump.x, raptorJump.y, RGBA(255, 255, 0));
 
-						if (Local.GetPosition().DistTo(raptorJumpSpot) < 155 && PressedKey(VK_LSHIFT))
+						if (Local.GetPosition().Distance(raptorJumpSpot) < 155 && PressedKey(VK_LSHIFT))
 						{
 							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
 							mouse->RightClick();
@@ -61,19 +62,19 @@ void Talon::OnKeyDown(int)
 			if (M.Talon.JumpsType[0])
 			{
 				Vector3 drakeJumpSpot = Vector3(8688, 50.623039, 5196);
-				if (Local.GetPosition().DistTo(drakeJumpSpot) < 1000)
+				if (Local.GetPosition().Distance(drakeJumpSpot) < 1000)
 				{
 					ImVec2 drakeJump = Direct3D9.WorldToScreen(drakeJumpSpot);
 					if (drakeJump.x == 0 && drakeJump.y == 0)
 						return;
 					draw->Circle(drakeJump.x, drakeJump.y, 75, RGBA(255, 255, 255));
-					if (Local.GetPosition().DistTo(drakeJumpSpot) < 400)
+					if (Local.GetPosition().Distance(drakeJumpSpot) < 400)
 					{
 						ImVec2 drakeJumpFinal = Direct3D9.WorldToScreen(Vector3(9372, -71.240601, 4642));
 						draw->Circle(drakeJumpFinal.x, drakeJumpFinal.y, 30, RGBA(255, 255, 0));
 						draw->Line(drakeJumpFinal.x, drakeJumpFinal.y, drakeJump.x, drakeJump.y, RGBA(255, 255, 0));
 
-						if (Local.GetPosition().DistTo(drakeJumpSpot) < 155 && PressedKey(VK_LSHIFT))
+						if (Local.GetPosition().Distance(drakeJumpSpot) < 155 && PressedKey(VK_LSHIFT))
 						{
 							mouse->MouseMoveInstant(drakeJump.x, drakeJump.y);
 							mouse->RightClick();
@@ -109,19 +110,19 @@ void Talon::OnKeyDown(int)
 			if (M.Talon.JumpsType[2])
 			{
 				Vector3 botJumpSpot = Vector3(12472, 51.729401, 4508);
-				if (Local.GetPosition().DistTo(botJumpSpot) < 800)
+				if (Local.GetPosition().Distance(botJumpSpot) < 800)
 				{
 					ImVec2 botJump = Direct3D9.WorldToScreen(botJumpSpot);
 					if (botJump.x == 0 && botJump.y == 0)
 						return;
 					draw->Circle(botJump.x, botJump.y, 75, RGBA(255, 255, 255));
-					if (Local.GetPosition().DistTo(botJumpSpot) < 400)
+					if (Local.GetPosition().Distance(botJumpSpot) < 400)
 					{
 						ImVec2 botJumpFinal = Direct3D9.WorldToScreen(Vector3(13122, 51.366905, 3988));
 						draw->Circle(botJumpFinal.x, botJumpFinal.y, 30, RGBA(255, 255, 0));
 						draw->Line(botJumpFinal.x, botJumpFinal.y, botJump.x, botJump.y, RGBA(255, 255, 0));
 
-						if (Local.GetPosition().DistTo(botJumpSpot) < 155 && PressedKey(VK_LSHIFT))
+						if (Local.GetPosition().Distance(botJumpSpot) < 155 && PressedKey(VK_LSHIFT))
 						{
 							mouse->MouseMoveInstant(botJump.x, botJump.y);
 							mouse->RightClick();
@@ -142,19 +143,19 @@ void Talon::OnKeyDown(int)
 			if (M.Talon.JumpsType[3])
 			{
 				Vector3 topJumpSpot = Vector3(2424, 54.32550, 10406);
-				if (Local.GetPosition().DistTo(topJumpSpot) < 800)
+				if (Local.GetPosition().Distance(topJumpSpot) < 800)
 				{
 					ImVec2 topJump = Direct3D9.WorldToScreen(topJumpSpot);
 					if (topJump.x == 0 && topJump.y == 0)
 						return;
 					draw->Circle(topJump.x, topJump.y, 75, RGBA(255, 255, 255));
-					if (Local.GetPosition().DistTo(topJumpSpot) < 400)
+					if (Local.GetPosition().Distance(topJumpSpot) < 400)
 					{
 						ImVec2 topJumpFinal = Direct3D9.WorldToScreen(Vector3(1734, 52.838100, 11004));
 						draw->Circle(topJumpFinal.x, topJumpFinal.y, 30, RGBA(255, 255, 0));
 						draw->Line(topJumpFinal.x, topJumpFinal.y, topJump.x, topJump.y, RGBA(255, 255, 0));
 
-						if (Local.GetPosition().DistTo(topJumpSpot) < 155 && PressedKey(VK_LSHIFT))
+						if (Local.GetPosition().Distance(topJumpSpot) < 155 && PressedKey(VK_LSHIFT))
 						{
 							mouse->MouseMoveInstant(topJump.x, topJump.y);
 							mouse->RightClick();
@@ -177,19 +178,19 @@ void Talon::OnKeyDown(int)
 			{
 				Vector3 raptorJumpSpot = Vector3(6724.0, 48.527, 4908.0);
 
-				if (Local.GetPosition().DistTo(raptorJumpSpot) < 1000)
+				if (Local.GetPosition().Distance(raptorJumpSpot) < 1000)
 				{
 					ImVec2 raptorJump = Direct3D9.WorldToScreen(raptorJumpSpot);
 					if (raptorJump.x == 0 && raptorJump.y == 0)
 						return;
 					draw->Circle(raptorJump.x, raptorJump.y, 75, RGBA(255, 255, 255));
-					if (Local.GetPosition().DistTo(raptorJumpSpot) < 400)
+					if (Local.GetPosition().Distance(raptorJumpSpot) < 400)
 					{
 						ImVec2 raptorJumpFinal = Direct3D9.WorldToScreen(Vector3(6190, 51.772114, 5634));
 						draw->Circle(raptorJumpFinal.x, raptorJumpFinal.y, 30, RGBA(255, 255, 0));
 						draw->Line(raptorJumpFinal.x, raptorJumpFinal.y, raptorJump.x, raptorJump.y, RGBA(255, 255, 0));
 
-						if (Local.GetPosition().DistTo(raptorJumpSpot) < 155 && PressedKey(VK_LSHIFT))
+						if (Local.GetPosition().Distance(raptorJumpSpot) < 155 && PressedKey(VK_LSHIFT))
 						{
 							mouse->MouseMoveInstant(raptorJump.x, raptorJump.y);
 							mouse->RightClick();
@@ -234,7 +235,7 @@ void Talon::Harass()
 {
 }
 
-bool Talon::Evade(Vector3 /*evadePos*/)
+bool Talon::Evade(Vector3 evadePos)
 {
 	return false;
 }

@@ -51,7 +51,7 @@ bool Mouse::MouseMove(int x, int y)
 
 	for (int i = 1; i <= stepSize; i++)
 	{
-		progress = (i / (float)(stepSize)) * M_PI_F;
+		progress = (i / (float)(stepSize)) * M_PI;
 		interimX = (curMouse.x + (i * stepX)) + (deviatePathx * sin(progress));
 		interimY = (curMouse.y + (i * stepY)) + (deviatePathY * sin(progress));
 		//printf("itterim: %.0f, %.0f\n", round(interimX), round(interimY));
