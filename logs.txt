@@ -1,2 +1,0 @@
-[DEBUG LOG ENABLED]
-[19:39:19][WinMain] Window Found
