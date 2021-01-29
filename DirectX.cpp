@@ -110,7 +110,6 @@ int Direct3D9Render::Render()
 {
 	auto timeBefore = std::chrono::high_resolution_clock::now();
 
-
 	if (M.bConsoleOpen)
 	{
 		clog.Draw("Console Log", &M.bConsoleOpen);
@@ -304,7 +303,7 @@ int Direct3D9Render::Render()
 				ImGui::Checkbox("Draw Spells", &M.Evade.Draw);
 				ImGui::Checkbox("Limit Range", &M.Evade.LimitRange);
 				ImGui::SameLine(); HelpMarker("Don't scan missiles at long range");
-				ImGui::SliderFloat("##EvadeLR", &M.Evade.LR, 500.f, 10000.f, "Max Range: %lg",1.f);
+				ImGui::SliderFloat("##EvadeLR", &M.Evade.LR, 500.f, 10000.f, "Max Range: %lg", 1.f);
 				ImGui::SliderInt("Diagonal Search Step", &M.Evade.DS, 5, 100);
 				ImGui::SliderInt("Diagonal Points Count", &M.Evade.DC, 1, 8);
 
@@ -445,8 +444,6 @@ int Direct3D9Render::Render()
 			ImGui::EndTabBar();
 		}
 		ImGui::End();
-
-	
 
 		//ImGui::ShowDemoWindow();
 	}

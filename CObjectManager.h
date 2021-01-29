@@ -11,8 +11,6 @@
 #include "GameData.h"
 #include "CSpellSlot.h"
 
-
-
 class CObject
 {
 private:
@@ -34,61 +32,20 @@ private:
 		return  ((param_2 & uStack4) != 0);
 	}
 
-
-	DWORD AiManager(DWORD addr)
+	DWORD AiManager(int param_1)
 	{
-		int v1; // eax
-		int8_t v2; // esi
-		DWORD v3; // ecx
-		DWORD v4; // edi
-		int v5; // edx
-		DWORD v6; // edx
-		int v7; // eax
-		int8_t v8; // al
-		DWORD v9; // eax
-		DWORD v10; // edx
-		char v11; // cl
-		int v13; // [esp+8h] [ebp-4h]
-
-		v1 = Memory.Read<int>(addr + 12312);
-
-		v2 = addr + 12304;
-		v3 = 0;
-		v4 = Memory.Read<DWORD>(v2 + 1);
-		v5 = Memory.Read<DWORD>(v2 + (4 * v1 + 12));
-		v13 = Memory.Read<DWORD>(v2 + (4 * v1 + 12));
-		DWORD temp = v13;
-		if (v4)
-		{
-			v6 = (int)(v2 + 4);
-			do
-			{
-				v7 = v6;
-				++v6;
-				temp = Memory.Read<DWORD>(temp + v3);
-				temp ^= ~v7;
-				++v3;
-			} while (v3 < v4);
-			v5 = temp;
-		}
-		v8 = Memory.Read<DWORD>(v2 + 2);
-		if (!v8)
-			return Memory.Read<DWORD>(v5 + 8);
-		v9 = 4 - v8;
-		if (v9 >= 4)
-			return Memory.Read<DWORD>(v5 + 8);
-		v10 = Memory.Read<DWORD>(v2 + v9 + 4);
-		
-		do
-		{
-			v11 = v10++;
-			temp = Memory.Read<BYTE>(temp + v9++);
-			temp ^= ~v11;
-		} while (v9 < 4);
-		return Memory.Read<DWORD>(temp + 8);
+		if (!param_1)
+			return 0;
+		int uVar2;
+		int puVar3;
+		int uStack4;
+		int num1 = oAiManager;
+		uStack4 = Memory.Read<int>(param_1 + (num1 + 8) + (Memory.Read<byte>(param_1 + (num1 + 4))) * 4);
+		puVar3 = param_1 + num1;
+		uVar2 = Memory.Read<int>(puVar3);
+		uStack4 ^= ~uVar2;
+		return Memory.Read<DWORD>(uStack4 + 8);
 	}
-
-
 
 protected:
 
@@ -113,10 +70,24 @@ public:
 	//}
 	//ChampSpells spell;
 
-
 	DWORD GetAiManager()
 	{
 		return AiManager(base);
+
+		/*	old
+			IsDashing = 0x1EC;
+			DashSpeed = 0x1D0;
+			TargetPosition = 0x10;
+			*/
+
+			//checked
+			//TargetPos 0x10 vec
+			//IsMoving  0x198 bool
+			//ServerPosition  0x2BC vec
+			//NavBegin 0x1A4 vec
+			//NavEnd 0x1FC vec
+			//PassedWaypoints 0x19C int
+			//Velocity 0x2C8 or 0x2D0 float
 	}
 
 	DWORD Address() const
@@ -237,7 +208,7 @@ public:
 	std::string GetChampName()
 	{
 		if (champ.empty())
-			champ = Memory.ReadString(base + oObjChampionName); 
+			champ = Memory.ReadString(base + oObjChampionName);
 		return champ;
 	}
 	std::string SummonerSpell1()
@@ -342,6 +313,12 @@ public:
 	}
 	int IsWard()
 	{
+		if (!this->HasUnitTags(Unit_Ward))
+		{
+			wardType = 0;
+			return wardType;
+		}
+
 		if (wardType == -1)
 		{
 			float maxHP = this->GetMaxHealth();
@@ -425,7 +402,7 @@ public:
 		return Memory.Read<float>(GetUCIPropertiesInstance() + oPathingRadius);
 	}
 
-	bool HasUnitTags(const UnitTag& type1) const 
+	bool HasUnitTags(const UnitTag& type1) const
 	{
 		return unitInfo->tags.test(type1);
 	}
@@ -487,6 +464,18 @@ public:
 		if (base != A)
 			return true;
 		else return false;
+	}
+
+	inline bool operator ! () const
+	{
+		if (base == 0)
+			return true;
+		return false;
+	}
+
+	inline DWORD operator + (DWORD offset) const
+	{
+		return base + offset;
 	}
 
 	bool IsGameObject()
@@ -575,8 +564,6 @@ public:
 	}
 };
 
-
-
 inline std::vector<CObject>g_MinionList;
 inline void MinionListLoop()
 {
@@ -604,7 +591,5 @@ inline void MinionListLoop()
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 }
-
-
 
 #endif // !_COBJECTMANAGER_H_

@@ -5,6 +5,18 @@
 
 #include "CSpellInfo.h"
 
+//todo reverse ["GetSpellState", FindFuncCall("E8 ? ? ? ? 8B F8 8B CB 89")],
+enum class SpellState : int
+{
+	//Possible flags
+	Ready = 0,
+	NotAvailable = 4,
+	Surpressed = 8,
+	NotLearned = 12,
+	Cooldown = 32,
+	NoMana = 64,
+	Unknown
+};
 
 class CSpellSlot
 {

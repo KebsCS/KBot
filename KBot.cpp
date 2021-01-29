@@ -196,6 +196,8 @@ void Direct3D9Render::HeroLoop()
 					vis->TalonDamageCalc(obj);
 			}
 
+			draw->String(WorldToMinimap(obj.GetPosition()), obj.GetChampName(), RGBA(255, 255, 255));
+
 			//clog.AddLog("%s %i", obj.GetChampName().c_str(), obj.GetNetworkID());
 
 			//float dist = obj.GetDistToMe(Local);
@@ -376,238 +378,6 @@ bool RenameExe()
 }
 
 bool once123 = true;
-
-//uint __thiscall UndefinedFunction_009c5490(int param_1, uint param_2)
-//
-//{
-//	byte bVar1;
-//	uint uVar2;
-//	uint* puVar3;
-//	uint uVar4;
-//	byte* pbVar5;
-//	uint uStack4;
-//
-//	uVar4 = 0;
-//	bVar1 = *(byte*)(param_1 + 0x51);
-//	uStack4 = *(uint*)(param_1 + 0x5c + (uint) * (byte*)(param_1 + 0x58) * 4);
-//	if (bVar1 != 0) {
-//		puVar3 = (uint*)(param_1 + 0x54);
-//		do {
-//			uVar2 = *puVar3;
-//			puVar3 = puVar3 + 1;
-//			(&uStack4)[uVar4] = (&uStack4)[uVar4] ^ ~uVar2;
-//			uVar4 = uVar4 + 1;
-//		} while (uVar4 < bVar1);
-//	}
-//	if ((*(byte*)(param_1 + 0x52) != 0) && (uVar4 = 4 - (uint) * (byte*)(param_1 + 0x52), uVar4 < 4))
-//	{
-//		pbVar5 = (byte*)(param_1 + 0x54 + uVar4);
-//		do {
-//			bVar1 = *pbVar5;
-//			pbVar5 = pbVar5 + 1;
-//			*(byte*)((int)&uStack4 + uVar4) = *(byte*)((int)&uStack4 + uVar4) ^ ~bVar1;
-//			uVar4 = uVar4 + 1;
-//		} while (uVar4 < 4);
-//	}
-//	return uStack4 & 0xffffff00 | (uint)((param_2 & uStack4) != 0);
-//}
-//
-//
-//
-//int IsFunc(DWORD param_1, int param_2)
-//{
-//	if (!param_1)
-//		return 0;
-//
-//	int uVar2;
-//	int puVar3;
-//	int uStack4;
-//
-//	uStack4 = Memory.Read<int>(param_1 + 0x5c + (Memory.Read<byte>(param_1 + 0x58)) * 4);
-//	puVar3 = param_1 + 0x54;
-//	uVar2 = Memory.Read<int>(puVar3);
-//	uStack4 ^= ~uVar2;
-//
-//	return  ((param_2 & uStack4) != 0);
-//}
-
-//undefined4 __fastcall UndefinedFunction_009be220(int param_1)
-//
-//{
-//	byte bVar1;
-//	uint uVar2;
-//	uint uVar3;
-//	uint* puVar4;
-//	byte* pbVar5;
-//	uint uStack4;
-//
-//	uVar3 = 0;
-//	bVar1 = *(byte*)(param_1 + 0x2ff1);
-//	uStack4 = *(uint*)(param_1 + 0x2ffc + (uint) * (byte*)(param_1 + 0x2ff8) * 4);
-//	if (bVar1 != 0) {
-//		puVar4 = (uint*)(param_1 + 0x2ff4);
-//		do {
-//			uVar2 = *puVar4;
-//			puVar4 = puVar4 + 1;
-//			(&uStack4)[uVar3] = (&uStack4)[uVar3] ^ ~uVar2;
-//			uVar3 = uVar3 + 1;
-//		} while (uVar3 < bVar1);
-//	}
-//	if ((*(byte*)(param_1 + 0x2ff2) != 0) &&
-//		(uVar3 = 4 - (uint) * (byte*)(param_1 + 0x2ff2), uVar3 < 4)) {
-//		pbVar5 = (byte*)(param_1 + 0x2ff4 + uVar3);
-//		do {
-//			bVar1 = *pbVar5;
-//			pbVar5 = pbVar5 + 1;
-//			*(byte*)((int)&uStack4 + uVar3) = *(byte*)((int)&uStack4 + uVar3) ^ ~bVar1;
-//			uVar3 = uVar3 + 1;
-//		} while (uVar3 < 4);
-//		return *(undefined4*)(uStack4 + 8);
-//	}
-//	return *(undefined4*)(uStack4 + 8);
-//}
-
-//undefined4 __fastcall UndefinedFunction_006ce490(int param_1)
-//
-//{
-//	byte bVar1;
-//	uint uVar2;
-//	uint uVar3;
-//	uint* puVar4;
-//	byte* pbVar5;
-//	uint uStack4;
-//
-//	uVar3 = 0;
-//	bVar1 = *(byte*)(param_1 + 0x3011);
-//	uStack4 = *(uint*)(param_1 + 0x301c + (uint) * (byte*)(param_1 + 0x3018) * 4);
-//	if (bVar1 != 0) {
-//		puVar4 = (uint*)(param_1 + 0x3014);
-//		do {
-//			uVar2 = *puVar4;
-//			puVar4 = puVar4 + 1;
-//			(&uStack4)[uVar3] = (&uStack4)[uVar3] ^ ~uVar2;
-//			uVar3 = uVar3 + 1;
-//		} while (uVar3 < bVar1);
-//	}
-//	if ((*(byte*)(param_1 + 0x3012) != 0) &&
-//		(uVar3 = 4 - (uint) * (byte*)(param_1 + 0x3012), uVar3 < 4)) {
-//		pbVar5 = (byte*)(param_1 + 0x3014 + uVar3);
-//		do {
-//			bVar1 = *pbVar5;
-//			pbVar5 = pbVar5 + 1;
-//			*(byte*)((int)&uStack4 + uVar3) = *(byte*)((int)&uStack4 + uVar3) ^ ~bVar1;
-//			uVar3 = uVar3 + 1;
-//		} while (uVar3 < 4);
-//		return *(undefined4*)(uStack4 + 8);
-//	}
-//	return *(undefined4*)(uStack4 + 8);
-//}
-
-
-DWORD AiManager(int param_1)
-{
-	byte bVar1;
-	unsigned int uVar2;
-	unsigned int uVar3;
-	unsigned int puVar4;
-	byte pbVar5;
-	unsigned int uStack4;
-
-	uVar3 = 0;
-
-	clog.AddLog("%x", param_1);
-
-//	int num1 = 12312; //this[num1];
-//	int num2 = 12304; //this + num2;
-	bVar1 = Memory.Read<byte>(param_1 + 0x3011); //1
-	clog.AddLog("bvar1 %x", bVar1);
-	uStack4 = Memory.Read<unsigned>(param_1 + 0x301c + (unsigned)(Memory.Read<byte>(param_1 + 0x3018)) * 4);
-	clog.AddLog("first %x",uStack4);
-
-
-
-	if (bVar1 != 0) {
-		puVar4 = (param_1 + 0x3014);
-		do {
-			uVar2 = Memory.Read<unsigned>(puVar4);
-			clog.AddLog("var2 %x", uVar2);
-			puVar4 = puVar4 + 1;
-			uStack4 = Memory.Read<int>(uStack4 + uVar3);
-			clog.AddLog("ust4 %x", uStack4);
-			uStack4 ^= ~uVar2;
-			clog.AddLog("ust4xor %x", uStack4);
-			uVar3 = uVar3 + 1;
-		} while (uVar3 < bVar1);
-	}
-
-	if ((Memory.Read<byte>(param_1 + 0x3012) != 0) &&
-		(uVar3 = 4 - Memory.Read<byte>(param_1 + 0x3012), uVar3 < 4)) {
-		pbVar5 = (param_1 + 0x3014 + uVar3);
-		clog.AddLog("5a");
-		do {
-			bVar1 = Memory.Read<byte>(pbVar5);
-			pbVar5 = pbVar5 + 1;
-			uStack4 = Memory.Read<byte>((int)uStack4 + uVar3);
-			clog.AddLog("2l %x", uStack4);
-			uStack4 = uStack4 ^ ~bVar1;
-			uVar3 = uVar3 + 1;
-		} while (uVar3 < 4);
-		return Memory.Read<DWORD>(uStack4 + 8);
-	}
-	clog.AddLog("last %x", uStack4);
-	return Memory.Read<DWORD>(uStack4 + 8);
-}
-
-//int AiManager(uint8_t addr)
-//{
-//	int v1; // eax
-//	uint8_t v2; // esi
-//	unsigned int v3; // ecx
-//	unsigned int v4; // edi
-//	int v5; // edx
-//	int v6; // edx
-//	int v7; // eax
-//	uint8_t v8; // al
-//	unsigned int v9; // eax
-//	uint8_t v10; // edx
-//	char v11; // cl
-//	int v13; // [esp+8h] [ebp-4h]
-//
-//	v1 = Memory.Read<int>(addr+ 12312);
-//	v2 = addr + 12304;
-//	v3 = 0;
-//	v4 = Memory.Read<unsigned>(v2 + 1);
-//	v5 = Memory.Read<DWORD>(Memory.Read< uint8_t>(v2 + 4 * v1 + 12));
-//	v13 = Memory.Read<DWORD>(Memory.Read< uint8_t>(v2 + 4 * v1 + 12));
-//	MessageBoxA(0, std::to_string(v13).c_str(), 0, 0);
-//	if (v4)
-//	{
-//		v6 = (int)(v2 + 4);
-//		do
-//		{
-//			v7 = Memory.Read<int>(v6);
-//			++v6;
-//			v13 = Memory.Read<int>(v13 + v3);
-//			v13 ^= ~v7;
-//			++v3;
-//		} while (v3 < v4);
-//		v5 = v13;
-//	}
-//	v8 = Memory.Read<uint8_t>(v2 + 2);
-//	if (!v8)
-//		return Memory.Read<DWORD>(v5 + 8);
-//	v9 = 4 - v8;
-//	if (v9 >= 4)
-//		return Memory.Read<DWORD>(v5 + 8);
-//	v10 = Memory.Read< uint8_t>(v2 + v9 + 4);
-//	do
-//	{
-//		v11 = Memory.Read< char>(v10++);
-//		v13 = Memory.Read<byte>(v13 + v9++);
-//		v13 ^= ~v11;
-//	} while (v9 < 4);
-//	return Memory.Read<DWORD>(v13 + 8);
-//}
 
 // Main code
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -820,42 +590,29 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		evade->Tick();
 		evade->Draw();
 
-		/*	CSpellEntry spell(Local.GetActiveSpellEntry());
-			if (spell.Address() != 0)
-			{
-				clog.AddLog("%s", spell.GetSpellInfo()->GetName().c_str());
-				clog.AddLog("%s", Memory.ReadString(Memory.Read<DWORD>(Memory.Read<DWORD>(spell.Address() + oSpellEntrySpellInfo)+oSpellInfoSpellName)));
-			}*/
+		//Vector3 mpos = mouse->GetWorldPos();
 
-			//Vector3 mpos = mouse->GetWorldPos();
+		//if (PressedKey(VK_XBUTTON2))
+		//{
+		//	std::string temp = ".Add(Vector3(" + std::to_string(mpos.x) + ", " + std::to_string(mpos.y) + ", " + std::to_string(mpos.z) + "));";
+		//	//std::string temp = "Vector3(" + std::to_string(mpos.x) + ", " + std::to_string(mpos.y) + ", " + std::to_string(mpos.z) + ")";
+		//	utils->CopyToClipboard(temp);
+		//}
 
-			//if (PressedKey(VK_XBUTTON2))
-			//{
-			//	std::string temp = ".Add(Vector3(" + std::to_string(mpos.x) + ", " + std::to_string(mpos.y) + ", " + std::to_string(mpos.z) + "));";
-			//	//std::string temp = "Vector3(" + std::to_string(mpos.x) + ", " + std::to_string(mpos.y) + ", " + std::to_string(mpos.z) + ")";
-			//	utils->CopyToClipboard(temp);
-			//}
+		//for (auto& poly : WorldMap)
+		//{
+		//	if (poly.IsInside(mpos))
+		//		draw->Polygon(poly, RGBA(255, 0, 0));
+		//	else
+		//		draw->Polygon(poly, RGBA(255, 255, 255));
+		//}
 
-			//for (auto& poly : WorldMap)
-			//{
-			//	if (poly.IsInside(mpos))
-			//		draw->Polygon(poly, RGBA(255, 0, 0));
-			//	else
-			//		draw->Polygon(poly, RGBA(255, 255, 255));
-			//}
-		/*	DWORD lasterror = GetLastError();
-			if (lasterror != 0)
-				MessageBoxA(0, std::to_string(lasterror).c_str(), 0, 0);*/
+	/*	DWORD lasterror = GetLastError();
+		if (lasterror != 0)
+			MessageBoxA(0, std::to_string(lasterror).c_str(), 0, 0);*/
 
-		if (once123)
-		{
-			//clog.AddLog("8 %x", AiManager((uint8_t)(Local.Address())));
-			clog.AddLog("dw %x", AiManager(Local.Address()));
-			//clog.AddLog("i %x", AiManager((int)Local.Address()));
-		//	once123 = false;
-		}
 
-		//End rendering
+			//End rendering
 		Direct3D9.EndFrame();
 	}
 

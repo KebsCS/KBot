@@ -47,7 +47,7 @@
 #define use_lines
 
 //use_deprecated: Enables temporary support for the obsolete functions
-//#define use_deprecated  
+//#define use_deprecated
 
 #include <vector>
 #include <list>
@@ -60,7 +60,6 @@
 #include <queue>
 
 namespace ClipperLib {
-
 	enum ClipType { ctIntersection, ctUnion, ctDifference, ctXor };
 	enum PolyType { ptSubject, ptClip };
 	//By far the most widely used winding rules for polygon filling are
@@ -146,7 +145,7 @@ namespace ClipperLib {
 		bool IsOpen() const;
 		int ChildCount() const;
 	private:
-		//PolyNode& operator =(PolyNode& other); 
+		//PolyNode& operator =(PolyNode& other);
 		unsigned Index; //node index in Parent.Childs
 		bool m_IsOpen;
 		JoinType m_jointype;
@@ -303,7 +302,7 @@ namespace ClipperLib {
 		bool             m_UsingPolyTree;
 		bool             m_StrictSimple;
 #ifdef use_xyz
-		ZFillCallback   m_ZFill; //custom callback 
+		ZFillCallback   m_ZFill; //custom callback
 #endif
 		void SetWindingCount(TEdge& edge);
 		bool IsEvenOddFillType(const TEdge& edge) const;
@@ -398,8 +397,6 @@ namespace ClipperLib {
 		std::string m_descr;
 	};
 	//------------------------------------------------------------------------------
-
 } //ClipperLib namespace
 
 #endif //clipper_hpp
-

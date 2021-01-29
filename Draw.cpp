@@ -114,7 +114,7 @@ Vector3 FixPos(Vector3 pos)
 	return Vector3(pos.x, pos.y, Local.GetPosition().z);
 }
 
-void Draw::Arrow(const Vector3& startPos, const Vector3& endPos, RGBA color) 
+void Draw::Arrow(const Vector3& startPos, const Vector3& endPos, RGBA color)
 {
 	//todo
 	/*Vector3 p1 = endPos - ((startPos - endPos).Normalized() * 30).Perpendicular() + (startPos - endPos).Normalized() * 30;

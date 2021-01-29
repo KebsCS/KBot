@@ -67,7 +67,6 @@ public:
 
 	CObject GetSource()
 	{
-		
 		return CObjectManager::GetObjByIndex(GetMissileSourceIndex());
 	}
 

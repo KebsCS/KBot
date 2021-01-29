@@ -3,36 +3,40 @@
 #ifndef _OFFSETS_H_
 #define _OFFSETS_H_
 
+//Main
 #define oUnderMouseObject 0x1bf0160 // 		 E8 ? ? ? ? C7 40 ? ? ? ? ? C7 40 ? ? ? ? ? C3 go to sub, last dword_[offset]
 #define oLocalPlayer 0x34EC5E0 //			A1 ?? ?? ?? ?? 85 C0 74 07 05 ?? ?? ?? ?? EB 02 33 C0 56 // dword_[offset]
 #define oGameTime 0x34E4CD4 // 				F3 0F 11 05 ? ? ? ? 8B 49 // dword_[offset]
 #define oObjManager 0x1C50190 //			8B 0D ? ? ? ? 89 74 24 14 // dword_[offset]
 #define oHudInstance 0x1C501D0 //			8B 0D ? ? ? ? FF 77 20 8B 49 14 // dword_[offset]
-
 #define oViewMatrix 0x350E8F0 //B9 ? ? ? ? E8 ? ? ? ? B9 ? ? ? ? E9 ? ? ? ? CC CC CC CC CC CC CC CC
+
+//Object lists
 #define oHeroList 0x1C4E104 //				A1 ? ? ? ? 53 55 56 8B 68 04 8B 40 08 57 33 FF
 #define oMinionList 0x289C5EC//A1 ? ? ? ? 53 55 8B 6C 24 1C				A1 ? ? ? ? 8B 50 04 8D 48 04 89 44 24 1C				//E8 ? ? ? ? EB 02 33 C0 6A 14 A3 ? ? ? ? E8 ? ? ? ? 83 C4 04
 #define oTurretList 0x34E3C88//				8B 0D ? ? ? ? E8 ? ? ? ? 85 C0 74 13 8B 10
 #define oInhibitorList 0x34ED198//			8B 15 ? ? ? ? 8B 7A 04 8B 42 08 8D 0C 87 3B F9 73 31 66 90
 #define oStructureList 0x1C50190 //idk if correct // FF 30 8B 0D ? ? ? ? E8 ? ? ? ?
-
 #define oMissileMap 0x34EAE3C // 8B 15 ? ? ? ? 85 D2 74 44  //mov edx, offset
 
+//Renderer
 #define oRenderer 0x35116EC	//8B 15 ? ? ? ? 83 EC 08 F3
 #define oRendererWidth 0x10
 #define oRendererHeight 0x14
 
+//Minimap
 #define oMinimapObject 0x34EC5F0 //FF 52 04 8B 0D ? ? ? ? E8 ? ? ? ?		//mov ecx, offset
 #define oMinimapObjectHud 0x88
 #define oMinimapHudPos 0x5C
 #define oMinimapHudSize 0x64
 
-//
-//#define oIsTargetable 0x1281714
-//
-//#define oObjNetworkID 0xCC //
-//#define mHP 0xD98
-//#define mMaxHP 0xDA8
+//E8 ?? ?? ?? ?? 50 8B CE E8 ?? ?? ?? ?? 80 BB ?? ?? ?? ?? ??
+//go into call function
+//this[offset]
+//offset-4
+#define oAiManager 0x3014
+
+
 //#define mHPMaxPenalty 0xDE4
 //#define mAllShield 0xE04
 //#define mPhysicalShield 0xE14
@@ -40,18 +44,7 @@
 //#define mChampSpecificHealth 0xE34
 //#define mStopShieldFade 0xE54
 //#define mGoldTotal 0x1AF0
-//
-//
-//#define oObjBuffMgr 0x213C
-//#define oObjSpellBook 0x26E8 //8B 44 24 08 81 C1 //ecx, 2720h
-//#define oObjChampionName 0x3308
-//#define oObjLevel 0x366C
-//#define oObjSourceIndex 0x290
-//
-//#define oMissileSpellInfo 0x230
-//#define oMissileTargetIndex 0x2E8
-//#define oMissileStartPos 0x2A8
-//#define oMissileEndPos 0x2B4
+
 
 //CObject
 #define oObjIndex 0x20
@@ -149,9 +142,6 @@
 #define oSpellSlotSpellInfo 0x13C
 
 //#define oSpellSlotCD 0x18
-
 //#define oSpellSlotRemainingRechargeCD 0x64
-
-
 
 #endif //!_OFFSETS_H_

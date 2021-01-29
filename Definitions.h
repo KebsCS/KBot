@@ -30,6 +30,7 @@
 #include "xor.h"
 //#include "SpellDB.h"
 #include "Vector.h"
+#include "RGBA.h"
 
 //#include "DirectX.h"
 
@@ -112,46 +113,46 @@ enum SpellSlotID : int
 enum CharacterState : int
 {
 	//todo update these
-	CanAttack = (1<<0),
-	CanCast= (1<<1),
+	CanAttack = (1 << 0),
+	CanCast = (1 << 1),
 	//CanCrit = (1<<2),
-	CanMove = (1<<2),
-	IsAsleep = (1<<4),
-	IsBrushVisibilityFake = (1<<5),
-	IsCallForHelpSuppresser = (1<<6),
-	IsCharmed = (1<<7),
-	IsClickproofToEnemies = (1<<8),
-	IsCritImmune = (1<<9),
-	IsCursorAllowedWhileUntargetable = (1<<10),
-	IsDisableAmbientGold = (1<<11),
-	IsDisableAmbientXP = (1<<12),
-	IsDodgePiercing = (1<<13),
-	IsDodgingMissiles = (1<<14),
-	IsFeared = (1<<15),
-	IsFleeing = (1<<16),
-	IsForceRenderParticles = (1<<17),
-	IsGhostProof = (1<<18),
-	IsGhostProofForAllies = (1<<19),
-	IsGhostProofForEnemies = (1<<20),
-	IsGhosted = (1<<21),
-	IsGhostedForAllies = (1<<22),
-	IsGrounded = (1<<23),
-	IsIgnoreCallForHelp = (1<<24),
-	IsImmovable = (1<<25),
-	IsNearSight = (1<<26),
-	IsNoRender = (1<<27),
-	IsObscured = (1<<28),
-	IsPacified = (1<<29),
-	IsRevealSpecificUnit = (1<<30),
-	IsRooted = (1<<31),
-	IsSelectable = (1<<32),
-	IsSlowed = (1<<33),
-	IsStealthed = (1<<34),
-	IsStunned = (1<<35),
-	IsSuppressCallForHelp = (1<<36),
-	IsSuppressed = (1<<37),
-	IsTaunted = (1<<38),
-	IsUnkillable = (1<<39),
+	CanMove = (1 << 2),
+	IsAsleep = (1 << 4),
+	IsBrushVisibilityFake = (1 << 5),
+	IsCallForHelpSuppresser = (1 << 6),
+	IsCharmed = (1 << 7),
+	IsClickproofToEnemies = (1 << 8),
+	IsCritImmune = (1 << 9),
+	IsCursorAllowedWhileUntargetable = (1 << 10),
+	IsDisableAmbientGold = (1 << 11),
+	IsDisableAmbientXP = (1 << 12),
+	IsDodgePiercing = (1 << 13),
+	IsDodgingMissiles = (1 << 14),
+	IsFeared = (1 << 15),
+	IsFleeing = (1 << 16),
+	IsForceRenderParticles = (1 << 17),
+	IsGhostProof = (1 << 18),
+	IsGhostProofForAllies = (1 << 19),
+	IsGhostProofForEnemies = (1 << 20),
+	IsGhosted = (1 << 21),
+	IsGhostedForAllies = (1 << 22),
+	IsGrounded = (1 << 23),
+	IsIgnoreCallForHelp = (1 << 24),
+	IsImmovable = (1 << 25),
+	IsNearSight = (1 << 26),
+	IsNoRender = (1 << 27),
+	IsObscured = (1 << 28),
+	IsPacified = (1 << 29),
+	IsRevealSpecificUnit = (1 << 30),
+	IsRooted = (1 << 31),
+	IsSelectable = (1 << 32),
+	IsSlowed = (1 << 33),
+	IsStealthed = (1 << 34),
+	IsStunned = (1 << 35),
+	IsSuppressCallForHelp = (1 << 36),
+	IsSuppressed = (1 << 37),
+	IsTaunted = (1 << 38),
+	IsUnkillable = (1 << 39),
 };
 
 enum ObjectType : int
@@ -173,49 +174,6 @@ enum ObjectType : int
 	Unknown1 = (1 << 16), //0x10000
 	Building = (1 << 17), //0x20000
 	Unknown2 = (1 << 18), //0x40000
-};
-
-struct RGBA
-{
-	int R, G, B, A;
-	inline RGBA()
-	{
-		R = G = B = A = 255;
-	}
-	inline RGBA(const int r, const int g, const int b, const int a = 255)
-	{
-		R = r;
-		G = g;
-		B = b;
-		A = a;
-	}
-	inline RGBA(const float r, const float g, const float b, const float a = 1.f)
-	{
-		R = static_cast<int>(r * 255);
-		G = static_cast<int>(g * 255);
-		B = static_cast<int>(b * 255);
-		A = static_cast<int>(a * 255);
-	}
-	inline RGBA(const unsigned hex) // HEX to RGB
-	{
-		R = ((hex >> 24) & 0xFF);
-		G = ((hex >> 16) & 0xFF);
-		B = ((hex >> 8) & 0xFF);
-		A = ((hex) & 0xFF);
-	}
-	inline unsigned HEX() const // RGB to HEX
-	{
-		return ((R & 0xff) << 24) + ((G & 0xff) << 16) + ((B & 0xff) << 8) + (A & 0xff);
-	}
-	inline bool operator==(RGBA& rgba) const
-	{
-		if (R == rgba.R && G == rgba.G && B == rgba.B && A == rgba.A)
-			return true;
-	}
-	/*ImColor ToImColor()
-	{
-		return ImColor(this->R, this->G, this->B, this->A);
-	}*/
 };
 
 struct Area

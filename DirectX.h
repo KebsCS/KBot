@@ -35,7 +35,6 @@ static ID3D11DeviceContext* g_pd3dDeviceContext = NULL;
 static ID3D11RenderTargetView* g_pd3dRenderTargetView = NULL;
 static IDXGISwapChain1* g_pSwapChain = NULL;
 
-
 //static ID3D11Buffer* g_pVertexBuffer = NULL;
 //static ID3D11InputLayout* g_pInputLayout = NULL;
 //static ID3DX11EffectTechnique* m_pTechnique = NULL;
@@ -245,7 +244,6 @@ struct ConsoleLog
 			if (ImGui::Selectable("Clear")) ClearLog();
 			ImGui::EndPopup();
 		}
-		
 
 		// Display every line as a separate entry so we can change their color or add custom widgets.
 		// If you only want raw text you can use ImGui::TextUnformatted(log.begin(), log.end());

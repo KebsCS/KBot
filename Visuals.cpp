@@ -615,11 +615,11 @@ void Visuals::LastHit(CObject obj, RGBA color)
 			draw->Circle(RealPos.x, RealPos.y, 11 * xd, RGBA(255, 255, 255));
 		draw->Circle(RealPos.x, RealPos.y, 11, color);
 
-	/*	if (dmg >= obj.GetHealth())
-		{
-			ImVec2 p = Direct3D9.GetHpBarPos(obj);
-			draw->Rect(Vector4(p.x - 34, p.y - 9, p.x + 32, p.y + 1), RGBA(255, 25, 25), 0, 2);
-		}*/
+		/*	if (dmg >= obj.GetHealth())
+			{
+				ImVec2 p = Direct3D9.GetHpBarPos(obj);
+				draw->Rect(Vector4(p.x - 34, p.y - 9, p.x + 32, p.y + 1), RGBA(255, 25, 25), 0, 2);
+			}*/
 	}
 }
 
@@ -656,9 +656,6 @@ void Visuals::WardsRange(CObject obj)
 		return;
 
 	if (obj.IsDead())
-		return;
-
-	if (!obj.HasUnitTags(Unit_Ward))
 		return;
 
 	int type = obj.IsWard(); // store ward type for later

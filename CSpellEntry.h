@@ -10,7 +10,7 @@
 //good for non missiles(karthus q, xerath w), but doesn't detect end cast pos of charged spells(xerath q, varus q)
 //expect chargeable spells it's usable to almost everything with little bit of work
 //like calculating correct endpos from spell range and making a timer so the line doesn't disappear too fast
-//todo  
+//todo
 class CSpellEntry
 {
 private:
@@ -90,7 +90,6 @@ public:
 	{
 		return (spellInfo->flags & flags) == flags;
 	}
-
 };
 
 #endif // !_CSPELLENTRY_H_

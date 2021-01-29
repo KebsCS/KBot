@@ -49,7 +49,6 @@
 #include <functional>
 
 namespace ClipperLib {
-
 	static double const pi = 3.141592653589793238;
 	static double const two_pi = pi * 2;
 	static double const def_arc_tolerance = 0.25;
@@ -260,7 +259,6 @@ namespace ClipperLib {
 			if (_lo < 0)  hi = -1; else hi = 0;
 		}
 
-
 		Int128(const Int128& val) : lo(val.lo), hi(val.hi) {}
 
 		Int128(const long64& _hi, const ulong64& _lo) : lo(_lo), hi(_hi) {}
@@ -355,7 +353,6 @@ namespace ClipperLib {
 			else
 				return (double)(lo + hi * shift64);
 		}
-
 	};
 	//------------------------------------------------------------------------------
 
@@ -629,7 +626,7 @@ namespace ClipperLib {
 
 	void IntersectPoint(TEdge& Edge1, TEdge& Edge2, IntPoint& ip)
 	{
-#ifdef use_xyz  
+#ifdef use_xyz
 		ip.Z = 0;
 #endif
 
@@ -768,7 +765,7 @@ namespace ClipperLib {
 		//progression of the bounds - ie so their xbots will align with the
 		//adjoining lower edge. [Helpful in the ProcessHorizontal() method.]
 		std::swap(e.Top.X, e.Bot.X);
-#ifdef use_xyz  
+#ifdef use_xyz
 		std::swap(e.Top.Z, e.Bot.Z);
 #endif
 	}
@@ -1491,13 +1488,13 @@ namespace ClipperLib {
 		m_StrictSimple = ((initOptions & ioStrictlySimple) != 0);
 		m_PreserveCollinear = ((initOptions & ioPreserveCollinear) != 0);
 		m_HasOpenPaths = false;
-#ifdef use_xyz  
+#ifdef use_xyz
 		m_ZFill = 0;
 #endif
 	}
 	//------------------------------------------------------------------------------
 
-#ifdef use_xyz  
+#ifdef use_xyz
 	void Clipper::ZFillFunction(ZFillCallback zFillFunc)
 	{
 		m_ZFill = zFillFunc;
@@ -1689,7 +1686,7 @@ namespace ClipperLib {
 				if (Abs(e->WindCnt) > 1)
 				{
 					//outside prev poly but still inside another.
-					//when reversing direction of prev poly use the same WC 
+					//when reversing direction of prev poly use the same WC
 					if (e->WindDelta * edge.WindDelta < 0) edge.WindCnt = e->WindCnt;
 					//otherwise continue to 'decrease' WC ...
 					else edge.WindCnt = e->WindCnt + edge.WindDelta;
@@ -2067,7 +2064,6 @@ namespace ClipperLib {
 
 			if (lb->NextInAEL != rb)
 			{
-
 				if (rb->OutIdx >= 0 && rb->PrevInAEL->OutIdx >= 0 &&
 					SlopesEqual(rb->PrevInAEL->Curr, rb->PrevInAEL->Top, rb->Curr, rb->Top, m_UseFullRange) &&
 					(rb->WindDelta != 0) && (rb->PrevInAEL->WindDelta != 0))
@@ -2088,7 +2084,6 @@ namespace ClipperLib {
 					}
 				}
 			}
-
 		}
 	}
 	//------------------------------------------------------------------------------
@@ -2697,12 +2692,10 @@ namespace ClipperLib {
 
 		for (;;) //loop through consec. horizontal edges
 		{
-
 			bool IsLastHorz = (horzEdge == eLastHorz);
 			TEdge* e = GetNextInAEL(horzEdge, dir);
 			while (e)
 			{
-
 				//this code block inserts extra coords into horizontal edges (in output
 				//polygons) whereever maxima touch these horizontal edges. This helps
 				//'simplifying' polygons (ie if the Simplify property is set).
@@ -2741,7 +2734,7 @@ namespace ClipperLib {
 #ifdef use_xyz
 					if (dir == dLeftToRight) SetZ(e->Curr, *horzEdge, *e);
 					else SetZ(e->Curr, *e, *horzEdge);
-#endif      
+#endif
 					op1 = AddOutPt(horzEdge, e->Curr);
 					TEdge* eNextHorz = m_SortedEdges;
 					while (eNextHorz)
@@ -2790,7 +2783,6 @@ namespace ClipperLib {
 			UpdateEdgeIntoAEL(horzEdge);
 			if (horzEdge->OutIdx >= 0) AddOutPt(horzEdge, horzEdge->Bot);
 			GetHorzDirection(*horzEdge, dir, horzLeft, horzRight);
-
 		} //end for (;;)
 
 		if (horzEdge->OutIdx >= 0 && !op1)
@@ -2925,7 +2917,6 @@ namespace ClipperLib {
 		m_SortedEdges = 0; //important
 	}
 	//------------------------------------------------------------------------------
-
 
 	void Clipper::ProcessIntersectList()
 	{
@@ -3746,7 +3737,6 @@ namespace ClipperLib {
 
 					if ((outRec2->IsHole ^ m_ReverseOutput) == (Area(*outRec2) > 0))
 						ReversePolyPtLinks(outRec2->Pts);
-
 				}
 				else if (Poly2ContainsPoly1(outRec1->Pts, outRec2->Pts))
 				{
@@ -3770,7 +3760,6 @@ namespace ClipperLib {
 					//fixup FirstLeft pointers that may need reassigning to OutRec2
 					if (m_UsingPolyTree) FixupFirstLefts1(outRec1, outRec2);
 				}
-
 			}
 			else
 			{
@@ -4171,7 +4160,7 @@ namespace ClipperLib {
 					Round(m_srcPoly[j].Y + m_normals[k].Y * m_delta)));
 				return;
 			}
-			//else angle => 180 degrees   
+			//else angle => 180 degrees
 		}
 		else if (m_sinA > 1.0) m_sinA = 1.0;
 		else if (m_sinA < -1.0) m_sinA = -1.0;
@@ -4653,5 +4642,4 @@ namespace ClipperLib {
 		return s;
 	}
 	//------------------------------------------------------------------------------
-
 } //ClipperLib namespace
