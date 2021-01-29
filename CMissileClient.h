@@ -3,24 +3,33 @@
 #ifndef _CMISSILECLIENT_H_
 #define _CMISSILECLIENT_H_
 
-#include "ObjectManager.h"
+#include "CObjectManager.h"
+#include "CSpellInfo.h"
 
-class MissileClient : public CObject
+class CMissileClient : public CObject
 {
 private:
 	DWORD base = 0;
-	DWORD spelldata = 0;
+	DWORD dwSpellInfo = 0;
+
+	Vector3 startPos, endPos;
 public:
 
-	MissileClient()
+	SpellInfo* spellInfo = GameData::UnknownSpell;
+
+	CMissileClient()
 		:base{ 0 }
 	{
 		CObject::base = 0;
+		std::string temp = utils->ToLower(GetSpellInfo()->GetName());
+		spellInfo = GameData::GetSpellInfoByName(temp);
 	}
-	MissileClient(DWORD addy)
+	CMissileClient(DWORD addy)
 		:base{ addy }
 	{
 		CObject::base = addy;
+		std::string temp = utils->ToLower(GetSpellInfo()->GetName());
+		spellInfo = GameData::GetSpellInfoByName(temp);
 	}
 	DWORD Address() const
 	{
@@ -29,20 +38,26 @@ public:
 
 	Vector3 GetMissileStartPos()
 	{
-		Vector3 startPos = Vector3(Memory.Read<float>(base + oMissileStartPos, sizeof(float)),
-			Memory.Read<float>(base + oMissileStartPos + 0x4, sizeof(float)),
-			Memory.Read<float>(base + oMissileStartPos + 0x8, sizeof(float)));
-		startPos.y += 100;
+		if (startPos.IsZero())
+		{
+			startPos = Vector3(Memory.Read<float>(base + oMissileStartPos, sizeof(float)),
+				Memory.Read<float>(base + oMissileStartPos + 0x4, sizeof(float)),
+				Memory.Read<float>(base + oMissileStartPos + 0x8, sizeof(float)));
+			//startPos.y += spellInfo->height;
+		}
 		return startPos;
 	}
 
 	Vector3 GetMissileEndPos()
 	{
-		Vector3 startPos = Vector3(Memory.Read<float>(base + oMissileEndPos, sizeof(float)),
-			Memory.Read<float>(base + oMissileEndPos + 0x4, sizeof(float)),
-			Memory.Read<float>(base + oMissileEndPos + 0x8, sizeof(float)));
-		startPos.y += 100;
-		return startPos;
+		if (endPos.IsZero())
+		{
+			endPos = Vector3(Memory.Read<float>(base + oMissileEndPos, sizeof(float)),
+				Memory.Read<float>(base + oMissileEndPos + 0x4, sizeof(float)),
+				Memory.Read<float>(base + oMissileEndPos + 0x8, sizeof(float)));
+			//endPos.y += spellInfo->height;
+		}
+		return endPos;
 	}
 
 	short GetMissileSourceIndex()
@@ -52,7 +67,8 @@ public:
 
 	CObject GetSource()
 	{
-		return ObjManager->GetObjByIndex(GetMissileSourceIndex());
+		
+		return CObjectManager::GetObjByIndex(GetMissileSourceIndex());
 	}
 
 	short GetMissileTargetIndex()
@@ -62,18 +78,43 @@ public:
 
 	CObject GetTarget()
 	{
-		return ObjManager->GetObjByIndex(GetMissileTargetIndex());
+		return CObjectManager::GetObjByIndex(GetMissileTargetIndex());
 	}
 
-	DWORD GetSpellData()
+	CSpellInfo* GetSpellInfo()
 	{
-		if (!spelldata)
+		if (!dwSpellInfo)
 		{
-			DWORD spellinfo = Memory.Read<DWORD>(base + oMissileSpellInfo);
-			spelldata = Memory.Read<DWORD>(spellinfo + oSpellInfoSpellData);
+			dwSpellInfo = Memory.Read<DWORD>(base + oMissileSpellInfo);
 		}
-		else return spelldata;
+		if (!dwSpellInfo)
+			return 0;
+		return (CSpellInfo*)(dwSpellInfo);
 	}
+
+	bool HasSpellFlags(SpellFlags flags) const
+	{
+		return (spellInfo->flags & flags) == flags;
+	}
+
+	//void SetObjConsts()
+	//{
+	//	std::string temp = utils->ToLower(champ);
+	//	spellInfo = GameData::GetSpellInfoByName(temp);
+	//	// Some spells require their end position to be projected using the range of the spell
+	//	if (spellInfo != GameData::UnknownSpell && HasSpellFlags(ProjectedDestination)) {
+	//		startPos.y += spellInfo->height;
+
+	//		// Calculate direction vector and normalize
+	//		endPos = Vector3(endPos.x - startPos.x, 0, endPos.z - startPos.z);
+	//		endPos = endPos.Normalized();
+
+	//		// Update endposition using the height of the current position
+	//		endPos.x = endPos.x * spellInfo->castRange + startPos.x;
+	//		endPos.y = startPos.y;
+	//		endPos.z = endPos.z * spellInfo->castRange + startPos.z;
+	//	}
+	//}
 };
 
 #endif // !_CMISSILECLIENT_H_

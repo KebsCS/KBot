@@ -53,7 +53,6 @@ public:
 };
 #pragma pack( pop )
 
-
 #pragma once
 #include <inttypes.h>
 #include <intrin.h>
@@ -175,8 +174,8 @@ private:
 
 	std::string StrRead(ULONG ReadAddress)
 	{
-		//24 + null terminator
-		//only 24 to save memory and most of the strings won't go above it
+		/*24 + null terminator
+		only 24 to save memory and most of the strings won't go above it*/
 		char buff[25];
 		ZeroMemory(buff, 25);
 		buff[24] = '\0';
@@ -193,6 +192,24 @@ private:
 			}
 		}
 		return std::string(buff);
+
+		//todo doesnt work when string is in pointer
+		////should be faster since its 1 read per 16 bytes and DWORD is 4 reads for 16
+		//char buff[24];
+		//Read(ReadAddress, buff, 24);
+		//int k = 0;
+		//for (int i = 8; i < 24; i++)
+		//{
+		//	if (buff[i] <= 0 || buff[i] > 127)
+		//	{
+		//		buff[i] = '\0';
+		//		k = i;
+		//		break;
+		//	}
+		//}
+		//char str[16];
+		//memcpy(&str[0], &buff[8], k);
+		//return std::string(str);
 	}
 public:
 
@@ -263,6 +280,28 @@ public:
 		return (type)false;
 	}
 
+	//for some reason it can only read up to 16 bytes starting from 8th
+	void Read(ULONG ReadAddress, void* structure, SIZE_T Size)
+	{
+		//type cData;
+		if (hDriver == INVALID_HANDLE_VALUE)
+			return;
+		//DWORD Return, Bytes;
+		KERNEL_READ_REQUEST ReadRequest;
+
+		ReadRequest.ProcessId = ProcessID;
+		ReadRequest.Address = ReadAddress;
+		//ReadRequest.pBuff = structure;
+		ReadRequest.Size = Size;
+
+		if (DeviceIoControl(hDriver, IO_READ_REQUEST, &ReadRequest, sizeof(ReadRequest), structure, Size, 0, 0))
+		{
+			return;
+		}
+
+		return;
+	}
+
 	DWORD DeobfuscateMember(DWORD ReadAddress)
 	{
 		if (hDriver == INVALID_HANDLE_VALUE)
@@ -274,7 +313,7 @@ public:
 
 		if (DeviceIoControl(hDriver, IO_READ_REQUEST, &ReadRequest, sizeof(ReadRequest), &ReadRequest, sizeof(ReadRequest), 0, 0))
 		{
-			CObfuscation<DWORD> oObfuscation = *(CObfuscation<DWORD>*)&ReadRequest.pBuff;
+			CObfuscation<DWORD> oObfuscation = *(CObfuscation<DWORD>*) & ReadRequest.pBuff;
 			DWORD temp = oObfuscation.get();
 			return Read<DWORD>(temp + 0x08);
 		}
@@ -292,17 +331,19 @@ public:
 
 		if (DeviceIoControl(hDriver, IO_READ_REQUEST, &ReadRequest, sizeof(ReadRequest), &ReadRequest, sizeof(ReadRequest), 0, 0))
 		{
-			xor_value<DWORD> oObfuscation = *(xor_value<DWORD>*)&ReadRequest.pBuff;
+			xor_value<DWORD> oObfuscation = *(xor_value<DWORD>*) & ReadRequest.pBuff;
 			DWORD temp = oObfuscation.decrypt();
 			return Read<DWORD>(temp + 0x08);
 		}
 		return 0;
 	}
 
-	std::string ReadString(DWORD address, bool noPtr = false)
+	std::string ReadString(DWORD address, int noPtr = -1)
 	{
-		if (noPtr)
+		if (noPtr==0)
 			return StrRead(address);
+		else if(noPtr==1)
+			return StrRead(Read<DWORD>(address, sizeof(DWORD)));
 
 		std::string strReturn;
 
@@ -344,5 +385,9 @@ public:
 			return false;
 	}*/
 };
+
+static KInterface Memory(R"(\\.\kbotl)");
+
+static DWORD ClientAddress = Memory.GetClientModule();
 
 #endif //!_KINTERFACE_H_

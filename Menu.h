@@ -11,20 +11,30 @@ struct Menu
 	{};
 
 	//globals
-	bool MenuOpen = 1;
-	bool ConsoleOpen = 0;
-	bool Debug = 0;
+	bool bMenuOpen = 1;
+	bool bConsoleOpen = 0;
+	bool bDebug = 0;
 
-	bool ExitBot = 0;
+	bool bExitBot = 0;
 
-	float GameTime = 0;
-	DWORD StartTime = 0;
+	float fGameTime = 0;
+	DWORD dwStartTime = 0;
 	DirectX::XMMATRIX Matrix;
 
-	std::string ServerInfo;
+	std::string sServerInfo;
 
-	std::string Champion;
-	std::string ScoreboardNames[10]; //for GUI scoreboard
+	std::string sChampion;
+	std::string sScoreboardNames[10]; //for GUI scoreboard
+
+	//minimap
+	float fMinimapPos[2] = { 1653.f,812.f };
+	float fMinimapSize[2] = { 257.f,257.f };
+
+	//renderer
+	int nRendererWidth = 1920;
+	int nRendererHeight = 1080;
+
+	int nPatch = 0;
 
 	struct
 	{
@@ -33,11 +43,19 @@ struct Menu
 	}Misc;
 	int Configs = 0;
 
-
 	struct
 	{
 		bool Master = 0;
-
+		bool Missile = 0;
+		bool Draw = 0;
+		bool LimitRange = 0;
+		float LR = 2500.f;
+		bool Smooth = false;
+		int GP = 0;
+		int DS = 0;
+		int DC = 0;
+		bool OnKey = false;
+		int EvadeKey = VK_SPACE;
 	}Evade;
 
 	struct

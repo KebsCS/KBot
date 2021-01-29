@@ -5,6 +5,8 @@
 
 #include "DirectX.h"
 #include "Bytes.h"
+#include "Definitions.h"
+#include "Geometry.h"
 
 //
 //class image {
@@ -23,82 +25,120 @@
 class Draw
 {
 private:
-	//LPDIRECT3DTEXTURE9 LoadTextureFromFile(const char* filename, LPDIRECT3DTEXTURE9* out_texture, int* out_width, int* out_height, LPDIRECT3DDEVICE9 xD);
-
-	static const int CIRCLE_RESOLUTION = 32;
-
-	struct VERTEX_2D_DIF
-	{
-		float x, y, z, rhw;
-		D3DCOLOR color;
-		static const DWORD FVF = D3DFVF_XYZRHW | D3DFVF_DIFFUSE;
-	};
 
 public:
+	ImDrawList* overlay;
 
-	//todo use image class
-	LPDIRECT3DTEXTURE9 textureBarrier = NULL;
-	LPDIRECT3DTEXTURE9 textureClarity = NULL;
-	LPDIRECT3DTEXTURE9 textureCleanse = NULL;
-	LPDIRECT3DTEXTURE9 textureExhaust = NULL;
-	LPDIRECT3DTEXTURE9 textureFlash = NULL;
-	LPDIRECT3DTEXTURE9 textureGhost = NULL;
-	LPDIRECT3DTEXTURE9 textureHeal = NULL;
-	LPDIRECT3DTEXTURE9 textureIgnite = NULL;
-	LPDIRECT3DTEXTURE9 textureSmite = NULL;
-	LPDIRECT3DTEXTURE9 textureTeleport = NULL;
+	Draw()
+	{
+	}
 
-	LPDIRECT3DTEXTURE9 textureKEKW = NULL;
-	LPDIRECT3DTEXTURE9 textureSks = NULL;
+	void Line(const ImVec2& start, const ImVec2& end, const RGBA& color, float thickness = 1.f);
+	void Line(const int& x, const int& y, const int& x2, const int& y2, const RGBA& color, float thickness = 1.f);
 
-	//initializes textures from bytes in memory
-	bool InitTextures();
+	void CircleRange2(const Vector3& Pos, const float& points, float r, const RGBA& color, float thickness = 1.f);
 
-	//not needed since now every texture is loaded from memory
-	//void Image(std::string _filename, int x, int y, std::string text = "", int index = 0, int in_width = 64, int in_height = 64, bool inWindow = false);
+	void CircleRange(const Vector3& worldPos, int numPoints, float radius, RGBA color, float thickness = 1.f, bool filled = 0) const;
 
-	//Filename, posx, posy, Text below image,
-	//unique index to render few same images, width, height,
-	//inWindow if true renders in imgui window, if false renders standalone
-	void ImageFromMemory(LPDIRECT3DTEXTURE9 texturename, int x, int y, std::string text, int index, int in_width, int in_height, bool inWindow = false);
+	void String(const ImVec2& pos, const std::string text, const RGBA& color);
+	void String(const int& x, const int& y, const std::string text, const RGBA& color);
 
-	//draws line
-	void Line(int x, int y, int x2, int y2, RGBA rgb, float thickness = 1.f);
-	void Line(ImVec2 pos1, ImVec2 pos2, RGBA rgb, float thickness = 1.f);
+	void String(std::string text, int x, int y, int orientation, RGBA color, int font, bool bordered = true, RGBA bcolor = RGBA(1, 0, 0))
+	{
+		String(x, y, text, color);
+	}
 
-	//draws text
-	void String(std::string text, int x, int y, int orientation, RGBA color, ID3DXFont* font, bool bordered = true, RGBA bcolor = RGBA(1, 0, 0));
+	void Circle(const ImVec2& pos, float radius, const RGBA& color)
+	{
+		overlay->AddCircle(pos, radius, ImColor(color.R, color.G, color.B, color.A), 64, 1.f);
+	}
 
-	//draws filled box
-	void BoxFilled(int x, int y, int w, int h, RGBA rgb);
+	void Circle(const int& x, const int& y, float radius, const RGBA& color)
+	{
+		Circle(ImVec2(x, y), radius, color);
+	}
 
-	//draws only box border
-	void BoxBorder(int x, int y, int w, int h, RGBA color, int thickness = 1);
 
-	//draws box with a outline
-	void BoxOutlined(int x, int y, int w, int h, RGBA color, float thickness = 1, RGBA bcolor = RGBA(1, 0, 0));
+	void Rect(const Vector4& box, const RGBA& color, float rounding = 0, float thickness = 1.0)
+	{
+		overlay->AddRect(ImVec2(box.x, box.y), ImVec2(box.z, box.w), ImColor(color.R, color.G, color.B, color.A), rounding, 15, thickness);
+	}
 
-	//draws string in a box
-	void StringBoxed(std::string text, int x, int y, int orientation, RGBA color, ID3DXFont* font, RGBA bcolor = RGBA(1, 0, 0), RGBA background = RGBA(0, 0, 0, 0));
+	bool IsOnScreen(const ImVec2& point, float offsetX = 0.f, float offsetY = 0.f) const;
 
-	//draws only circle outline
-	void Circle(int x, int y, float r, RGBA rgb);
+	bool IsOnScreen(const Vector3& point, float offsetX = 0.f, float offsetY = 0.f) const;
 
-	//draws filled circle
-	void CircleFilled(int x, int y, float r, RGBA rgb);
-	void CircleFilled(ImVec2 coord, float r, RGBA rgb);
+	void Polygon(const Geometry::Polygon poly, RGBA color);
 
-	//draws game's circle range
-	void CircleRange(Vector3 Pos, float points, float r, RGBA color, float thickness = 1.f);
+	void Arrow(const Vector3& startPos, const Vector3& endPos, RGBA color);
 
-	void Bar(int x, int y, float value);
+	/*
+	void DrawLineInternal(int x0, int y0, int x1, int y1, int r, int g, int b, int a);*/
 
-	void FillRGB(float x, float y, float w, float h, RGBA color);
+	////todo use image class
+	//ID3D11ShaderResourceView* textureBarrier = NULL;
+	//ID3D11ShaderResourceView* textureClarity = NULL;
+	//ID3D11ShaderResourceView* textureCleanse = NULL;
+	//ID3D11ShaderResourceView* textureExhaust = NULL;
+	//ID3D11ShaderResourceView* textureFlash = NULL;
+	//ID3D11ShaderResourceView* textureGhost = NULL;
+	//ID3D11ShaderResourceView* textureHeal = NULL;
+	//ID3D11ShaderResourceView* textureIgnite = NULL;
+	//ID3D11ShaderResourceView* textureSmite = NULL;
+	//ID3D11ShaderResourceView* textureTeleport = NULL;
 
-	void GradientBox(int x, int y, int w, int h, RGBA rgb, RGBA rgb2, bool vertical);
+	//ID3D11ShaderResourceView* textureKEKW = NULL;
+	//ID3D11ShaderResourceView* textureSks = NULL;
 
-	void GradientBoxOutlined(int x, int y, int w, int h, RGBA rgb, RGBA rgb2, bool vertical, float thickness = 1, RGBA bcolor = RGBA(1, 0, 0));
+	////initializes textures from bytes in memory
+	//bool InitTextures();
+
+	////not needed since now every texture is loaded from memory
+	////void Image(std::string _filename, int x, int y, std::string text = "", int index = 0, int in_width = 64, int in_height = 64, bool inWindow = false);
+
+	////Filename, posx, posy, Text below image,
+	////unique index to render few same images, width, height,
+	////inWindow if true renders in imgui window, if false renders standalone
+	//void ImageFromMemory(ID3D11ShaderResourceView* texturename, int x, int y, std::string text, int index, int in_width, int in_height, bool inWindow = false);
+
+	//void Sprite(ID3D11ShaderResourceView* tex, float x, float y, float resolution = 2, float scale = 1, float rotation = 0);
+
+	////draws line
+	//void Line(int x, int y, int x2, int y2, RGBA rgb, float thickness = 1.f);
+	//void Line(ImVec2 pos1, ImVec2 pos2, RGBA rgb, float thickness = 1.f);
+
+	////draws text
+	////void String(std::string text, int x, int y, int orientation, RGBA color, ID3DXFont* font, bool bordered = true, RGBA bcolor = RGBA(1, 0, 0));
+
+	////draws filled box
+	//void BoxFilled(int x, int y, int w, int h, RGBA rgb);
+
+	////draws only box border
+	//void BoxBorder(int x, int y, int w, int h, RGBA color, int thickness = 1);
+
+	////draws box with a outline
+	//void BoxOutlined(int x, int y, int w, int h, RGBA color, float thickness = 1, RGBA bcolor = RGBA(1, 0, 0));
+
+	////draws string in a box
+	////void StringBoxed(std::string text, int x, int y, int orientation, RGBA color, ID3DXFont* font, RGBA bcolor = RGBA(1, 0, 0), RGBA background = RGBA(0, 0, 0, 0));
+
+	////draws only circle outline
+	//void Circle(int x, int y, float r, RGBA rgb);
+
+	////draws filled circle
+	//void CircleFilled(int x, int y, float r, RGBA rgb);
+	//void CircleFilled(ImVec2 coord, float r, RGBA rgb);
+
+	////draws game's circle range
+	//void CircleRange(Vector3 Pos, float points, float r, RGBA color, float thickness = 1.f);
+
+	//void Bar(int x, int y, float value);
+
+	//void FillRGB(float x, float y, float w, float h, RGBA color);
+
+	//void GradientBox(int x, int y, int w, int h, RGBA rgb, RGBA rgb2, bool vertical);
+
+	//void GradientBoxOutlined(int x, int y, int w, int h, RGBA rgb, RGBA rgb2, bool vertical, float thickness = 1, RGBA bcolor = RGBA(1, 0, 0));
 };
 extern Draw* draw;
-
 #endif // !_DRAW_H_

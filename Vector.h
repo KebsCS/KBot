@@ -10,6 +10,9 @@
 #define M_PI 3.14159265358979323846f
 #endif
 
+struct ProjectionInfo;
+struct IntersectionResult;
+
 struct Vector4
 {
 	float     x, y, z, w;
@@ -68,8 +71,10 @@ public:
 	float NormalizeInPlace() const;
 
 	float Distance(Vector3 const& to) const;
-
+	float Distance(Vector3 const& segment_start, Vector3 const& segment_end, bool only_if_on_segment = false, bool squared = false) const;
 	float DistanceSquared(Vector3 const& to) const;
+
+	IntersectionResult Intersection(Vector3 const& line_segment_end, Vector3 const& line_segment2_start, Vector3 const& line_segment2_end) const;
 
 	float DotProduct(Vector3 const& other) const;
 	float CrossProduct(Vector3 const& other) const;
@@ -80,7 +85,36 @@ public:
 
 	Vector3 Rotated(float angle) const;
 	Vector3 Perpendicular() const;
+	Vector3 Perpendicular2() const;
 	Vector3 Extend(Vector3 const& to, float distance) const;
+
+	Vector3 Append(Vector3 pos1, Vector3 pos2, float dist) const;
+	
+
+	ProjectionInfo ProjectOn(Vector3 const& segment_start, Vector3 const& segment_end) const;
+
+	Vector3 Scale(float s)
+	{
+		return Vector3(x * s, y * s, z * s);
+	}
+};
+
+
+struct ProjectionInfo
+{
+	bool IsOnSegment;
+	Vector3 LinePoint;
+	Vector3 SegmentPoint;
+
+	ProjectionInfo(bool is_on_segment, Vector3 const& segment_point, Vector3 const& line_point);
+};
+
+struct IntersectionResult
+{
+	bool Intersects;
+	Vector3 Point;
+
+	IntersectionResult(bool intersects = false, Vector3 const& point = Vector3());
 };
 
 #endif // !_Vector3_H

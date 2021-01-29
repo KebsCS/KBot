@@ -8,6 +8,8 @@
 #include "Lux.h"
 #include "Xerath.h"
 
+#include "Menu.h"
+
 class ScriptUtils {
 public:
 	static IScript* GetScriptByChampionName(std::string championName)

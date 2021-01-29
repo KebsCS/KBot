@@ -1,129 +1,75 @@
 #pragma once
+#include <string>
+#include <map>
+#include "Definitions.h"
 
-#include "KInterface.h"
+/// Flags of a spell/missile (they are the same thing anyway)
+enum SpellFlags {
+	// Flags from the game data files
+	AffectAllyChampion = 1,
+	AffectEnemyChampion = 1 << 1,
+	AffectAllyLaneMinion = 1 << 2,
+	AffectEnemyLaneMinion = 1 << 3,
+	AffectAllyWard = 1 << 4,
+	AffectEnemyWard = 1 << 5,
+	AffectAllyTurret = 1 << 6,
+	AffectEnemyTurret = 1 << 7,
+	AffectAllyInhibs = 1 << 8,
+	AffectEnemyInhibs = 1 << 9,
+	AffectAllyNonLaneMinion = 1 << 10,
+	AffectJungleMonster = 1 << 11,
+	AffectEnemyNonLaneMinion = 1 << 12,
+	AffectAlwaysSelf = 1 << 13,
+	AffectNeverSelf = 1 << 14,
 
+	// Custom flags set by us. These flags cant be unpacked from the game files (exception Targeted flag).
+	ProjectedDestination = 1 << 22,
 
-
-
-
-
-class SpellData
-{
-private:
-	DWORD base;
-	DWORD ProcessId = Driver.GetProcessId();
-public:
-	//char* GetMissileName() {
-	//	return GetStr((DWORD)this + 0x0058);
-	//}
-	//char* GetSpellName() {
-	//	return GetStr((DWORD)this + 0x007C);
-	//}
-	//char* GetDescription() {
-	//	return GetStr((DWORD)this + 0x0088);
-	//}
-	//float GetEffectAmount() {
-	//	return *(float*)((DWORD)this + 0xD0);
-	//}
-
-	//float GetIncreaseDamage() {
-	//	return *(float*)((DWORD)this + 0xEC);
-	//}
-
-	//float GetSpellDuration() {
-	//	return *(float*)((DWORD)this + 0x108);
-	//}
-
-	//float GetRootDuration() {
-	//	return *(float*)((DWORD)this + 0x15C);
-	//}
-	//float GetIncreaseDamageBonus() {
-	//	return *(float*)((DWORD)this + 0x178);
-	//}
-	//float GetCoefficient() {
-	//	return *(float*)((DWORD)this + 0x200);
-	//}
-	//float GetCoefficient2() {
-	//	return *(float*)((DWORD)this + 0x204);
-	//}
-	//int GetMaxHighlightTargets() {
-	//	return *(int*)((DWORD)this + 0x208);
-	//}
-
-
-
-	float GetSpellInfo()
-	{
-		return Driver.ReadVirtualMemory<float>(ProcessId, base + 0x280, sizeof(float));
-	}
-
-	//float GetDelayCastOffsetPercent() {
-	//	return *(float*)((DWORD)this + 0x29C);
-	//}
-
-	//float GetDelayTotalTimePercent() {
-	//	return *(float*)((DWORD)this + 0x2A0);
-	//}
-
-	//int GetMaxAmmo() {
-	//	return *(int*)((DWORD)this + 0x31C);
-	//}
-	//int GetAmmoUsed() {
-	//	return *(int*)((DWORD)this + 0x338);
-	//}
-
-	//float GetAmmoRechargeTime() {
-	//	return *(float*)((DWORD)this + 0x354);
-	//}
-
-	//float GetMissileSpeed() {
-	//	return *(float*)((DWORD)this + 0x450);
-	//}
+	AffectAllyMob = AffectAllyLaneMinion | AffectAllyNonLaneMinion,
+	AffectEnemyMob = AffectEnemyLaneMinion | AffectEnemyNonLaneMinion | AffectJungleMonster,
+	AffectAllyGeneric = AffectAllyMob | AffectAllyChampion,
+	AffectEnemyGeneric = AffectEnemyMob | AffectEnemyChampion,
 };
 
-
-class SpellInfo
+enum SpellType
 {
-private:
-	DWORD base;
-	DWORD ProcessId = Driver.GetProcessId();
-public:
-	SpellData* GetSpellData()
-	{
-		return Driver.ReadVirtualMemory<SpellData*>(ProcessId, base + 0x44, sizeof(SpellData*));
-	}
-
-	SpellData* GetSpellClassByID(int ID)
-	{
-		return Driver.ReadVirtualMemory<SpellData*>(ProcessId, base + 0x478 + (0x4*ID), sizeof(SpellData*));
-	}
-
-
+	linear,
+	polygon,
+	circular,
+	conic,
+	rectangular,
+	threeway
 };
 
-
-class SpellSlot
-{
-private:
-	DWORD base;
-	DWORD ProcessId = Driver.GetProcessId();
+/// Static data of a spell that we load from disk
+class SpellInfo {
 public:
-	//int GetLevel() {
-	//	return *(int*)((DWORD)this + 0x20);
-	//}
+	SpellInfo* AddFlags(SpellFlags flags);
+public:
+	// Values from game's data files
+	std::string name;
+	std::string icon;
 
-	//float GetTime() {
-	//	return *(float*)((DWORD)this + 0x28);
-	//}
+	SpellFlags flags;
+	float delay;
+	float castRange;
+	float castRadius;
+	float width;
+	float height;
+	float speed;
+	float travelTime;
 
-	//float GetCD() {
-	//	return *(float*)((DWORD)this + 0x18);
-	//}
-
-	SpellInfo* GetSpellInfo()
-	{
-		return Driver.ReadVirtualMemory<SpellInfo*>(ProcessId, base + 0x124, sizeof(SpellInfo*)); //oMissileSpellInfo
-	}
-
+	std::string displayName;
+	std::string missileName;
+	SpellSlotID slot;
+	SpellType type;
+	int danger;
+	bool cc;
+	bool collision;
+	bool windwall;
+	bool hitbox;
+	bool fow;
+	bool exception;
+	bool extend;
 
 };

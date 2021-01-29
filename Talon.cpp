@@ -1,6 +1,8 @@
 #include "Talon.h"
 #include "DirectX.h"
 #include "Draw.h"
+#include "Keyboard.h"
+#include "Mouse.h"
 
 void Talon::OnKeyDown(int)
 {

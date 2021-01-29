@@ -6,9 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "ObjectManager.h"
+#include "CObjectManager.h"
 #include "CMissileClient.h"
-#include "CSpellCastInfo.h"
+//#include "CSpellInfo.h"
+//#include "CSpellEntry.h"
 
 class Initialize
 {
@@ -37,6 +38,9 @@ public:
 
 	void MakeTestList();
 
+	void SetMinimapProperties();
+
+	void SetRendererProperties();
 
 	void InitSpells();
 

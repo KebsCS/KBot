@@ -4,6 +4,8 @@
 #ifndef _XOR_H_
 #define _XOR_H_
 
+#pragma warning (disable: 4996)
+
 #include <string>
 #include <array>
 #include <cstdarg>

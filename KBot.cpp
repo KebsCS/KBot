@@ -1,487 +1,906 @@
-﻿//#include "Orbwalker.h"
+﻿#include "DirectX.h"
 
-#define _WINSOCKAPI_
+#include <chrono>
+#include "Utils.h"
+#include "Config.h"
 
-#include "DirectX.h"
+#include "Evade.h"
+
+#include "Mouse.h"
+
 #include "API.h"
-#include "IRC.h"
-#include "KBot.h"
 
-HWND hWnd;
-
+LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 Direct3D9Render Direct3D9;
 
+HWND hwnd;
 ConsoleLog clog;
 
-const MARGINS Margin = { 0, SCREENWIDTH, 0, SCREENHEIGHT };
+Visuals* vis;
 
-// Forward declare message handler from imgui_impl_win32.cpp
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+//std::vector<CMissileClient>g_MissileList;
+//
+//void Direct3D9Render::MissileThread()
+//{
+//	//auto obj = GetFirst();
+//	//while (obj)
+//	//{
+//	//	CObject cobj(obj);
+//	//	int team = cobj.GetTeam();
+//	//	if (team == 100 || team == 200 || team == 300)
+//	//	{
+//	//		if (cobj.IsMissile())
+//	//		{
+//	//			CObject source = ObjManager->GetObjByIndex(cobj.GetMissileSourceIndex());
+//	//			//DWORD spellinfo = Memory.Read<DWORD>(cobj.Address() + 0x230);
+//	//			//DWORD spelldata = Memory.Read<DWORD>(spellinfo + 0x44);
+//	//			//float speed = Memory.Read<float>(spelldata + 0x428);
+//	//			//
+//	//			////clog.AddLog("%x ,  %s  , %d", source.Address(), source.GetChampName().c_str(), cobj.GetMissileSourceIndex());
+//	//			//clog.AddLog("%x , %s ", cobj.Address(), cobj.GetName().c_str());
+//	//			if (source.IsHero())
+//	//			{
+//	//				if (cobj.GetName().find("basic") == std::string::npos)
+//	//				{
+//	//					Vector3 StartPos = cobj.GetMissileStartPos();
+//	//					ImVec2 RealStartPos = Direct3D9.WorldToScreen(StartPos);
+//	//					Vector3 EndPos = cobj.GetMissileEndPos();
+//	//					ImVec2 RealEndPos = Direct3D9.WorldToScreen(EndPos);
+//	//					/*DWORD spellinfo = Memory.Read<DWORD>(cobj.Address() + 0x230);
+//	//					DWORD spelldata = Memory.Read<DWORD>(spellinfo + 0x44);
+//	//					float speed = Memory.Read<float>(spellinfo + 0x450);
+//	//					std::string desc = Memory.ReadString(spelldata + 0x0088);
+//	//					clog.AddLog("=============");
+//	//					for (int i = 0; i < 2000; i += 4)
+//	//					{
+//	//						speed = Memory.Read<float>(spelldata + i);
+//	//						clog.AddLog("%x ,  %s, %f  , %x", cobj.Address(), cobj.GetName().c_str(), speed ,i);
+//	//					}*/
+//	//					if (RealStartPos.x != 0 && RealStartPos.y != 0 && RealEndPos.x != 0 && RealEndPos.y != 0)
+//	//					{
+//	//						std::string str = cobj.GetName() + " , " + std::to_string(cobj.Address());
+//	//						draw->String(str, RealEndPos.x, RealEndPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
+//	//						draw->Line(RealStartPos, RealEndPos, RGBA(255, 255, 255));
+//	//					}
+//	//				}
+//	//			}
+//	//		}
+//	//	}
+//	//	obj = GetNext(obj);
+//	//}
+//
+//	std::vector<CMissileClient> missiles;
+//	int numMissiles = Memory.Read<int>(MissileMap + 0x78);
+//	int rootNode = Memory.Read<int>(MissileMap + 0x74);
+//	//clog.AddLog("%x", rootNode);
+//	std::queue<int> nodesToVisit;
+//	std::set<int> visitedNodes;
+//	nodesToVisit.push(rootNode);
+//
+//	int childNode1, childNode2, childNode3, node;
+//	while (nodesToVisit.size() > 0 && visitedNodes.size() < numMissiles * 2)
+//	{
+//		node = nodesToVisit.front();
+//		nodesToVisit.pop();
+//		visitedNodes.insert(node);
+//		//clog.AddLog("%x", node);
+//		childNode1 = Memory.Read<int>(node);
+//		childNode2 = Memory.Read<int>(node + 4);
+//		childNode3 = Memory.Read<int>(node + 8);
+//
+//		if (visitedNodes.find(childNode1) == visitedNodes.end())
+//			nodesToVisit.push(childNode1);
+//		if (visitedNodes.find(childNode2) == visitedNodes.end())
+//			nodesToVisit.push(childNode2);
+//		if (visitedNodes.find(childNode3) == visitedNodes.end())
+//			nodesToVisit.push(childNode3);
+//
+//		unsigned int netId = Memory.Read<int>(node + 0x10);
+//
+//		// Actual missiles net_id start from 0x40000000 and throught the game this id will be incremented by 1 for each missile.
+//		// So we use this information to check if missiles are valid.
+//		if (netId - (unsigned int)0x40000000 > 0x100000)
+//			continue;
+//
+//		int addr = Memory.Read<int>(node + 0x14);
+//		if (addr == 0)
+//			continue;
+//
+//		// The MissileClient is wrapped around another object
+//		addr = Memory.Read<int>(addr + 0x4);
+//		if (addr == 0)
+//			continue;
+//
+//		addr = Memory.Read<int>(addr + 0x10);
+//		if (addr == 0)
+//			continue;
+//
+//		// At this point addr is the address of the MissileClient
+//		CMissileClient obj(addr); //std::unique_ptr<CObject>(new CObject());
+//	   // m->LoadFromMem(addr, hProcess);
+//
+//		// Check one more time that we read a valid missile
+//		if (obj.GetNetworkID() != netId)
+//			continue;
+//		//.AddLog("%x", m.Address());
+//		//clog.AddLog("%s %x", obj.GetName().c_str(), obj.Address());
+//		//missiles.push_back(m);
+//
+//		int team = obj.GetTeam();
+//		if (team == 100 || team == 200 || team == 300)
+//		{
+//			CObject source = obj.GetSource();
+//			if (source.IsHero())
+//			{
+//				//clog.AddLog("%x", obj.Address());
+//				if (!utils->StringContains(obj.GetName(), "basic", true))
+//				{
+//					Geometry::Rectangle rect = Geometry::Rectangle(obj.GetMissileStartPos(), obj.GetMissileEndPos(), obj.spellInfo->width);
+//
+//					Geometry::Polygon poly;
+//					poly.Points = rect.ToPolygon(0, obj.spellInfo->width).Points;
+//
+//					if (!obj.spellInfo->displayName.empty())
+//					{
+//
+//						draw->Polygon(poly, RGBA(255, 255, 255));
+//						draw->String(WorldToScreen(obj.GetMissileEndPos()), obj.spellInfo->name, RGBA(255, 255, 255));
+//					}
+//					//auto outer_polygons = Geometry::Geometry::ToPolygons(Geometry::Geometry::ClipPolygons(outer));
+//					//Vector3 closest;
+//					/*for(auto &hero : init->herolist)
+//					if (poly.IsInside(hero.GetPosition()))
+//						closest = Evade::GetClosestOutsidePoint(hero.GetPosition(), outer_polygons);*/
+//
+//						//draw->Circle(Direct3D9.WorldToScreen(closest), 10, RGBA(255, 255, 255));
+//
+//					missiles.emplace_back(obj);
+//				}
+//			}
+//		}
+//	}
+//	if (!missiles.empty())
+//		g_MissileList = missiles;
+//}
 
-// Step 4: the Window Procedure
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+void Direct3D9Render::HeroLoop()
 {
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
-		return true;
-
-	switch (msg)
+	//hero loop
+	if (M.Cooldowns.Master || M.AARange.Master || M.Tracers.Master || M.GankAlerter.Master || M.Talon.DmgCalc || M.Evade.Master)
 	{
-	case WM_CREATE:
-		DwmExtendFrameIntoClientArea(hwnd, &Margin);
-		break;
-	case WM_SYSCOMMAND:
-		if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
-			return 0;
-		break;
-	case WM_DESTROY:
-		M.ExitBot = true;
-		PostQuitMessage(0);
-		return 0;
-	}
-	return DefWindowProc(hwnd, msg, wParam, lParam);
-}
-
-DWORD GetFirst()
-{
-	DWORD objManager = OBJManager;
-	int v1; // eax
-	int v2; // edx
-
-	v1 = OBJManagerArray;
-	v2 = Memory.Read<int>(objManager + 0x18);
-	if (v1 == v2)
-		return 0;
-	while (Memory.Read<BYTE>(v1) & 1 || !Memory.Read<DWORD>(v1)) // never enters loop
-	{
-		v1 += 4;
-		if (v1 == v2)
-			return 0;
-	}
-	return Memory.Read<DWORD>(v1); // returns first address in objlist
-}
-
-DWORD GetNext(DWORD a2)
-{
-	int v2; // eax
-	uint16_t v3; // edx
-	uint16_t v4; // esi
-	int v5; // eax
-
-	v2 = OBJManagerArray;
-	v3 = Memory.Read<uint16_t>(a2 + 0x20) + 1; // loops from first to last object index - 1 to a1a
-	v4 = 0xbb8;//(Memory.Read<int>(objManager + 0x18) - v2) >> 2; // always bb8 (max possible amount of objects maybe?)
-	if (v3 >= v4)
-		return 0;
-	v5 = v2 + 4 * v3; // every obj address before pointer
-	while (Memory.Read<BYTE>(v5) & 1 || !Memory.Read<DWORD>(v5))
-	{
-		++v3;
-		v5 += 4;
-		if (v3 >= v4)
-			return 0;
-	}
-	DWORD temp = Memory.Read<DWORD>(v5);
-	// CObject xd(temp);
-   //  clog.AddLog("%x , %x , %s", v5, temp, xd.GetName().c_str());
-	return temp; // object address pointer
-}
-
-std::vector<CObject>minionList;
-void MinionListLoop()
-{
-	DWORD MinionList = Memory.Read<DWORD>(ClientAddress + oMinionList);
-	while (true)
-	{
-		std::vector<CObject>currobjList;
-		DWORD MinionArray = Memory.Read<DWORD>(MinionList + 0x4);
-		int MinionArrayLength = Memory.Read<int>(MinionList + 0x8);
-		for (int i = 0; i < MinionArrayLength * 4; i += 4)
+		for (auto& obj : init->herolist)
 		{
-			CObject obj(Memory.Read<DWORD>(MinionArray + i));
-			obj.SetObjConsts();
-			// clog.AddLog("%s %x %i", obj.GetName().c_str(), obj.Address(), obj.GetAlive());
-
-			currobjList.emplace_back(obj);
-		}
-		if (!currobjList.empty())
-			minionList = currobjList;
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-	}
-}
-
-void OrbwalkThread()
-{
-	while (true)
-	{
-		if (M.Orbwalker.Master)
-		{
-			if (PressedKey(M.Orbwalker.HoldKey))
+			if (M.Cooldowns.Master)
 			{
-				//orbwalk->Move();
+				//todo store cooldowns in object class
+				if (M.Cooldowns.Type[0] || M.Cooldowns.Type[1])
+					vis->CooldownTimers(obj);
+				//if master + tab /  scoreboard window + show scoreboard
+				if ((M.Cooldowns.Type[2] && ((PressedKey(VK_TAB))) || (M.Cooldowns.ScoreboardWnd && M.Cooldowns.Scoreboard.ShowScoreboard)))
+					vis->ScoreBoard(obj);
+			}
+
+			if (M.AARange.Master)
+				vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
+					false, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]), false);
+
+			if (M.Tracers.Master)
+				vis->DrawTracers(obj, M.Tracers.Thickness);
+
+			if (M.GankAlerter.Master)
+				vis->GankAlerter(obj);
+
+			if (M.Talon.Master)
+			{
+				if (M.Talon.DmgCalc)
+					vis->TalonDamageCalc(obj);
+			}
+
+			//clog.AddLog("%s %i", obj.GetChampName().c_str(), obj.GetNetworkID());
+
+			//float dist = obj.GetDistToMe(Local);
+			//clog.AddLog("%s , %f", obj.GetName(), dist);
+			//float dmg = Local.GetTotalDamage(&obj);
+			//ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+			//std::string str = obj.GetName() + " , " + std::to_string(dmg);
+			//draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+		}
+	}
+}
+
+void Direct3D9Render::TurretLoop()
+{
+	//turret loop
+	if (M.AARange.Turrets)
+	{
+		for (auto& obj : init->turretlist)
+		{
+			if (M.AARange.Turrets)
+				vis->DrawAARanges(obj, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
+					false, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]), true);
+
+			//ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+			//std::string str = obj.GetName() + " , " + std::to_string(obj.Address()) +" " + std::to_string(obj.GetPosition().X) + " " + std::to_string(obj.GetPosition().Y) + " " + std::to_string(obj.GetPosition().Z);
+			//draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+		}
+	}
+}
+
+void Direct3D9Render::Loops()
+{
+	//if (M.Debug)
+	//MissileThread();
+
+	if (M.AARange.Local)
+		vis->DrawAARanges(Local, M.AARange.Slider[0], M.AARange.Slider[1] / 10.f, RGBA(M.AARange.Color[0], M.AARange.Color[1], M.AARange.Color[2], M.AARange.Color[3]),
+			M.AARange.Local, RGBA(M.AARange.LocalColor[0], M.AARange.LocalColor[1], M.AARange.LocalColor[2], M.AARange.LocalColor[3]), false);
+
+	//std::thread HeroLoopThread(&Direct3D9Render::HeroLoop, this);
+	//std::thread TurretLoopThread(&Direct3D9Render::TurretLoop, this);
+	HeroLoop();
+	TurretLoop();
+
+	//minions/monsters/wards loop
+	if (M.Wards.Master || M.LastHit.Master || M.AutoSmite.Master)
+	{
+		for (auto& obj : g_MinionList)
+		{
+			//clog.AddLog("%s", obj.GetName().c_str());
+			if (M.Wards.Master)
+				vis->WardsRange(obj);
+
+			if (M.AutoSmite.Master)
+				vis->AutoSmite(obj, M.AutoSmite.Slot, M.AutoSmite.Mode, M.AutoSmite.MouseSpeed);
+
+			if (M.LastHit.Master)
+				vis->LastHit(obj, RGBA(M.LastHit.Color[0], M.LastHit.Color[1], M.LastHit.Color[2], M.LastHit.Color[3]));
+
+			//	ImVec2 RealPos = Direct3D9.WorldToScreen(obj.GetPosition());
+			//float dmg = Local.GetTotalDamage(obj);
+			//std::string str = obj.GetName() + " , " + std::to_string(dmg) + " , " + std::to_string(obj.Address());
+			//draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), fontTahoma);
+		}
+	}
+
+	//inhib loop
+	if (M.Inhibs.Master)
+	{
+		for (auto& obj : init->inhiblist)
+		{
+			if (M.Inhibs.Master)
+			{
+				vis->InhibTimers(obj);
 			}
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
+
+	//HeroLoopThread.join();
+	//TurretLoopThread.join();
 }
 
+//UI open/close Loop
 void MenuHandler()
 {
 	while (true)
 	{
-		if (PressedKey(M.Misc.MenuKey)) //open menu
+		if (PressedKey(M.Misc.MenuKey))
 		{
-			long winlong = GetWindowLong(hWnd, GWL_EXSTYLE);
-			if (!M.MenuOpen)
+			//Get window styles
+			if (long lWinLong = GetWindowLong(hwnd, GWL_EXSTYLE); !M.bMenuOpen)
 			{
-				M.MenuOpen = !M.MenuOpen;
-				if (winlong != (WS_EX_LAYERED | WS_EX_TOPMOST))
-					SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST);
-				SetForegroundWindow(hWnd);
+#ifndef NOLEAGUE
+				//If league or script isn't in foreground, don't open menu
+			/*	if (!utils->IsLeagueForeGround() && !utils->IsScriptForeGround())
+					continue;*/
+#endif // !NOLEAGUE
+
+					//Open the menu, and make the UI clickable
+				M.bMenuOpen = !M.bMenuOpen;
+				if (lWinLong != (WS_EX_LAYERED | WS_EX_TOPMOST))
+					SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST);
+				SetForegroundWindow(hwnd);
 				//clog.AddLog("Menu Opened");
 			}
 			else
 			{
-				M.MenuOpen = !M.MenuOpen;
-				if (winlong != (WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT))
-					SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT);
+				//Close the menu, and make the UI pass through clicks, by setting the WS_EX_TRANSPARENT flag
+				M.bMenuOpen = !M.bMenuOpen;
+				if (lWinLong != (WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT))
+					SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT);
 				//clog.AddLog("Menu Closed");
 			}
 
-#ifndef NOLEAGUE
-
-			if (!FindWindowA(0, XorStr("League of Legends (TM) Client")))
+			while (PressedKey(M.Misc.MenuKey))
 			{
-				M.ExitBot = true;
-				break;
-			}
+				//These don't need to be in the main loop, or would take too much CPU power
+#ifndef NOLEAGUE
+				//If Lol is closed, exit
+				if (!FindWindowA(0, XorStr("League of Legends (TM) Client")))
+				{
+					M.bExitBot = true;
+					break;
+				}
 
+				//CheckHWID();
+				//CheckWindows();
+				//AntiDebug();
+
+				//Get minimap position and size
+				init->SetMinimapProperties();
+
+				//Get League's window width and height (usually 1920x1080)
+				init->SetRendererProperties();
 #endif // !NOLEAGUE
-			while (PressedKey(M.Misc.MenuKey)) {
-				CheckHWID();
-				CheckWindows();
-				AntiDebug();
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			}
 		}
+		//Infinite loop sleep
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 }
 
-void Secure()
+//Draw game overlay (used for primitive rendering)
+void DrawOverlayWindows(Draw& cdraw)
 {
-	while (true)
-	{
-		AntiDebug();
-		std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-	}
+	auto io = ImGui::GetIO();
+	ImGui::SetNextWindowSize(io.DisplaySize);
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::Begin("##Overlay", nullptr,
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoScrollbar |
+		ImGuiWindowFlags_NoSavedSettings |
+		ImGuiWindowFlags_NoInputs |
+		ImGuiWindowFlags_NoBackground
+	);
+
+	cdraw.overlay = ImGui::GetWindowDrawList();
+
+	ImGui::End();
 }
 
+bool RenameExe()
+{
+	char szExeFileName[MAX_PATH];
+	GetModuleFileNameA(NULL, szExeFileName, MAX_PATH);
+	std::string path = std::string(szExeFileName);
+	std::string exe = path.substr(path.find_last_of("\\") + 1, path.size());
+	std::string newname;
+	newname = utils->RandomString(RandomInt(5, 10));
+	newname += XorStr(".exe");
+	if (!rename(exe.c_str(), newname.c_str()))
+		return true;
+	else return false;
+}
+
+bool once123 = true;
+
+//uint __thiscall UndefinedFunction_009c5490(int param_1, uint param_2)
+//
+//{
+//	byte bVar1;
+//	uint uVar2;
+//	uint* puVar3;
+//	uint uVar4;
+//	byte* pbVar5;
+//	uint uStack4;
+//
+//	uVar4 = 0;
+//	bVar1 = *(byte*)(param_1 + 0x51);
+//	uStack4 = *(uint*)(param_1 + 0x5c + (uint) * (byte*)(param_1 + 0x58) * 4);
+//	if (bVar1 != 0) {
+//		puVar3 = (uint*)(param_1 + 0x54);
+//		do {
+//			uVar2 = *puVar3;
+//			puVar3 = puVar3 + 1;
+//			(&uStack4)[uVar4] = (&uStack4)[uVar4] ^ ~uVar2;
+//			uVar4 = uVar4 + 1;
+//		} while (uVar4 < bVar1);
+//	}
+//	if ((*(byte*)(param_1 + 0x52) != 0) && (uVar4 = 4 - (uint) * (byte*)(param_1 + 0x52), uVar4 < 4))
+//	{
+//		pbVar5 = (byte*)(param_1 + 0x54 + uVar4);
+//		do {
+//			bVar1 = *pbVar5;
+//			pbVar5 = pbVar5 + 1;
+//			*(byte*)((int)&uStack4 + uVar4) = *(byte*)((int)&uStack4 + uVar4) ^ ~bVar1;
+//			uVar4 = uVar4 + 1;
+//		} while (uVar4 < 4);
+//	}
+//	return uStack4 & 0xffffff00 | (uint)((param_2 & uStack4) != 0);
+//}
+//
+//
+//
+//int IsFunc(DWORD param_1, int param_2)
+//{
+//	if (!param_1)
+//		return 0;
+//
+//	int uVar2;
+//	int puVar3;
+//	int uStack4;
+//
+//	uStack4 = Memory.Read<int>(param_1 + 0x5c + (Memory.Read<byte>(param_1 + 0x58)) * 4);
+//	puVar3 = param_1 + 0x54;
+//	uVar2 = Memory.Read<int>(puVar3);
+//	uStack4 ^= ~uVar2;
+//
+//	return  ((param_2 & uStack4) != 0);
+//}
+
+//undefined4 __fastcall UndefinedFunction_009be220(int param_1)
+//
+//{
+//	byte bVar1;
+//	uint uVar2;
+//	uint uVar3;
+//	uint* puVar4;
+//	byte* pbVar5;
+//	uint uStack4;
+//
+//	uVar3 = 0;
+//	bVar1 = *(byte*)(param_1 + 0x2ff1);
+//	uStack4 = *(uint*)(param_1 + 0x2ffc + (uint) * (byte*)(param_1 + 0x2ff8) * 4);
+//	if (bVar1 != 0) {
+//		puVar4 = (uint*)(param_1 + 0x2ff4);
+//		do {
+//			uVar2 = *puVar4;
+//			puVar4 = puVar4 + 1;
+//			(&uStack4)[uVar3] = (&uStack4)[uVar3] ^ ~uVar2;
+//			uVar3 = uVar3 + 1;
+//		} while (uVar3 < bVar1);
+//	}
+//	if ((*(byte*)(param_1 + 0x2ff2) != 0) &&
+//		(uVar3 = 4 - (uint) * (byte*)(param_1 + 0x2ff2), uVar3 < 4)) {
+//		pbVar5 = (byte*)(param_1 + 0x2ff4 + uVar3);
+//		do {
+//			bVar1 = *pbVar5;
+//			pbVar5 = pbVar5 + 1;
+//			*(byte*)((int)&uStack4 + uVar3) = *(byte*)((int)&uStack4 + uVar3) ^ ~bVar1;
+//			uVar3 = uVar3 + 1;
+//		} while (uVar3 < 4);
+//		return *(undefined4*)(uStack4 + 8);
+//	}
+//	return *(undefined4*)(uStack4 + 8);
+//}
+
+//undefined4 __fastcall UndefinedFunction_006ce490(int param_1)
+//
+//{
+//	byte bVar1;
+//	uint uVar2;
+//	uint uVar3;
+//	uint* puVar4;
+//	byte* pbVar5;
+//	uint uStack4;
+//
+//	uVar3 = 0;
+//	bVar1 = *(byte*)(param_1 + 0x3011);
+//	uStack4 = *(uint*)(param_1 + 0x301c + (uint) * (byte*)(param_1 + 0x3018) * 4);
+//	if (bVar1 != 0) {
+//		puVar4 = (uint*)(param_1 + 0x3014);
+//		do {
+//			uVar2 = *puVar4;
+//			puVar4 = puVar4 + 1;
+//			(&uStack4)[uVar3] = (&uStack4)[uVar3] ^ ~uVar2;
+//			uVar3 = uVar3 + 1;
+//		} while (uVar3 < bVar1);
+//	}
+//	if ((*(byte*)(param_1 + 0x3012) != 0) &&
+//		(uVar3 = 4 - (uint) * (byte*)(param_1 + 0x3012), uVar3 < 4)) {
+//		pbVar5 = (byte*)(param_1 + 0x3014 + uVar3);
+//		do {
+//			bVar1 = *pbVar5;
+//			pbVar5 = pbVar5 + 1;
+//			*(byte*)((int)&uStack4 + uVar3) = *(byte*)((int)&uStack4 + uVar3) ^ ~bVar1;
+//			uVar3 = uVar3 + 1;
+//		} while (uVar3 < 4);
+//		return *(undefined4*)(uStack4 + 8);
+//	}
+//	return *(undefined4*)(uStack4 + 8);
+//}
+
+
+DWORD AiManager(int param_1)
+{
+	byte bVar1;
+	unsigned int uVar2;
+	unsigned int uVar3;
+	unsigned int puVar4;
+	byte pbVar5;
+	unsigned int uStack4;
+
+	uVar3 = 0;
+
+	clog.AddLog("%x", param_1);
+
+//	int num1 = 12312; //this[num1];
+//	int num2 = 12304; //this + num2;
+	bVar1 = Memory.Read<byte>(param_1 + 0x3011); //1
+	clog.AddLog("bvar1 %x", bVar1);
+	uStack4 = Memory.Read<unsigned>(param_1 + 0x301c + (unsigned)(Memory.Read<byte>(param_1 + 0x3018)) * 4);
+	clog.AddLog("first %x",uStack4);
+
+
+
+	if (bVar1 != 0) {
+		puVar4 = (param_1 + 0x3014);
+		do {
+			uVar2 = Memory.Read<unsigned>(puVar4);
+			clog.AddLog("var2 %x", uVar2);
+			puVar4 = puVar4 + 1;
+			uStack4 = Memory.Read<int>(uStack4 + uVar3);
+			clog.AddLog("ust4 %x", uStack4);
+			uStack4 ^= ~uVar2;
+			clog.AddLog("ust4xor %x", uStack4);
+			uVar3 = uVar3 + 1;
+		} while (uVar3 < bVar1);
+	}
+
+	if ((Memory.Read<byte>(param_1 + 0x3012) != 0) &&
+		(uVar3 = 4 - Memory.Read<byte>(param_1 + 0x3012), uVar3 < 4)) {
+		pbVar5 = (param_1 + 0x3014 + uVar3);
+		clog.AddLog("5a");
+		do {
+			bVar1 = Memory.Read<byte>(pbVar5);
+			pbVar5 = pbVar5 + 1;
+			uStack4 = Memory.Read<byte>((int)uStack4 + uVar3);
+			clog.AddLog("2l %x", uStack4);
+			uStack4 = uStack4 ^ ~bVar1;
+			uVar3 = uVar3 + 1;
+		} while (uVar3 < 4);
+		return Memory.Read<DWORD>(uStack4 + 8);
+	}
+	clog.AddLog("last %x", uStack4);
+	return Memory.Read<DWORD>(uStack4 + 8);
+}
+
+//int AiManager(uint8_t addr)
+//{
+//	int v1; // eax
+//	uint8_t v2; // esi
+//	unsigned int v3; // ecx
+//	unsigned int v4; // edi
+//	int v5; // edx
+//	int v6; // edx
+//	int v7; // eax
+//	uint8_t v8; // al
+//	unsigned int v9; // eax
+//	uint8_t v10; // edx
+//	char v11; // cl
+//	int v13; // [esp+8h] [ebp-4h]
+//
+//	v1 = Memory.Read<int>(addr+ 12312);
+//	v2 = addr + 12304;
+//	v3 = 0;
+//	v4 = Memory.Read<unsigned>(v2 + 1);
+//	v5 = Memory.Read<DWORD>(Memory.Read< uint8_t>(v2 + 4 * v1 + 12));
+//	v13 = Memory.Read<DWORD>(Memory.Read< uint8_t>(v2 + 4 * v1 + 12));
+//	MessageBoxA(0, std::to_string(v13).c_str(), 0, 0);
+//	if (v4)
+//	{
+//		v6 = (int)(v2 + 4);
+//		do
+//		{
+//			v7 = Memory.Read<int>(v6);
+//			++v6;
+//			v13 = Memory.Read<int>(v13 + v3);
+//			v13 ^= ~v7;
+//			++v3;
+//		} while (v3 < v4);
+//		v5 = v13;
+//	}
+//	v8 = Memory.Read<uint8_t>(v2 + 2);
+//	if (!v8)
+//		return Memory.Read<DWORD>(v5 + 8);
+//	v9 = 4 - v8;
+//	if (v9 >= 4)
+//		return Memory.Read<DWORD>(v5 + 8);
+//	v10 = Memory.Read< uint8_t>(v2 + v9 + 4);
+//	do
+//	{
+//		v11 = Memory.Read< char>(v10++);
+//		v13 = Memory.Read<byte>(v13 + v9++);
+//		v13 ^= ~v11;
+//	} while (v9 < 4);
+//	return Memory.Read<DWORD>(v13 + 8);
+//}
+
+// Main code
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	WNDCLASSEXA wc;
-	//Registering the Window Class
-	ZeroMemory(&wc, sizeof(WNDCLASSEXA));
-	wc.cbSize = sizeof(WNDCLASSEXA); //
-	wc.style = /*CS_VREDRAW | CS_HREDRAW | */ CS_NOCLOSE;
-	wc.lpfnWndProc = WndProc; //
-	wc.cbClsExtra = 0; //
-	wc.cbWndExtra = 0; //
-	wc.hInstance = hInstance; //
-	wc.hIcon = 0;// LoadIconA(NULL, IDI_APPLICATION);
-	wc.hIconSm = 0;// LoadIconA(NULL, IDI_APPLICATION); //
-	wc.hCursor = 0;// LoadCursorA(NULL, IDC_ARROW); //
-	wc.hbrBackground = (HBRUSH)CreateSolidBrush(RGB(0, 0, 0)); //
-
+	//Randomize using current time, todo swap with recent c++ random
 	srand(time(0));
 
-	if (dwNtGlobalFlag & NT_GLOBAL_FLAG_DEBUGGED)
+	//Random class name, since some apps, check for known names.
+	//League doesn't do that for this script, but just to be sure they don't implement that anytime soon
+	std::string sClassName = utils->RandomString(RandomInt(5, 10));
+	LPCSTR lpszOverlayClassName = sClassName.c_str();
+
+	//Register window class information
+	WNDCLASSEXA wc = { sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, sClassName.c_str(), NULL };
+
+	// Rename exe to random string
+	RenameExe();
+
+	::RegisterClassExA(&wc);
+
+	// Create application window
+	hwnd = ::CreateWindowExA(
+		WS_EX_TOPMOST /*| WS_EX_NOACTIVATE*/ | WS_EX_LAYERED | WS_EX_TRANSPARENT,
+		sClassName.c_str(), lpszOverlayClassName,
+		WS_POPUP,
+		1, 1, SCREENWIDTH, SCREENHEIGHT,
+		nullptr, nullptr, GetModuleHandle(0), nullptr);
+
+	if (hwnd == NULL)
 	{
-		M.ExitBot = true;
-		abort();
-	}
-
-	std::string className = utils->RandomString(RandomInt(5, 10));
-	LPCSTR overlayClassName = className.c_str();
-
-	InitAntiDebug();
-
-	wc.lpszMenuName = overlayClassName; //
-	wc.lpszClassName = overlayClassName; //
-
-	{
-		char szExeFileName[MAX_PATH];
-		GetModuleFileNameA(NULL, szExeFileName, MAX_PATH);
-		std::string path = std::string(szExeFileName);
-		std::string exe = path.substr(path.find_last_of("\\") + 1, path.size());
-		std::string newname;
-		newname = utils->RandomString(RandomInt(5, 10));
-		newname += XorStr(".exe");
-		rename(exe.c_str(), newname.c_str());
-	}
-
-	if (!::RegisterClassExA(&wc))
-	{
-		MessageBoxA(0, XorStr("Window Registration Failed"), std::to_string(GetLastError()).c_str(), 0);
 		::UnregisterClassA(wc.lpszClassName, wc.hInstance);
 		return 0;
 	}
 
+	std::string htmlData = api->GET(XorStr("https://raw.githubusercontent.com"), XorStr("/y3541599/test/main/README.md"));
+	size_t nPos = htmlData.find(XorStr("#Version#")) + strlen(XorStr("#Version#"));
+	if (nPos == std::string::npos)
 	{
-		std::string htmlData = api->GET(XorStr("https://raw.githubusercontent.com"), XorStr("/y3541599/test/main/README.md"));
-		size_t nPos = htmlData.find(XorStr("#Version#")) + strlen(XorStr("#Version#"));
-		if (nPos == std::string::npos)
-		{
-			M.ExitBot = true;
-			::UnregisterClassA(wc.lpszClassName, wc.hInstance);
-			return 0;
-		}
-		std::string NowVersion = htmlData.substr(nPos, htmlData.find(XorStr("$Version$"), nPos) - nPos);
-		nPos = htmlData.find(XorStr("#Patch#")) + strlen(XorStr("#Patch#"));
-		if (nPos == std::string::npos)
-		{
-			M.ExitBot = true;
-			::UnregisterClassA(wc.lpszClassName, wc.hInstance);
-			return 0;
-		}
-		std::string NowPatch = htmlData.substr(nPos, htmlData.find(XorStr("$Patch$"), nPos) - nPos);
-
-		if (NowVersion != XorStr("1.0.0") || NowPatch != XorStr("11.1"))
-		{
-			MessageBoxA(0, XorStr("Outdated version"), 0, 0);
-			M.ExitBot = true;
-			::UnregisterClassA(wc.lpszClassName, wc.hInstance);
-			return 0;
-		}
-
-		nPos = htmlData.find(XorStr("#Info#")) + strlen(XorStr("#Info#"));
-		if (nPos == std::string::npos)
-		{
-			M.ExitBot = true;
-			::UnregisterClassA(wc.lpszClassName, wc.hInstance);
-			return 0;
-		}
-		std::string ServerInfo = htmlData.substr(nPos, htmlData.find(XorStr("$Info$"), nPos) - nPos);
-
-		if (!ServerInfo.empty())
-		{
-			clog.AddLog(XorStr("[info] %s"), ServerInfo.c_str());
-			M.ServerInfo = ServerInfo;
-		}
-		clog.AddLog(XorStr("[start] Version: %s"), NowVersion.c_str());
-		clog.AddLog(XorStr("[start] Patch: %s"), NowPatch.c_str());
-
-		//htmlData = api->GET(XorStr("https://24timezones.com"), XorStr("/time-zone/cet"));
-		//nPos = htmlData.find(XorStr(" January ")) + strlen(XorStr(" January "));
-		//if (nPos == std::string::npos)
-		//{
-		//    M.ExitBot = true;
-		//    ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
-		//    return 0;
-
-		//}
-		//std::string Today = htmlData.substr(nPos, htmlData.find(XorStr(", 2021</p>"), nPos) - nPos).c_str();
-		//try
-		//{
-		//    if (std::stoi(Today) > 31) //end of month
-		//    {
-		//        M.ExitBot = true;
-		//        ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
-		//        return 0;
-
-		//    }
-		//}
-		//catch (...)
-		//{
-		//    M.ExitBot = true;
-		//    ::UnregisterClassA(wc.lpszClassName, wc.hInstance);
-		//    return 0;
-		//}
+		M.bExitBot = true;
+		::UnregisterClassA(wc.lpszClassName, wc.hInstance);
+		return 0;
+	}
+	std::string NowVersion = htmlData.substr(nPos, htmlData.find(XorStr("$Version$"), nPos) - nPos);
+	nPos = htmlData.find(XorStr("#Patch#")) + strlen(XorStr("#Patch#"));
+	if (nPos == std::string::npos)
+	{
+		M.bExitBot = true;
+		::UnregisterClassA(wc.lpszClassName, wc.hInstance);
+		return 0;
 	}
 
-	//todo fix failed to connect
-	/*std::thread IRCThread(&IRC::Run, irc);
-	IRCThread.detach();*/
+	std::string NowPatch = htmlData.substr(nPos, htmlData.find(XorStr("$Patch$"), nPos) - nPos);
+
+	if (NowVersion != XorStr("1.0.0") || NowPatch != XorStr("11.2"))
+	{
+		MessageBoxA(0, XorStr("Outdated version"), 0, 0);
+		M.bExitBot = true;
+		::UnregisterClassA(wc.lpszClassName, wc.hInstance);
+		return 0;
+	}
+
+	clog.AddLog(XorStr("[start] Version: %s"), NowVersion.c_str());
+	clog.AddLog(XorStr("[start] Patch: %s"), NowPatch.c_str());
+
+	// String version to number eg. 11.2 to 112
+	NowPatch.erase(std::remove(NowPatch.begin(), NowPatch.end(), '.'), NowPatch.end());
+	int nNowPatch = std::stoi(NowPatch);
+
+	nPos = htmlData.find(XorStr("#Info#")) + strlen(XorStr("#Info#"));
+	if (nPos == std::string::npos)
+	{
+		M.bExitBot = true;
+		::UnregisterClassA(wc.lpszClassName, wc.hInstance);
+		return 0;
+	}
+	std::string ServerInfo = htmlData.substr(nPos, htmlData.find(XorStr("$Info$"), nPos) - nPos);
+
+	if (!ServerInfo.empty())
+	{
+		clog.AddLog(XorStr("[info] %s"), ServerInfo.c_str());
+		M.sServerInfo = ServerInfo;
+	}
 
 #ifndef NOLEAGUE
 
-	LPCSTR windowName = XorStr("League of Legends (TM) Client");
-	if (!::FindWindowA(0, windowName))
+	//Find if league is running
+	LPCSTR lpszWindowName = XorStr("League of Legends (TM) Client");
+	if (!::FindWindowA(0, lpszWindowName))
 	{
 		MessageBoxA(0, XorStr("Game not found"), XorStr("Window creation failed"), 0);
-		M.ExitBot = true;
+		M.bExitBot = true;
 		::UnregisterClassA(wc.lpszClassName, wc.hInstance);
 		return 0;
 	}
 
+	//If driver isn't running, or there's problem with it we shouldn't be able to get PID
 	if (!Memory.Process())
 	{
 		MessageBoxA(0, XorStr("Driver not found"), 0, 0);
-		M.ExitBot = true;
+		M.bExitBot = true;
 		::UnregisterClassA(wc.lpszClassName, wc.hInstance);
 		return 0;
 	}
 
 #endif // !NOLEAGUE
 
-	hWnd = ::CreateWindowExA(WS_EX_TOPMOST | WS_EX_LAYERED, overlayClassName, overlayClassName, WS_POPUP, 0, 0, SCREENWIDTH, SCREENHEIGHT, 0, 0, wc.hInstance, 0);
-	SetLayeredWindowAttributes(hWnd, 0, 0, LWA_ALPHA);
-	SetLayeredWindowAttributes(hWnd, 0, 0, LWA_COLORKEY);
-	//SetLayeredWindowAttributes(hWnd, RGB(255, 255, 255),100, /* 0=transparent, 255=completely solid*/LWA_COLORKEY);
-	//SetWindowPos(hWnd, HWND_TOPMOST, 0 ,0 , SCREENWIDTH, SCREENHEIGHT, SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
-	//ShowWindow(hWnd, SW_SHOW);
-
-	Config->Setup();
-	Config->Load(XorStr("default"));
-	clog.AddLog(XorStr("[start] Config loaded"));
-
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-	// Initialize Direct3D
-	if (!Direct3D9.DirectXInit(hWnd))
+	//Initialize Direct3D
+	if (!Direct3D9.DirectXInit(hwnd))
 	{
 		Direct3D9.Shutdown();
 		::UnregisterClassA(wc.lpszClassName, wc.hInstance);
 		return 0;
 	}
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(200));
-	AntiDebug();
-	::ShowWindow(hWnd, SW_SHOWDEFAULT);
-	::UpdateWindow(hWnd);
+	// Show the window
+	::ShowWindow(hwnd, SW_SHOWDEFAULT);
+	::UpdateWindow(hwnd);
 
-#ifndef NOLEAGUE
+	// Load Fonts
+	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
+	// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
+	// - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
+	// - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
+	// - Read 'docs/FONTS.md' for more instructions and details.
+	// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
+	//io.Fonts->AddFontDefault();
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
+	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+	//IM_ASSERT(font != NULL);
 
-	std::thread MinionListThread{ MinionListLoop };
-	MinionListThread.detach();
-
-#endif // !NOLEAGUE
-
+	//Start the thread that opens/closes UI
 	std::thread MenuHandlerThread{ MenuHandler };
 	MenuHandlerThread.detach();
 
-	// CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ObjListLoop, 0, 0, 0); //todo loop obj only when needed, not in different thread and c++11 threads
-	 //CreateThread(0, 0, (LPTHREAD_START_ROUTINE)OrbwalkThread, 0, 0, 0);
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	//Start minion list loop
+	std::thread MinionListThread{ MinionListLoop };
+	MinionListThread.detach();
 
-	for (char a = 65; a <= 90; a++)
+	//Load default config
+	Config->Setup();
+	Config->Load(XorStr("default"));
+	clog.AddLog(XorStr("[start] Config loaded"));
+
+	std::string sDataPath("Data");
+	if (nNowPatch != M.nPatch)
 	{
-		std::string sm = ":";
-		std::string temp = "\\\\.\\";
-		std::string final = temp + a + sm;
+		// delete files so they redownload
+		std::filesystem::remove_all(sDataPath);
 
-		HANDLE hCdRom = CreateFile(utils->StringToWstring(final).c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-		if (hCdRom == INVALID_HANDLE_VALUE)
-		{
-			//clog.AddLog("Error: %x", GetLastError());
-			continue;
-		}
-		else
-		{
-			//DWORD dwBytes;
-			// Open the door:
-			//DeviceIoControl(hCdRom, IOCTL_STORAGE_EJECT_MEDIA, NULL, 0, NULL, 0, &dwBytes, NULL);
-
-			//Sleep(1000);
-
-			// Close the door:
-			//DeviceIoControl(hCdRom, IOCTL_STORAGE_LOAD_MEDIA, NULL, 0, NULL, 0, &dwBytes, NULL);
-
-			//clog.AddLog("cd drive: %s", final);
-
-			CloseHandle(hCdRom);
-			break;
-		}
+		//update version
+		M.nPatch = nNowPatch;
+		//save version
+		Config->Save(XorStr("default"));
 	}
 
-	//DWORD a = utils->GetStringHash(utils->GetUserNameFunc() + utils->GetComputerNameFunc() + utils->GetGUID());
+	//Load static info from files
+	GameData::Load(sDataPath);
 
-	CheckHWID();
+	init->StartupInfo();
 
-	std::thread SecureThread{ Secure };
-	SecureThread.detach();
+	Evade* evade = new Evade();
+	evade->MakeWorldMap();
 
-	//message Loop
-	MSG Msg;
-	ZeroMemory(&Msg, sizeof(Msg));
-	while (Msg.message != WM_QUIT)
+	// Main loop
+	MSG msg;
+	ZeroMemory(&msg, sizeof(msg));
+	while (msg.message != WM_QUIT)
 	{
-		if (::PeekMessage(&Msg, hWnd, 0, 0, PM_REMOVE))
+		// Poll and handle messages (inputs, window resize, etc.)
+		// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
+		// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
+		// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
+		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+		if (::PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE))
 		{
-			::DispatchMessage(&Msg);
-			::TranslateMessage(&Msg);
+			::TranslateMessage(&msg);
+			::DispatchMessage(&msg);
 			continue;
 		}
-		//std::thread MissileThread{ GetObjectList };
 
-		if (M.ExitBot || PressedKey(VK_F11))// || !FindWindowA(0, windowName)) //exit
+		//If script is supposed to exit or F11 pressed, exit
+		if (M.bExitBot || PressedKey(VK_F11))// || !FindWindowA(0, windowName)) //exit
 			break;
-#ifndef NOLEAGUE
 
-		M.GameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+		//Start rendering
+		Direct3D9.StartFrame();
 
-		if (championScript && PressedKey(VK_SPACE))
-			championScript->Harass();
-
-		//todo mem reads in cobfuscation i guess
-		//clog.AddLog("aimgr: %x", (Memory.DeobfuscateMember(Local.Address() + 0x3018)));
-		/*clog.AddLog("aimgr1: %x", Memory.DeobfuscateMember(Local.Address() + 0x3018));
-		clog.AddLog("aimgr2: %x", Memory.DeobfuscateMember2(Local.Address() + 0x3018));*/
-
-#endif // !NOLEAGUE
-
+		//Render UI
 		Direct3D9.Render();
 
-		/*	DWORD buffStart = Memory.Read<DWORD>(Local.Address() + 0x2160 + 0x10);
-			DWORD buffEnd = Memory.Read<DWORD>(Local.Address() + 0x2160 + 0x14);
+		//Draw contents
+		DrawOverlayWindows(*draw);
 
-			for (DWORD buffPtr = buffStart; buffPtr != buffEnd; buffPtr += 0x04)
+		//Update Global timer
+		M.fGameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+
+		//Update ViewMatrix
+		Direct3D9.GetViewProjectionMatrix();
+
+		//Loop through lists
+		Direct3D9.Loops();
+
+		//Execute champion scripts
+		if (championScript)
+			championScript->OnKeyDown(1);
+
+		evade->Tick();
+		evade->Draw();
+
+		/*	CSpellEntry spell(Local.GetActiveSpellEntry());
+			if (spell.Address() != 0)
 			{
-				DWORD buffCurr = Memory.Read<DWORD>(buffPtr);
-				DWORD temp = Memory.Read<DWORD>(buffCurr + 0x08);
-				if (!temp)
-					continue;
-				clog.AddLog("%s %x", Memory.ReadString(temp +0x08, true).c_str(), buffCurr);
+				clog.AddLog("%s", spell.GetSpellInfo()->GetName().c_str());
+				clog.AddLog("%s", Memory.ReadString(Memory.Read<DWORD>(Memory.Read<DWORD>(spell.Address() + oSpellEntrySpellInfo)+oSpellInfoSpellName)));
 			}*/
-			//clog.AddLog("%x",Memory.Read<DWORD>(Local.Address()+0x6c));
 
-			//todo twisted fate cards bound separately+visual indicator
+			//Vector3 mpos = mouse->GetWorldPos();
 
-			//clog.AddLog("%i", GetObjectList().size());
-		   // CObject undermouseObj(CObject::GetUnderMouseObject());
-			//int xd = CObject::GetUnderMouseObject();
-		   // DWORD address = Memory.Read<DWORD>(ClientAddress + oUnderMouseObject);
-		  //  clog.AddLog("under mouse: %x", address);
-
-			//clog.AddLog("%lg", GetBoundingRadius(Local.Address()));
-			//int i = 0;
-			//DWORD buffmgr = (LocalPlayer + 0x2174);
-			//for (DWORD pBuffPtr = Memory.Read<DWORD>(buffmgr +0x10); pBuffPtr != Memory.Read<DWORD>(buffmgr + 0x14); pBuffPtr = Memory.Read<DWORD>(pBuffPtr + 0x8 *i))
+			//if (PressedKey(VK_XBUTTON2))
 			//{
-			//    auto pBuff = Memory.Read<DWORD>(pBuffPtr);
-			//    i++;
-			//    if (!pBuff) continue;
-			//    //if (!pBuff->IsValid()) continue;
-			//    //if (pBuff->IsAlive()) {
-			//    std::string buffname = Memory.ReadString(pBuff + 0x08);
-			//    clog.AddLog("%s", buffname);
-			//  //  }
+			//	std::string temp = ".Add(Vector3(" + std::to_string(mpos.x) + ", " + std::to_string(mpos.y) + ", " + std::to_string(mpos.z) + "));";
+			//	//std::string temp = "Vector3(" + std::to_string(mpos.x) + ", " + std::to_string(mpos.y) + ", " + std::to_string(mpos.z) + ")";
+			//	utils->CopyToClipboard(temp);
+			//}
 
-			////}
-			//Vector3 start = Vector3(11579, 51, 7013);
-			//Vector3 end = Vector3(11802, 51, 7264);
+			//for (auto& poly : WorldMap)
+			//{
+			//	if (poly.IsInside(mpos))
+			//		draw->Polygon(poly, RGBA(255, 0, 0));
+			//	else
+			//		draw->Polygon(poly, RGBA(255, 255, 255));
+			//}
+		/*	DWORD lasterror = GetLastError();
+			if (lasterror != 0)
+				MessageBoxA(0, std::to_string(lasterror).c_str(), 0, 0);*/
 
-			//clog.AddLog("Mouse: %f, %f, %f", mouse->GetMouseWorldPosition().X, mouse->GetMouseWorldPosition().Y, mouse->GetMouseWorldPosition().Z);
-			//clog.AddLog("Player: %f, %f, %f", Local.GetPosition().X, Local.GetPosition().Y, Local.GetPosition().Z);
-			//clog.AddLog("Real Mouse: %d , %d", mouse->GetPos().x, mouse->GetPos().y);
+		if (once123)
+		{
+			//clog.AddLog("8 %x", AiManager((uint8_t)(Local.Address())));
+			clog.AddLog("dw %x", AiManager(Local.Address()));
+			//clog.AddLog("i %x", AiManager((int)Local.Address()));
+		//	once123 = false;
+		}
 
-			//MissileThread.join();
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(M.Misc.AntiLag));
+		//End rendering
+		Direct3D9.EndFrame();
 	}
+
+	//Save config to default
 	Config->Save(XorStr("default"));
-	WSACleanup();
+
+	// Cleanup
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+
+	//Exit
 	Direct3D9.Shutdown();
-	::DestroyWindow(hWnd);
+	::DestroyWindow(hwnd);
 	::UnregisterClassA(wc.lpszClassName, wc.hInstance);
+
 	return 0;
+}
+
+// Forward declare message handler from imgui_impl_win32.cpp
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+// Win32 message handler
+LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
+		return true;
+
+	switch (msg)
+	{
+	case WM_SIZE:
+		if (g_pd3dDevice != NULL && wParam != SIZE_MINIMIZED)
+		{
+			Direct3D9.CleanupRenderTarget();
+			g_pSwapChain->ResizeBuffers(0, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam), DXGI_FORMAT_UNKNOWN, 0);
+			Direct3D9.CreateRenderTarget();
+		}
+		return 0;
+	case WM_SYSCOMMAND:
+		if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
+			return 0;
+		break;
+	case WM_DESTROY:
+		::PostQuitMessage(0);
+		return 0;
+	}
+	return ::DefWindowProc(hWnd, msg, wParam, lParam);
 }

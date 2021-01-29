@@ -1,15 +1,28 @@
 #include "Config.h"
 
+#include <filesystem>
+
 void CConfig::Setup()
 {
-	SetupValue(M.MenuOpen, 1, "Main", "MenuOpen");
-	SetupValue(M.ConsoleOpen, 0, "Main", "ConsoleOpen");
-	SetupValue(M.Debug, 0, "Main", "Debug");
+	SetupValue(M.bMenuOpen, 1, "Main", "MenuOpen");
+	SetupValue(M.bConsoleOpen, 0, "Main", "ConsoleOpen");
+	SetupValue(M.nPatch, 0, "Main", "Patch");
+	SetupValue(M.bDebug, 0, "Main", "Debug");
 
 	SetupValue(M.Misc.AntiLag, 1, "Misc", "AntiLag");
 	SetupValue(M.Misc.MenuKey, VK_INSERT, "Misc", "MenuKey");
 
 	SetupValue(M.Evade.Master, 0, "Evade", "Master");
+	SetupValue(M.Evade.Smooth, 0, "Evade", "Smooth");
+	SetupValue(M.Evade.Draw, 0, "Evade", "Draw");
+	SetupValue(M.Evade.Missile, 0, "Evade", "Missile");
+	SetupValue(M.Evade.LimitRange, 0, "Evade", "LimitRange");
+	SetupValue(M.Evade.LR, 2500.f, "Evade", "LR");
+	SetupValue(M.Evade.GP, 50, "Evade", "GP");
+	SetupValue(M.Evade.DS, 20, "Evade", "DS");
+	SetupValue(M.Evade.DC, 4, "Evade", "DC");
+	SetupValue(M.Evade.OnKey, 0, "Evade", "OnKey");
+	SetupValue(M.Evade.EvadeKey, VK_SPACE, "Evade", "EvadeKey");
 
 	SetupValue(M.Orbwalker.Master, 0, "Orbwalker", "Master");
 	SetupValue(M.Orbwalker.HoldKey, 0, "Orbwalker", "HoldKey");
@@ -91,16 +104,12 @@ void CConfig::SetupValue(bool& value, bool def, std::string category, std::strin
 
 void CConfig::Save(std::string fileName)
 {
-	static CHAR path[MAX_PATH];
-	std::string folder, file;
+	std::string directory = "configs";
 
-	//	if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, path)))
-	//	{
-	folder = std::string(path) + ".\\configs\\";
-	file = folder + fileName + ".ini";
-	//	}
+	if (!std::filesystem::exists(directory))
+		std::filesystem::create_directory(directory);
 
-	CreateDirectoryA(folder.c_str(), NULL);
+	std::string file = directory + "\\" + fileName + ".ini";
 
 	//save number of configs to default cfg
 	WritePrivateProfileStringA("Main", "Configs", std::to_string(M.Configs).c_str(), ".\\configs\\default.ini");
@@ -117,16 +126,16 @@ void CConfig::Save(std::string fileName)
 
 void CConfig::Load(std::string fileName)
 {
-	static CHAR path[MAX_PATH];
-	std::string folder, file;
+	std::string directory = "configs";
 
-	//if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, path)))
-//	{
-	folder = std::string(path) + ".\\configs\\";
-	file = folder + fileName + ".ini";
-	//	}
+	if (!std::filesystem::exists(directory))
+		std::filesystem::create_directory(directory);
 
-	CreateDirectoryA(folder.c_str(), NULL);
+	std::string file = directory + "\\" + fileName + ".ini";
+
+	//dont load settings if file doesnt exists
+	if (!std::filesystem::exists(file))
+		return;
 
 	char value_l[32] = { '\0' };
 
@@ -137,8 +146,6 @@ void CConfig::Load(std::string fileName)
 	for (auto value : ints)
 	{
 		GetPrivateProfileStringA(value->category.c_str(), value->name.c_str(), "", value_l, 32, file.c_str());
-		if (GetLastError() == 0x2) // if file not found dont load settings
-			return;
 		*value->value = atoi(value_l);
 	}
 

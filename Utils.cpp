@@ -71,17 +71,29 @@ Area Utils::GetForegroundWindowArea() const
 
 std::string Utils::ToLower(std::string str)
 {
-	std::transform(str.begin(), str.end(), str.begin(),
-		[](unsigned char c) { return std::tolower(c); }
-	);
+	std::string strLower;
+	strLower.resize(str.size());
+
+	std::transform(str.begin(),
+		str.end(),
+		strLower.begin(),
+		::tolower);
+
+	return strLower;
 	return str;
 }
 
 std::string Utils::ToUpper(std::string str)
 {
-	std::transform(str.begin(), str.end(), str.begin(),
-		[](unsigned char c) { return std::toupper(c); }
-	);
+	std::string strLower;
+	strLower.resize(str.size());
+
+	std::transform(str.begin(),
+		str.end(),
+		strLower.begin(),
+		::toupper);
+
+	return strLower;
 	return str;
 }
 
@@ -142,6 +154,34 @@ std::string Utils::RandomString(int size)
 		str += RandomInt(0, 1) ? RandomInt(48, 57) : RandomInt(97, 122);
 
 	return str;
+}
+
+std::string Utils::FormatString(const char* c, const char* args...)
+{
+	char buff[200];
+	sprintf_s(buff, c, args);
+
+	return std::string(buff);
+}
+
+void Utils::CopyToClipboard(std::string text)
+{
+	if (!::OpenClipboard(NULL))
+		return;
+	const int wbuf_length = ::MultiByteToWideChar(CP_UTF8, 0, text.c_str(), -1, NULL, 0);
+	HGLOBAL wbuf_handle = ::GlobalAlloc(GMEM_MOVEABLE, (SIZE_T)wbuf_length * sizeof(WCHAR));
+	if (wbuf_handle == NULL)
+	{
+		::CloseClipboard();
+		return;
+	}
+	WCHAR* wbuf_global = (WCHAR*)::GlobalLock(wbuf_handle);
+	::MultiByteToWideChar(CP_UTF8, 0, text.c_str(), -1, wbuf_global, wbuf_length);
+	::GlobalUnlock(wbuf_handle);
+	::EmptyClipboard();
+	if (::SetClipboardData(CF_UNICODETEXT, wbuf_handle) == NULL)
+		::GlobalFree(wbuf_handle);
+	::CloseClipboard();
 }
 
 Utils* utils = new Utils();

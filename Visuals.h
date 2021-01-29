@@ -9,7 +9,7 @@ class Visuals
 {
 private:
 	//std::string getSpellImg(std::string name);
-	LPDIRECT3DTEXTURE9 GetSpellImg(std::string name);
+	//LPDIRECT3DTEXTURE9 GetSpellImg(std::string name);
 
 public:
 

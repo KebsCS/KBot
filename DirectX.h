@@ -3,24 +3,42 @@
 #ifndef _DIRECTX_H_
 #define _DIRECTX_H_
 
-#include <Windows.h>
-#include <iomanip>
-#include <string>
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx11.h"
+#include <d3d11.h>
+#define DIRECTINPUT_VERSION 0x0800
+#include <tchar.h>
 
-#include <dwmapi.h>
-#pragma comment(lib, "dwmapi.lib")
+#include <dinput.h>
+#include <dxgi1_3.h>
+#include <d3d11_2.h>
+#include <dcomp.h>
+#pragma comment(lib, "dcomp.lib")
+#pragma comment(lib, "d3d11.lib")
 
-#include "Includes.h"
-#include "Initialize.h"
-#include "Config.h"
+#include <DirectXMath.h>
+
+#include "Draw.h"
+//#include "CObjectManager.h"
 #include "ScriptUtils.h"
+#include "Config.h"
+#include "Initialize.h"
+#include "Visuals.h"
+
+//#include "stb_image.h"
+//#include <functional>
+
+// Data
+static ID3D11Device* g_pd3dDevice = NULL;
+static ID3D11DeviceContext* g_pd3dDeviceContext = NULL;
+static ID3D11RenderTargetView* g_pd3dRenderTargetView = NULL;
+static IDXGISwapChain1* g_pSwapChain = NULL;
 
 
-extern LPDIRECT3D9              g_pD3D;
-extern LPDIRECT3DDEVICE9        g_pd3dDevice;
-extern D3DPRESENT_PARAMETERS    g_d3dpp;
-extern ID3DXLine* g_Line;
-extern LPDIRECT3DVERTEXBUFFER9  g_pVB;
+//static ID3D11Buffer* g_pVertexBuffer = NULL;
+//static ID3D11InputLayout* g_pInputLayout = NULL;
+//static ID3DX11EffectTechnique* m_pTechnique = NULL;
 
 class Direct3D9Render
 {
@@ -34,9 +52,9 @@ private:
 public:
 	void GetViewProjectionMatrix();
 
-	ID3DXFont* fontArial;
-	ID3DXFont* fontTahoma;
-	ID3DXFont* fontTahomaSmall;
+	int fontArial = 0;
+	int fontTahoma = 0;
+	int fontTahomaSmall = 0;
 
 	void MissileThread();
 
@@ -46,8 +64,16 @@ public:
 
 	~Direct3D9Render() = default;
 
+	void StartFrame();
+
+	void EndFrame();
+
 	// initializes directx, fonts, imgui and objects
 	bool DirectXInit(HWND hWnd);
+
+	bool CreateRenderTarget();
+
+	void CleanupRenderTarget();
 
 	// main rendering loop
 	int Render();
@@ -73,8 +99,20 @@ public:
 
 	void TurretLoop();
 
+	ImVec2 GetHpBarPos(CObject& obj)
+	{
+		Vector3 pos = obj.GetPosition();
+		pos.y += obj.GetHpBarHeight();
+		Direct3D9Render Direct3D9;
+		ImVec2 w2s = Direct3D9.WorldToScreen(pos);
+		w2s.y -= (M.nRendererHeight * 0.00083333335f * obj.GetHpBarHeight());
+
+		return w2s;
+	}
+
 	//w2s
-	ImVec2 WorldToScreen(Vector3 pos);
+	ImVec2 WorldToScreen(const Vector3& pos) const;
+	ImVec2 WorldToMinimap(const Vector3& pos) const;
 };
 extern Direct3D9Render Direct3D9;
 
@@ -171,7 +209,7 @@ struct ConsoleLog
 				*p_open = false;
 			ImGui::EndPopup();
 		}
-
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		if (ImGui::SmallButton("Scroll to Bottom")) { ScrollToBottom = true; }
 		/*if (ImGui::SmallButton("Add Debug Text")) { AddLog("%d some text", Items.Size); AddLog("some more text"); AddLog("display very important message here!"); }
 		ImGui::SameLine();
@@ -207,6 +245,7 @@ struct ConsoleLog
 			if (ImGui::Selectable("Clear")) ClearLog();
 			ImGui::EndPopup();
 		}
+		
 
 		// Display every line as a separate entry so we can change their color or add custom widgets.
 		// If you only want raw text you can use ImGui::TextUnformatted(log.begin(), log.end());
@@ -340,7 +379,7 @@ struct ConsoleLog
 		}
 		else if (Stricmp(command_line, "EXIT") == 0)
 		{
-			M.ExitBot = true;
+			M.bExitBot = true;
 		}
 		else if (Stricmp(command_line, "REINIT") == 0)
 		{
@@ -366,10 +405,10 @@ struct ConsoleLog
 		else if (Stricmp(command_line, "INFO") == 0)
 		{
 			IgnoreStopPrint = true;
-			if (M.Debug)
+			if (M.bDebug)
 				init->StartupInfo();
 			else
-				AddLog(XorStr("[info] %s"), M.ServerInfo.c_str());
+				AddLog(XorStr("[info] %s"), M.sServerInfo.c_str());
 		}
 		else
 		{

@@ -33,16 +33,16 @@ Vector3 Calculate(CObject target, float range, float casttime)
 
 Vector3 PredictCircular(CObject target, SpellSlotID slot, bool checkCharges = false)
 {
-	DWORD spell = Local.GetSpellByID(slot);
+	//CSpellSlot* spell = Local.GetSpellByID(slot);
 	//if (checkCharges && (spell->GetCharges() < 1))
 	//	return Vector(0.f, 0.f, 0.f);
 	//else
-	if (!(Memory.Read<int>(spell + oSpellSlotLevel, sizeof(int)) >= 1 && (M.GameTime >= Memory.Read<float>(spell + oSpellSlotTime, sizeof(float)))))
-		return Vector3(0.f, 0.f, 0.f);
-	//auto spellData = spell->GetSpellInfo()->GetSpellData();
-	//if (spellData->GetManaCostByLevel(spell->GetLevel()) > localObj->GetMana())
-	//	return Vector(0.f, 0.f, 0.f);
-	//DWORD spellData = Memory.Read<DWORD>(Memory.Read<DWORD>(spell + 0x134) + 0x44);
+	/*if (!(spell->GetLevel() >= 1 && (M.GameTime >= spell->GetCooldownExpire())))
+		return Vector3(0.f, 0.f, 0.f);*/
+		//auto spellData = spell->GetSpellInfo()->GetSpellData();
+		//if (spellData->GetManaCostByLevel(spell->GetLevel()) > localObj->GetMana())
+		//	return Vector(0.f, 0.f, 0.f);
+		//DWORD spellData = Memory.Read<DWORD>(Memory.Read<DWORD>(spell + 0x134) + 0x44);
 	auto vec = Calculate(target, 1000.f/*spellData.GetSpellRange()*/, 0.f);
 
 	return vec;
@@ -75,11 +75,11 @@ void Xerath::Harass()
 	if (!(vec == Vector3(0.f, 0.f, 0.f)))
 	{
 		ImVec2 RealPos = Direct3D9.WorldToScreen(vec);
-		mouse->StoreCurrentPos();
+		/*mouse->StoreCurrentPos();
 		mouse->MouseMoveInstant(RealPos.x, RealPos.y);
-		keyboard->GenerateKeyScancode(DIK_W, false);
-		POINT LastMousePos = mouse->GetStoredPos();
-		mouse->MouseMoveInstant(LastMousePos.x, LastMousePos.y);
+		keyboard->GenerateKeyScancode(DIK_W, false);*/
+		//POINT LastMousePos = mouse->GetStoredPos();
+		//mouse->MouseMoveInstant(LastMousePos.x, LastMousePos.y);
 	}
 }
 

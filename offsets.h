@@ -3,21 +3,29 @@
 #ifndef _OFFSETS_H_
 #define _OFFSETS_H_
 
-//#define oUnderMouseObject 0x1BFD160 // 		8B 0D ? ? ? ? 89 0D // dword_[offset]
-#define oLocalPlayer 0x34EEDE4 //			A1 ?? ?? ?? ?? 85 C0 74 07 05 ?? ?? ?? ?? EB 02 33 C0 56 // dword_[offset]
-#define oGameTime 0x34E6FD4 // 				F3 0F 11 05 ? ? ? ? 8B 49 // dword_[offset]
-#define oObjManager 0x1C52490 //			8B 0D ? ? ? ? 89 74 24 14 // dword_[offset]
-#define oHudInstance 0 // TODO
+#define oUnderMouseObject 0x1bf0160 // 		 E8 ? ? ? ? C7 40 ? ? ? ? ? C7 40 ? ? ? ? ? C3 go to sub, last dword_[offset]
+#define oLocalPlayer 0x34EC5E0 //			A1 ?? ?? ?? ?? 85 C0 74 07 05 ?? ?? ?? ?? EB 02 33 C0 56 // dword_[offset]
+#define oGameTime 0x34E4CD4 // 				F3 0F 11 05 ? ? ? ? 8B 49 // dword_[offset]
+#define oObjManager 0x1C50190 //			8B 0D ? ? ? ? 89 74 24 14 // dword_[offset]
+#define oHudInstance 0x1C501D0 //			8B 0D ? ? ? ? FF 77 20 8B 49 14 // dword_[offset]
 
-#define oViewMatrix 0x3514BE8 //B9 ? ? ? ? E8 ? ? ? ? B9 ? ? ? ? E9 ? ? ? ? CC CC CC CC CC CC CC CC
-#define oHeroList 0x1C50400 //				A1 ? ? ? ? 53 55 56 8B 68 04 8B 40 08 57 33 FF
-#define oMinionList 0x289E8EC//				A1 ? ? ? ? 8B 50 04 8D 48 04 89 44 24 1C				//E8 ? ? ? ? EB 02 33 C0 6A 14 A3 ? ? ? ? E8 ? ? ? ? 83 C4 04
-#define oTurretList 0x34E5F88//				8B 0D ? ? ? ? E8 ? ? ? ? 85 C0 74 13 8B 10
-#define oInhibitorList 0x34EF49C//			8B 15 ? ? ? ? 8B 7A 04 8B 42 08 8D 0C 87 3B F9 73 31 66 90
-#define oStructureList 0x1C4FDA8 // FF 30 8B 0D ? ? ? ? E8 ? ? ? ?
-//#define oShopList 0x28BDEA0
+#define oViewMatrix 0x350E8F0 //B9 ? ? ? ? E8 ? ? ? ? B9 ? ? ? ? E9 ? ? ? ? CC CC CC CC CC CC CC CC
+#define oHeroList 0x1C4E104 //				A1 ? ? ? ? 53 55 56 8B 68 04 8B 40 08 57 33 FF
+#define oMinionList 0x289C5EC//A1 ? ? ? ? 53 55 8B 6C 24 1C				A1 ? ? ? ? 8B 50 04 8D 48 04 89 44 24 1C				//E8 ? ? ? ? EB 02 33 C0 6A 14 A3 ? ? ? ? E8 ? ? ? ? 83 C4 04
+#define oTurretList 0x34E3C88//				8B 0D ? ? ? ? E8 ? ? ? ? 85 C0 74 13 8B 10
+#define oInhibitorList 0x34ED198//			8B 15 ? ? ? ? 8B 7A 04 8B 42 08 8D 0C 87 3B F9 73 31 66 90
+#define oStructureList 0x1C50190 //idk if correct // FF 30 8B 0D ? ? ? ? E8 ? ? ? ?
 
-#define oMissileMap 0x34ED13C // 8B 15 ? ? ? ? 85 D2 74 44  //mov edx, offset
+#define oMissileMap 0x34EAE3C // 8B 15 ? ? ? ? 85 D2 74 44  //mov edx, offset
+
+#define oRenderer 0x35116EC	//8B 15 ? ? ? ? 83 EC 08 F3
+#define oRendererWidth 0x10
+#define oRendererHeight 0x14
+
+#define oMinimapObject 0x34EC5F0 //FF 52 04 8B 0D ? ? ? ? E8 ? ? ? ?		//mov ecx, offset
+#define oMinimapObjectHud 0x88
+#define oMinimapHudPos 0x5C
+#define oMinimapHudSize 0x64
 
 //
 //#define oIsTargetable 0x1281714
@@ -59,6 +67,8 @@
 #define oObjHealth 0xD98
 #define oObjMaxHealth 0xDA8
 
+#define oObjActionState 0x1044
+
 #define oObjFlatMagicPen 0x1198
 #define oObjPercentArmorPen 0x119C
 #define oObjPercentMagicPen 0x11A0
@@ -78,21 +88,23 @@
 //#define oObjBuffMgr 0x213C
 #define oObjSpellBook 0x2708 // (0x2B60 - 0x478)
 
-#define UnitComponentInfo 0x2F44
+#define UnitComponentInfo 0x2F3C
 #define UCIPropertiesInstance 0x1C
 
-#define oObjChampionName 0x3134
+#define oObjChampionName 0x312C
 
-#define oObjEXP 0x36AC
-#define oObjLevel 0x36BC
-#define oObjAvaiableSpellPoints 0x36E4
+#define oObjEXP 0x36A4
+#define oObjLevel 0x36B4
+#define oObjAvaiableSpellPoints 0x36DC
 
-#define oObjSummonerSpell1 0x3B80
-#define oObjSummonerSpell2 0x3B8C
-#define oObjKeystone1 0x3BA0 //perk_displayname
-#define oObjKeystone2 0x3BAC //perk_tooltip
+#define oObjSummonerSpell1 0x3B78
+#define oObjSummonerSpell2 0x3B84
+#define oObjKeystone1 0x3B98 //perk_displayname
+#define oObjKeystone2 0x3BA4 //perk_tooltip
 
+//seems to be special info for non-normal objects
 #define oInhiRemainingRespawnTime 0x1014
+#define oTurretName 0x1014
 
 //UCIProperties
 #define oSelectionRadius 0x044C
@@ -104,24 +116,42 @@
 
 //MissileInfo
 #define oMissileSpellInfo 0x230
+#define oMissileSlot 0x234
+#define oMissileLevel 0x288
 #define oMissileSourceIndex 0x290
 #define oMissileTargetIndex 0x2E8
 #define oMissileStartPos 0x2A8
 #define oMissileEndPos 0x2B4
 
+//SpellEntry
+#define oSpellEntrySpellInfo 0x8
+#define oSpellEntrySlot 0xC
+#define oSpellEntryStartPos 0x80
+#define oSpellEntryEndPos 0x8C
+#define oSpellEntryWindupTime 0x4C0
+#define oSpellEntryCastStartTime 0x544
+
+//SpellInfo
 #define oSpellInfoSpellData 0x44
+#define oSpellInfoSpellName 0x18
 
-//oSpellSlot
+//SpellData
+#define oMissileRange 0x3B4
+#define oMissileCastRadius 0x3EC
+#define oMissileSpeed 0x440
+#define oMissileWidth 0x474
 
+//SpellSlot
 #define oSpellSlotLevel 0x20
-#define oSpellSlotTime 0x28
+#define oSpellCooldownExpire 0x28
 #define oSpellSlotRemainingCharge 0x58
 #define oSpellSlotDamage 0x94
+#define oSpellSlotSpellInfo 0x13C
 
 //#define oSpellSlotCD 0x18
 
 //#define oSpellSlotRemainingRechargeCD 0x64
 
-//#define oSpellSlotSpellInfo 0x134
+
 
 #endif //!_OFFSETS_H_

@@ -19,13 +19,13 @@ Vector3::~Vector3() = default;
 
 bool Vector3::IsValid() const
 {
-	return this->x != 0 && this->y != 0 && this->z != 0;
+	return this->x != 0/* && this->y != 0*/ && this->z != 0;
 }
 
 bool Vector3::IsZero(float tolerance) const
 {
 	return this->x > -tolerance && this->x < tolerance&&
-		this->y > -tolerance && this->y < tolerance;
+		this->z > -tolerance && this->z < tolerance;
 }
 
 bool Vector3::operator==(Vector3 const& other) const
@@ -186,12 +186,11 @@ Vector3 Vector3::Normalized() const
 	if (length != 0)
 	{
 		auto const inv = 1.0f / length;
-		return { this->x * inv, this->y * inv, this->z * inv };
+		return { this->x * inv, this->y * inv, this->z *inv};
 	}
 
 	return *this;
 }
-
 float Vector3::NormalizeInPlace() const
 {
 	auto v = *this;
@@ -203,7 +202,7 @@ float Vector3::NormalizeInPlace() const
 	}
 	else
 	{
-		v.x = v.y = 0.0f; v.z = 1.0f;
+		v.x = v.z = 0.0f; v.y = 1.0f;
 	}
 	return l;
 }
@@ -292,12 +291,18 @@ Vector3 Vector3::Rotated(float angle) const
 	auto const c = cos(angle);
 	auto const s = sin(angle);
 
-	return { static_cast<float>(x * c - y * s), static_cast<float>(y * c + x * s) };
+	return { static_cast<float>(x * c - z * s), static_cast<float>(z * c + x * s) };
 }
+
 
 Vector3 Vector3::Perpendicular() const
 {
-	return { y, -x, z }; // or -y
+	return { -z,y,x };
+}
+
+Vector3 Vector3::Perpendicular2() const
+{
+	return { z,y,-x };
 }
 
 Vector3 Vector3::Extend(Vector3 const& to, float distance) const
@@ -305,4 +310,56 @@ Vector3 Vector3::Extend(Vector3 const& to, float distance) const
 	const auto from = *this;
 	const auto result = from + (to - from).Normalized() * distance;
 	return result;
+}
+
+
+Vector3 Vector3::Append(Vector3 pos1, Vector3 pos2, float dist) const
+{
+	return pos2 + (pos2 - pos1).Normalized() * dist;
+}
+
+ProjectionInfo::ProjectionInfo(const bool is_on_segment, Vector3 const& segment_point, Vector3 const& line_point) :
+	IsOnSegment(is_on_segment), LinePoint(line_point), SegmentPoint(segment_point)
+{
+}
+
+ProjectionInfo Vector3::ProjectOn(Vector3 const& segment_start, Vector3 const& segment_end) const
+{
+	float rs;
+	auto const cx = x;
+	auto const cz = z;
+	auto const ax = segment_start.x;
+	auto const az = segment_start.z;
+	auto const bx = segment_end.x;
+	auto const bz = segment_end.z;
+
+	auto const cy = y;
+	auto const ay = segment_start.y;
+	auto const by = segment_end.y;
+	
+	const auto rl = ((cx - ax) * (bx - ax) + (cz - az) * (bz - az) + (cy - ay) * (by - ay)) / (pow(bx - ax, 2) + pow(bz - az, 2) + pow(by - ay, 2));
+	const auto point_line = Vector3(ax + rl * (bx - ax), ay + rl * (by - ay), az + rl * (bz - az));
+
+
+//	const auto rl = ((cx - ax) * (bx - ax) + (cz - az) * (bz - az)) / (pow(bx - ax, 2) + pow(bz - az, 2));
+//	const auto point_line = Vector3(ax + rl * (bx - ax), 0, az + rl * (bz - az));
+
+	if (rl < 0)
+	{
+		rs = 0;
+	}
+	else if (rl > 1)
+	{
+		rs = 1;
+	}
+	else
+	{
+		rs = rl;
+	}
+
+	auto const is_on_segment = rs == rl;
+	auto const point_segment = is_on_segment ? point_line : Vector3(ax + rs * (bx - ax), ay + rs * (by - ay), az + rs * (bz - az));
+	//auto const point_segment = is_on_segment ? point_line : Vector3(ax + rs * (bx - ax), 0, az + rs * (bz - az));
+
+	return ProjectionInfo(is_on_segment, point_segment, point_line);
 }
