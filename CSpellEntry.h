@@ -58,7 +58,7 @@ public:
 		Vector3 startPos = Vector3(Memory.Read<float>(base + oSpellEntryStartPos, sizeof(float)),
 			Memory.Read<float>(base + oSpellEntryStartPos + 0x4, sizeof(float)),
 			Memory.Read<float>(base + oSpellEntryStartPos + 0x8, sizeof(float)));
-		startPos.y += spellInfo->height;
+		//startPos.y += spellInfo->height;
 		return startPos;
 	}
 
@@ -67,7 +67,7 @@ public:
 		Vector3 startPos = Vector3(Memory.Read<float>(base + oSpellEntryEndPos, sizeof(float)),
 			Memory.Read<float>(base + oSpellEntryEndPos + 0x4, sizeof(float)),
 			Memory.Read<float>(base + oSpellEntryEndPos + 0x8, sizeof(float)));
-		startPos.y += spellInfo->height;
+		//startPos.y += spellInfo->height;
 		return startPos;
 	}
 

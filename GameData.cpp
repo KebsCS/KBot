@@ -29,13 +29,13 @@ void GameData::Load(std::string& dataFolder)
 
 	//LoadItemData(itemData);
 
-	if(utils->DownloadFile("/UnitData.json", dataFolder))
+	if (utils->DownloadFile(unitData.substr(dataFolder.size(), unitData.size() - dataFolder.size()), dataFolder))
 		LoadUnitData(unitData);
 
-	if (utils->DownloadFile("/SpellData.json", dataFolder))
+	if (utils->DownloadFile(spellData.substr(dataFolder.size(), spellData.size() - dataFolder.size()), dataFolder))
 		LoadSpellData(spellData);
 
-	if (utils->DownloadFile("/SpellDataCustom.json", dataFolder))
+	if (utils->DownloadFile(spellDataCustom.substr(dataFolder.size(), spellDataCustom.size() - dataFolder.size()), dataFolder))
 		LoadSpellData(spellDataCustom);
 
 	//LoadIcons(spellIcons);
@@ -110,7 +110,7 @@ void GameData::LoadSpellData(std::string& path)
 	inputSpellData.open(path);
 
 	if (!inputSpellData.is_open())
-		throw std::runtime_error("Can't open spell data file");
+		abort();
 
 	Aws::Utils::Json::JsonValue spellData(inputSpellData);
 
@@ -131,85 +131,6 @@ void GameData::LoadSpellData(std::string& path)
 		info->speed = (float)spell.GetDouble("speed");
 		info->travelTime = (float)spell.GetDouble("travelTime");
 		info->flags = (SpellFlags)(info->flags | (spell.GetBool("projectDestination") ? ProjectedDestination : 0));
-
-		// Evade spell database
-		if (info->name == XorStr(utils->ToLower("AatroxQ")))
-		{
-			info->displayName = "The Darkin Blade[First]";
-			info->slot = Q;
-			info->type = linear;
-			info->speed = 999999.f;
-			info->castRange = 650;
-			info->delay = 0.6;
-			info->castRadius = 130;
-			info->danger = 3;
-			info->cc = true;
-			info->collision = false;
-			info->windwall = false;
-			info->hitbox = false;
-			info->fow = false;
-			info->exception = false;
-			info->extend = true;
-		}
-
-		else if (info->name == XorStr(utils->ToLower("LuxLightBinding")) || info->name == XorStr(utils->ToLower("LuxLightBindingDummy")))
-		{
-			info->displayName = "Light Binding";
-			info->missileName = utils->ToLower("LuxLightBindingDummy");
-			info->slot = Q;
-			info->type = linear;
-			info->speed = 1200;
-			info->castRange = 1175;
-			info->delay = 0.25;
-			info->castRadius = 70;
-			info->danger = 1;
-			info->cc = true;
-			info->collision = false;
-			info->windwall = true;
-			info->hitbox = true;
-			info->fow = true;
-			info->exception = false;
-			info->extend = true;
-		}
-		else if (info->name == XorStr(utils->ToLower("LuxLightStrikeKugel")))
-		{
-			info->displayName = "Light Strike Kugel";
-			info->missileName = utils->ToLower("LuxLightStrikeKugel");
-			info->slot = Q;
-			info->type = circular;
-			info->speed = 1200;
-			info->castRange = 1100;
-			info->delay = 0.25;
-			info->castRadius = 300;
-			info->danger = 1;
-			info->cc = true;
-			info->collision = false;
-			info->windwall = true;
-			info->hitbox = false;
-			info->fow = true;
-			info->exception = false;
-			info->extend = false;
-		}
-		else if (info->name == XorStr(utils->ToLower("LuxMaliceCannon")) || info->name == XorStr(utils->ToLower("LuxMaliceCannonMis")) 
-			|| info->name == XorStr(utils->ToLower("LuxRVfxMis")))
-		{
-			info->displayName = "Malice Cannon";
-			info->missileName = utils->ToLower("LuxRVfxMis");
-			info->slot = R;
-			info->type = linear;
-			info->speed = 999999.f;
-			info->castRange = 3340;
-			info->delay = 1;
-			info->castRadius = 120;
-			info->danger = 4;
-			info->cc = false;
-			info->collision = false;
-			info->windwall = false;
-			info->hitbox = false;
-			info->fow = true;
-			info->exception = false;
-			info->extend = true;
-		}
 
 		Spells[info->name] = info;
 	}

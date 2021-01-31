@@ -40,6 +40,14 @@ public:
 	{
 		return Memory.Read<float>((DWORD)this + oMissileCastRadius);
 	}
+
+	float GetManaCostByLevel(unsigned int level)
+	{
+		if (level > 4) {
+			return 0.f;
+		}
+		return  Memory.Read<float>((DWORD)this + 0x518 + ((level - 1) * 0x4));
+	}
 };
 
 #endif // !_SPELLDATA_H_

@@ -64,13 +64,14 @@ bool Initialize::Start()
 void Initialize::StartupInfo()
 {
 	clog.AddLog("ProcessId: %d", Memory.Process());
-	clog.AddLog("ClientAddress: %x", ClientAddress);
-	clog.AddLog("OBJManager: %x", OBJManager);
+	clog.AddLog("ClientAddress: 0x%x", ClientAddress);
+	clog.AddLog("OBJManager: 0x%x", OBJManager);
 
-	clog.AddLog("LocalPlayer: %x", Local.Address());
-	clog.AddLog("UnitComponentInfo: %x", Local.GetUnitComponentInfo());
+	clog.AddLog("LocalPlayer: 0x%x", Local.Address());
+	clog.AddLog("UnitComponentInfo: 0x%x", Local.GetUnitComponentInfo());
+	clog.AddLog("AiManager: 0x%x", Local.GetAiManager());
 	clog.AddLog("Name: %s", Local.GetName().c_str());
-	clog.AddLog("NetworkID: %d", Local.GetNetworkID());
+	clog.AddLog("NetworkID: 0x%x", Local.GetNetworkID());
 	clog.AddLog("IsVisible: %d", Local.IsVisible());
 	clog.AddLog("Bounding: %f", Local.GetBoundingRadius());
 	clog.AddLog("GetTeam: %d", Local.GetTeam());

@@ -56,6 +56,8 @@ struct Menu
 		int DC = 0;
 		bool OnKey = false;
 		int EvadeKey = VK_SPACE;
+		bool MouseBack = true;
+		bool Force = 1;
 	}Evade;
 
 	struct
@@ -125,6 +127,11 @@ struct Menu
 	{
 		bool Master = 0;
 	}Inhibs;
+
+	struct
+	{
+		bool MouseClicks = 0;
+	}Enemies;
 
 	struct
 	{

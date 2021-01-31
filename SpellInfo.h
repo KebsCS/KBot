@@ -38,7 +38,7 @@ enum SpellType
 	circular,
 	conic,
 	rectangular,
-	threeway
+	threeway,
 };
 
 /// Static data of a spell that we load from disk
@@ -58,18 +58,4 @@ public:
 	float height;
 	float speed;
 	float travelTime;
-
-	std::string displayName;
-	std::string missileName;
-	SpellSlotID slot;
-	SpellType type;
-	int danger;
-	bool cc;
-	bool collision;
-	bool windwall;
-	bool hitbox;
-	bool fow;
-	bool exception;
-	bool extend;
-
 };

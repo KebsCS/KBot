@@ -4,6 +4,7 @@
 #define _CSPELLSLOT_H_
 
 #include "CSpellInfo.h"
+#include "Menu.h"
 
 //todo reverse ["GetSpellState", FindFuncCall("E8 ? ? ? ? 8B F8 8B CB 89")],
 enum class SpellState : int
@@ -31,6 +32,14 @@ public:
 	CSpellSlot(DWORD addr)
 		: base{ addr }
 	{
+	}
+	bool IsReady(float mana = 99999.f)
+	{
+		int level = this->GetLevel();
+		if ((level > 0) && (this->GetCooldownExpire() - M.fGameTime + 1 < 0)
+			&& this->GetSpellInfo()->GetSpellData()->GetManaCostByLevel(level) <= mana)
+			return true;
+		return false;
 	}
 
 	int GetLevel()

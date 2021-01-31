@@ -4,7 +4,7 @@
 #define _OFFSETS_H_
 
 //Main
-#define oUnderMouseObject 0x1bf0160 // 		 E8 ? ? ? ? C7 40 ? ? ? ? ? C7 40 ? ? ? ? ? C3 go to sub, last dword_[offset]
+#define oUnderMouseObject 0x289E358
 #define oLocalPlayer 0x34EC5E0 //			A1 ?? ?? ?? ?? 85 C0 74 07 05 ?? ?? ?? ?? EB 02 33 C0 56 // dword_[offset]
 #define oGameTime 0x34E4CD4 // 				F3 0F 11 05 ? ? ? ? 8B 49 // dword_[offset]
 #define oObjManager 0x1C50190 //			8B 0D ? ? ? ? 89 74 24 14 // dword_[offset]
@@ -36,7 +36,6 @@
 //offset-4
 #define oAiManager 0x3014
 
-
 //#define mHPMaxPenalty 0xDE4
 //#define mAllShield 0xE04
 //#define mPhysicalShield 0xE14
@@ -44,7 +43,6 @@
 //#define mChampSpecificHealth 0xE34
 //#define mStopShieldFade 0xE54
 //#define mGoldTotal 0x1AF0
-
 
 //CObject
 #define oObjIndex 0x20
@@ -140,8 +138,18 @@
 #define oSpellSlotRemainingCharge 0x58
 #define oSpellSlotDamage 0x94
 #define oSpellSlotSpellInfo 0x13C
-
 //#define oSpellSlotCD 0x18
 //#define oSpellSlotRemainingRechargeCD 0x64
+
+//AiManager
+#define oAiManagerTargetPos 0x10
+#define oAiManagerIsMoving  0x198
+#define oAiManagerPassedWaypoints 0x19C
+#define oAiManagerNavBegin 0x1A4
+#define oAiManagerDashSpeed 0x1D0
+#define oAiManagerIsDashing  0x1EC
+#define oAiManagerNavEnd 0x1FC
+#define oAiManagerServerPos  0x2BC
+//#define oAiManagerVelocity 0x2C8 or 0x2D0 vec
 
 #endif //!_OFFSETS_H_

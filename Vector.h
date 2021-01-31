@@ -8,6 +8,7 @@
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846f
+#define M_PI_F (float)M_PI
 #endif
 
 struct ProjectionInfo;
@@ -74,8 +75,6 @@ public:
 	float Distance(Vector3 const& segment_start, Vector3 const& segment_end, bool only_if_on_segment = false, bool squared = false) const;
 	float DistanceSquared(Vector3 const& to) const;
 
-	IntersectionResult Intersection(Vector3 const& line_segment_end, Vector3 const& line_segment2_start, Vector3 const& line_segment2_end) const;
-
 	float DotProduct(Vector3 const& other) const;
 	float CrossProduct(Vector3 const& other) const;
 	float Polar() const;
@@ -89,16 +88,25 @@ public:
 	Vector3 Extend(Vector3 const& to, float distance) const;
 
 	Vector3 Append(Vector3 pos1, Vector3 pos2, float dist) const;
-	
 
 	ProjectionInfo ProjectOn(Vector3 const& segment_start, Vector3 const& segment_end) const;
+	IntersectionResult Intersection(Vector3 const& line_segment_end, Vector3 const& line_segment2_start, Vector3 const& line_segment2_end) const;
 
 	Vector3 Scale(float s)
 	{
 		return Vector3(x * s, y * s, z * s);
 	}
-};
 
+	Vector3 Rotate(Vector3 startPos, float theta)
+	{
+		float dx = this->x - startPos.x;
+		float dz = this->z - startPos.z;
+
+		float px = dx * cos(theta) - dz * sin(theta);
+		float pz = dx * sin(theta) + dz * cos(theta);
+		return { px + startPos.x, this->y, pz + startPos.z };
+	}
+};
 
 struct ProjectionInfo
 {

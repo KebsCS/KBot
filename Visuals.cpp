@@ -486,6 +486,9 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 	if (Local.SummonerSpell1() != "summonersmite" && Local.SummonerSpell2() != "summonersmite")
 		return;
 
+	if (obj.GetNetworkID() - (unsigned int)0x40000000 > 0x100000)
+		return;
+
 	if (obj.GetTeam() == Local.GetTeam())
 		return;
 
@@ -582,6 +585,8 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 
 void Visuals::LastHit(CObject obj, RGBA color)
 {
+	if (obj.GetNetworkID() - (unsigned int)0x40000000 > 0x100000)
+		return;
 	if (obj.GetTeam() == Local.GetTeam())
 		return;
 	if (obj.IsDead() || Local.IsDead())
@@ -599,7 +604,7 @@ void Visuals::LastHit(CObject obj, RGBA color)
 	ImVec2 RealPos = Direct3D9.WorldToScreen(Position);
 	if (RealPos.x == 0 && RealPos.y == 0)
 		return;
-	if ((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1)))
+	if (draw->IsOnScreen(RealPos))
 	{
 		float dmg = Local.GetTotalDamage(obj);
 		float critChance = Local.GetCrit();
@@ -652,6 +657,8 @@ void Visuals::InhibTimers(CObject obj)
 std::map<int, float>wardTimer;
 void Visuals::WardsRange(CObject obj)
 {
+	if (obj.GetNetworkID() - (unsigned int)0x40000000 > 0x100000)
+		return;
 	if ((obj.GetTeam() == Local.GetTeam()) && !M.bDebug)
 		return;
 
@@ -740,9 +747,9 @@ void Visuals::GankAlerter(CObject obj)
 		//	 || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 4, 74.0, 77.0) || INRANGE((obj.GetEXP() - lastEXP[obj.Address()]) * 5, 74.0, 77.0))
 		//	clog.AddLog("[error] someone near %s - melee", obj.GetChampName().c_str());
 
-		if (INRANGE((obj.GetEXP() - temp) * 2, 115.0, 117.0)
-			|| INRANGE((obj.GetEXP() - temp) * 2, 37.0, 39.0)
-			|| INRANGE((obj.GetEXP() - temp) * 2, 74.0, 77.0))
+		if ((float)((obj.GetEXP() - temp) * 2) >= 115.f && (float)((obj.GetEXP() - temp) * 2) <= 117.f
+			|| (float)((obj.GetEXP() - temp) * 2) >= 37.f && (float)((obj.GetEXP() - temp) * 2) <= 39.f
+			|| (float)((obj.GetEXP() - temp) * 2) >= 74.f && (float)((obj.GetEXP() - temp) * 2) <= 77.f)
 		{
 			howManyNearby[obj.GetIndex()] = 1;
 			expTimer[obj.GetIndex()] = M.fGameTime + 5;

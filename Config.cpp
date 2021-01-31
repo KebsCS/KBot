@@ -21,6 +21,8 @@ void CConfig::Setup()
 	SetupValue(M.Evade.GP, 50, "Evade", "GP");
 	SetupValue(M.Evade.DS, 20, "Evade", "DS");
 	SetupValue(M.Evade.DC, 4, "Evade", "DC");
+	SetupValue(M.Evade.MouseBack, 1, "Evade", "MouseBack");
+	SetupValue(M.Evade.Force, 1, "Evade", "Force");
 	SetupValue(M.Evade.OnKey, 0, "Evade", "OnKey");
 	SetupValue(M.Evade.EvadeKey, VK_SPACE, "Evade", "EvadeKey");
 
@@ -45,6 +47,8 @@ void CConfig::Setup()
 
 	SetupValue(M.Tracers.Master, 0, "Tracers", "Master");
 	SetupValue(M.Tracers.Thickness, 1.f, "Tracers", "Thickness");
+
+	SetupValue(M.Enemies.MouseClicks, 0, "Enemies", "MouseClicks");
 
 	SetupValue(M.Cooldowns.Master, 0, "Cooldowns", "Master");
 	SetupValue(M.Cooldowns.Type[0], 0, "Cooldowns", "Type0");

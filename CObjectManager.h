@@ -11,6 +11,8 @@
 #include "GameData.h"
 #include "CSpellSlot.h"
 
+#include "AiManager.h"
+
 class CObject
 {
 private:
@@ -32,7 +34,7 @@ private:
 		return  ((param_2 & uStack4) != 0);
 	}
 
-	DWORD AiManager(int param_1)
+	DWORD AIMNGR(int param_1)
 	{
 		if (!param_1)
 			return 0;
@@ -46,6 +48,8 @@ private:
 		uStack4 ^= ~uVar2;
 		return Memory.Read<DWORD>(uStack4 + 8);
 	}
+
+	DWORD aimanager = 0;
 
 protected:
 
@@ -70,24 +74,15 @@ public:
 	//}
 	//ChampSpells spell;
 
-	DWORD GetAiManager()
+	AiManager* GetAiManager()
 	{
-		return AiManager(base);
-
-		/*	old
-			IsDashing = 0x1EC;
-			DashSpeed = 0x1D0;
-			TargetPosition = 0x10;
-			*/
-
-			//checked
-			//TargetPos 0x10 vec
-			//IsMoving  0x198 bool
-			//ServerPosition  0x2BC vec
-			//NavBegin 0x1A4 vec
-			//NavEnd 0x1FC vec
-			//PassedWaypoints 0x19C int
-			//Velocity 0x2C8 or 0x2D0 float
+		if (!aimanager)
+		{
+			aimanager = AIMNGR(base);
+		}
+		if (!aimanager)
+			return 0;
+		return (AiManager*)(aimanager);
 	}
 
 	DWORD Address() const
@@ -259,7 +254,7 @@ public:
 		return Memory.Read<float>(base + oObjFloatLethality, sizeof(float));
 	}
 
-	//1.0 is 0 armor pen 25% armor pen is 0.75
+	//1.0 is 0% armor pen 25% armor pen is 0.75
 	float GetArmorPen()
 	{
 		return Memory.Read<float>(base + oObjPercentArmorPen, sizeof(float));
@@ -359,7 +354,7 @@ public:
 			return wardType;
 	}
 
-	bool CheckState(CharacterState state)
+	bool CheckState(int state)
 	{
 		return  ((Memory.Read<int>(base + oObjActionState) & state) != 0);
 	}

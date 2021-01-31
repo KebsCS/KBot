@@ -176,6 +176,9 @@ int Direct3D9Render::Render()
 					ImGui::SliderFloat("##TracersThickness", &M.Tracers.Thickness, 0.1f, 10.f, "Thickness: %lg", 1.f);
 					ImGui::Separator();
 
+					ImGui::Checkbox("Show mouse clicks", &M.Enemies.MouseClicks);
+					ImGui::Separator();
+
 					ImGui::Checkbox("Gank Alerter", &M.GankAlerter.Master);
 					ImGui::Separator();
 					ImGui::Columns(2, 0, false);
@@ -306,7 +309,8 @@ int Direct3D9Render::Render()
 				ImGui::SliderFloat("##EvadeLR", &M.Evade.LR, 500.f, 10000.f, "Max Range: %lg", 1.f);
 				ImGui::SliderInt("Diagonal Search Step", &M.Evade.DS, 5, 100);
 				ImGui::SliderInt("Diagonal Points Count", &M.Evade.DC, 1, 8);
-
+				ImGui::Checkbox("Return mouse to original position", &M.Evade.MouseBack);
+				ImGui::Checkbox("Force ##Evade", &M.Evade.Force);
 				ImGui::Checkbox("On Key ##Evade", &M.Evade.OnKey);
 				ImGui::Combo("Evade Key", &M.Evade.EvadeKey, keyNames, ARRAYSIZE(keyNames));
 				//draw->ImageFromMemory(draw->textureKEKW, 0, 0, "", 99, 256, 256, true);
@@ -443,9 +447,24 @@ int Direct3D9Render::Render()
 			}
 			ImGui::EndTabBar();
 		}
+
 		ImGui::End();
 
 		//ImGui::ShowDemoWindow();
+	}
+
+	if (M.dwStartTime + 6000 > GetTickCount())
+	{
+		ImGui::SetNextWindowPos(ImVec2(10, 10));
+		bool openinfo = true;
+		ImGui::Begin("##info", &openinfo, ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs);
+		{
+			if (!M.sServerInfo.empty())
+				ImGui::Text(M.sServerInfo.c_str());
+			else
+				M.sServerInfo = "";
+		}
+		ImGui::End();
 	}
 
 	std::chrono::duration<float, std::milli> timeDuration = std::chrono::high_resolution_clock::now() - timeBefore;

@@ -186,7 +186,7 @@ Vector3 Vector3::Normalized() const
 	if (length != 0)
 	{
 		auto const inv = 1.0f / length;
-		return { this->x * inv, this->y * inv, this->z *inv};
+		return { this->x * inv, this->y * inv, this->z * inv };
 	}
 
 	return *this;
@@ -291,9 +291,8 @@ Vector3 Vector3::Rotated(float angle) const
 	auto const c = cos(angle);
 	auto const s = sin(angle);
 
-	return { static_cast<float>(x * c - z * s), static_cast<float>(z * c + x * s) };
+	return { static_cast<float>(x * c - z * s), y, static_cast<float>(z * c + x * s) };
 }
-
 
 Vector3 Vector3::Perpendicular() const
 {
@@ -312,7 +311,6 @@ Vector3 Vector3::Extend(Vector3 const& to, float distance) const
 	return result;
 }
 
-
 Vector3 Vector3::Append(Vector3 pos1, Vector3 pos2, float dist) const
 {
 	return pos2 + (pos2 - pos1).Normalized() * dist;
@@ -320,6 +318,11 @@ Vector3 Vector3::Append(Vector3 pos1, Vector3 pos2, float dist) const
 
 ProjectionInfo::ProjectionInfo(const bool is_on_segment, Vector3 const& segment_point, Vector3 const& line_point) :
 	IsOnSegment(is_on_segment), LinePoint(line_point), SegmentPoint(segment_point)
+{
+}
+
+IntersectionResult::IntersectionResult(const bool intersects, Vector3 const& point) :
+	Intersects(intersects), Point(point)
 {
 }
 
@@ -336,13 +339,12 @@ ProjectionInfo Vector3::ProjectOn(Vector3 const& segment_start, Vector3 const& s
 	auto const cy = y;
 	auto const ay = segment_start.y;
 	auto const by = segment_end.y;
-	
+
 	const auto rl = ((cx - ax) * (bx - ax) + (cz - az) * (bz - az) + (cy - ay) * (by - ay)) / (pow(bx - ax, 2) + pow(bz - az, 2) + pow(by - ay, 2));
 	const auto point_line = Vector3(ax + rl * (bx - ax), ay + rl * (by - ay), az + rl * (bz - az));
 
-
-//	const auto rl = ((cx - ax) * (bx - ax) + (cz - az) * (bz - az)) / (pow(bx - ax, 2) + pow(bz - az, 2));
-//	const auto point_line = Vector3(ax + rl * (bx - ax), 0, az + rl * (bz - az));
+	//	const auto rl = ((cx - ax) * (bx - ax) + (cz - az) * (bz - az)) / (pow(bx - ax, 2) + pow(bz - az, 2));
+	//	const auto point_line = Vector3(ax + rl * (bx - ax), 0, az + rl * (bz - az));
 
 	if (rl < 0)
 	{
@@ -362,4 +364,19 @@ ProjectionInfo Vector3::ProjectOn(Vector3 const& segment_start, Vector3 const& s
 	//auto const point_segment = is_on_segment ? point_line : Vector3(ax + rs * (bx - ax), 0, az + rs * (bz - az));
 
 	return ProjectionInfo(is_on_segment, point_segment, point_line);
+}
+
+IntersectionResult Vector3::Intersection(Vector3 const& line_segment_end, Vector3 const& line_segment2_start,
+	Vector3 const& line_segment2_end) const
+{
+	const Vector3 side1 = { line_segment_end.x - this->x, line_segment_end.y - this->y,line_segment_end.z - this->z };
+	const Vector3 side2 = { line_segment2_end.x - line_segment2_start.x, line_segment2_end.y - line_segment2_start.y,line_segment2_end.z - line_segment2_start.z };
+
+	const auto s = (-side1.z * (this->x - line_segment2_start.x) + side1.x * (this->z - line_segment2_start.z)) / (-side2.x * side1.z + side1.x * side2.z);
+	const auto t = (side2.x * (this->z - line_segment2_start.z) - side2.z * (this->x - line_segment2_start.x)) / (-side2.x * side1.z + side1.x * side2.z);
+
+	if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+		return { true,{ this->x + t * side1.x,  this->y + t * side1.y, this->z + t * side1.z } };
+
+	return { false,{} };
 }

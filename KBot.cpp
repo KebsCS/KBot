@@ -18,151 +18,6 @@ ConsoleLog clog;
 
 Visuals* vis;
 
-//std::vector<CMissileClient>g_MissileList;
-//
-//void Direct3D9Render::MissileThread()
-//{
-//	//auto obj = GetFirst();
-//	//while (obj)
-//	//{
-//	//	CObject cobj(obj);
-//	//	int team = cobj.GetTeam();
-//	//	if (team == 100 || team == 200 || team == 300)
-//	//	{
-//	//		if (cobj.IsMissile())
-//	//		{
-//	//			CObject source = ObjManager->GetObjByIndex(cobj.GetMissileSourceIndex());
-//	//			//DWORD spellinfo = Memory.Read<DWORD>(cobj.Address() + 0x230);
-//	//			//DWORD spelldata = Memory.Read<DWORD>(spellinfo + 0x44);
-//	//			//float speed = Memory.Read<float>(spelldata + 0x428);
-//	//			//
-//	//			////clog.AddLog("%x ,  %s  , %d", source.Address(), source.GetChampName().c_str(), cobj.GetMissileSourceIndex());
-//	//			//clog.AddLog("%x , %s ", cobj.Address(), cobj.GetName().c_str());
-//	//			if (source.IsHero())
-//	//			{
-//	//				if (cobj.GetName().find("basic") == std::string::npos)
-//	//				{
-//	//					Vector3 StartPos = cobj.GetMissileStartPos();
-//	//					ImVec2 RealStartPos = Direct3D9.WorldToScreen(StartPos);
-//	//					Vector3 EndPos = cobj.GetMissileEndPos();
-//	//					ImVec2 RealEndPos = Direct3D9.WorldToScreen(EndPos);
-//	//					/*DWORD spellinfo = Memory.Read<DWORD>(cobj.Address() + 0x230);
-//	//					DWORD spelldata = Memory.Read<DWORD>(spellinfo + 0x44);
-//	//					float speed = Memory.Read<float>(spellinfo + 0x450);
-//	//					std::string desc = Memory.ReadString(spelldata + 0x0088);
-//	//					clog.AddLog("=============");
-//	//					for (int i = 0; i < 2000; i += 4)
-//	//					{
-//	//						speed = Memory.Read<float>(spelldata + i);
-//	//						clog.AddLog("%x ,  %s, %f  , %x", cobj.Address(), cobj.GetName().c_str(), speed ,i);
-//	//					}*/
-//	//					if (RealStartPos.x != 0 && RealStartPos.y != 0 && RealEndPos.x != 0 && RealEndPos.y != 0)
-//	//					{
-//	//						std::string str = cobj.GetName() + " , " + std::to_string(cobj.Address());
-//	//						draw->String(str, RealEndPos.x, RealEndPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
-//	//						draw->Line(RealStartPos, RealEndPos, RGBA(255, 255, 255));
-//	//					}
-//	//				}
-//	//			}
-//	//		}
-//	//	}
-//	//	obj = GetNext(obj);
-//	//}
-//
-//	std::vector<CMissileClient> missiles;
-//	int numMissiles = Memory.Read<int>(MissileMap + 0x78);
-//	int rootNode = Memory.Read<int>(MissileMap + 0x74);
-//	//clog.AddLog("%x", rootNode);
-//	std::queue<int> nodesToVisit;
-//	std::set<int> visitedNodes;
-//	nodesToVisit.push(rootNode);
-//
-//	int childNode1, childNode2, childNode3, node;
-//	while (nodesToVisit.size() > 0 && visitedNodes.size() < numMissiles * 2)
-//	{
-//		node = nodesToVisit.front();
-//		nodesToVisit.pop();
-//		visitedNodes.insert(node);
-//		//clog.AddLog("%x", node);
-//		childNode1 = Memory.Read<int>(node);
-//		childNode2 = Memory.Read<int>(node + 4);
-//		childNode3 = Memory.Read<int>(node + 8);
-//
-//		if (visitedNodes.find(childNode1) == visitedNodes.end())
-//			nodesToVisit.push(childNode1);
-//		if (visitedNodes.find(childNode2) == visitedNodes.end())
-//			nodesToVisit.push(childNode2);
-//		if (visitedNodes.find(childNode3) == visitedNodes.end())
-//			nodesToVisit.push(childNode3);
-//
-//		unsigned int netId = Memory.Read<int>(node + 0x10);
-//
-//		// Actual missiles net_id start from 0x40000000 and throught the game this id will be incremented by 1 for each missile.
-//		// So we use this information to check if missiles are valid.
-//		if (netId - (unsigned int)0x40000000 > 0x100000)
-//			continue;
-//
-//		int addr = Memory.Read<int>(node + 0x14);
-//		if (addr == 0)
-//			continue;
-//
-//		// The MissileClient is wrapped around another object
-//		addr = Memory.Read<int>(addr + 0x4);
-//		if (addr == 0)
-//			continue;
-//
-//		addr = Memory.Read<int>(addr + 0x10);
-//		if (addr == 0)
-//			continue;
-//
-//		// At this point addr is the address of the MissileClient
-//		CMissileClient obj(addr); //std::unique_ptr<CObject>(new CObject());
-//	   // m->LoadFromMem(addr, hProcess);
-//
-//		// Check one more time that we read a valid missile
-//		if (obj.GetNetworkID() != netId)
-//			continue;
-//		//.AddLog("%x", m.Address());
-//		//clog.AddLog("%s %x", obj.GetName().c_str(), obj.Address());
-//		//missiles.push_back(m);
-//
-//		int team = obj.GetTeam();
-//		if (team == 100 || team == 200 || team == 300)
-//		{
-//			CObject source = obj.GetSource();
-//			if (source.IsHero())
-//			{
-//				//clog.AddLog("%x", obj.Address());
-//				if (!utils->StringContains(obj.GetName(), "basic", true))
-//				{
-//					Geometry::Rectangle rect = Geometry::Rectangle(obj.GetMissileStartPos(), obj.GetMissileEndPos(), obj.spellInfo->width);
-//
-//					Geometry::Polygon poly;
-//					poly.Points = rect.ToPolygon(0, obj.spellInfo->width).Points;
-//
-//					if (!obj.spellInfo->displayName.empty())
-//					{
-//
-//						draw->Polygon(poly, RGBA(255, 255, 255));
-//						draw->String(WorldToScreen(obj.GetMissileEndPos()), obj.spellInfo->name, RGBA(255, 255, 255));
-//					}
-//					//auto outer_polygons = Geometry::Geometry::ToPolygons(Geometry::Geometry::ClipPolygons(outer));
-//					//Vector3 closest;
-//					/*for(auto &hero : init->herolist)
-//					if (poly.IsInside(hero.GetPosition()))
-//						closest = Evade::GetClosestOutsidePoint(hero.GetPosition(), outer_polygons);*/
-//
-//						//draw->Circle(Direct3D9.WorldToScreen(closest), 10, RGBA(255, 255, 255));
-//
-//					missiles.emplace_back(obj);
-//				}
-//			}
-//		}
-//	}
-//	if (!missiles.empty())
-//		g_MissileList = missiles;
-//}
-
 void Direct3D9Render::HeroLoop()
 {
 	//hero loop
@@ -196,7 +51,28 @@ void Direct3D9Render::HeroLoop()
 					vis->TalonDamageCalc(obj);
 			}
 
-			draw->String(WorldToMinimap(obj.GetPosition()), obj.GetChampName(), RGBA(255, 255, 255));
+			if (M.Enemies.MouseClicks)
+			{
+				if (obj.IsVisible() && !obj.IsDead() && obj.CheckState(CanMove) && (obj.GetTeam() != Local.GetTeam()))
+				{
+					Vector3 clickPos = obj.GetAiManager()->GetNavEnd();
+					if (!clickPos.IsZero())
+					{
+						ImVec2 RealClickPos = WorldToScreen(clickPos);
+						if (draw->IsOnScreen(RealClickPos))
+						{
+							if (clickPos.Distance(obj.GetPosition()) > 10.f)
+							{
+								draw->CircleRange(clickPos, 16, 65, RGBA(COLOR_AQUA));
+								draw->String(RealClickPos, obj.GetChampName(), RGBA(COLOR_AQUA));
+							}
+						}
+					}
+				}
+			}
+
+			if (M.bDebug)
+				draw->String(WorldToMinimap(obj.GetPosition()), obj.GetChampName(), RGBA(255, 255, 255));
 
 			//clog.AddLog("%s %i", obj.GetChampName().c_str(), obj.GetNetworkID());
 
@@ -458,6 +334,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (!ServerInfo.empty())
 	{
 		clog.AddLog(XorStr("[info] %s"), ServerInfo.c_str());
+		M.dwStartTime = GetTickCount();
 		M.sServerInfo = ServerInfo;
 	}
 
@@ -543,6 +420,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	Evade* evade = new Evade();
 	evade->MakeWorldMap();
+	evade->InitSpells();
+	evade->InitEvadeSpells();
 
 	// Main loop
 	MSG msg;
@@ -587,32 +466,44 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		if (championScript)
 			championScript->OnKeyDown(1);
 
-		evade->Tick();
-		evade->Draw();
+		if (M.Evade.Master)
+		{
+			evade->Tick();
+			evade->Draw();
+			if (M.bMenuOpen)
+				evade->GUI();
+		}
 
-		//Vector3 mpos = mouse->GetWorldPos();
+		/*	for (int i = 0; i < 100; i++)
+			{
+				int ab = 1 << i;
+				clog.AddLog("i:%d state:%d", i, Local.CheckState(ab));
+			}*/
+			//Vector3 mpos = mouse->GetWorldPos();
 
-		//if (PressedKey(VK_XBUTTON2))
-		//{
-		//	std::string temp = ".Add(Vector3(" + std::to_string(mpos.x) + ", " + std::to_string(mpos.y) + ", " + std::to_string(mpos.z) + "));";
-		//	//std::string temp = "Vector3(" + std::to_string(mpos.x) + ", " + std::to_string(mpos.y) + ", " + std::to_string(mpos.z) + ")";
-		//	utils->CopyToClipboard(temp);
-		//}
+			//if (PressedKey(VK_XBUTTON2))
+			//{
+			//	std::string temp = ".Add(Vector3(" + std::to_string(mpos.x) + ", " + std::to_string(mpos.y) + ", " + std::to_string(mpos.z) + "));";
+			//	//std::string temp = "Vector3(" + std::to_string(mpos.x) + ", " + std::to_string(mpos.y) + ", " + std::to_string(mpos.z) + ")";
+			//	utils->CopyToClipboard(temp);
+			//}
 
-		//for (auto& poly : WorldMap)
-		//{
-		//	if (poly.IsInside(mpos))
-		//		draw->Polygon(poly, RGBA(255, 0, 0));
-		//	else
-		//		draw->Polygon(poly, RGBA(255, 255, 255));
-		//}
+			//for (auto& poly : WorldMap)
+			//{
+			//	if (poly.IsInside(mpos))
+			//		draw->Polygon(poly, RGBA(255, 0, 0));
+			//	else
+			//		draw->Polygon(poly, RGBA(255, 255, 255));
+			//}
 
-	/*	DWORD lasterror = GetLastError();
-		if (lasterror != 0)
-			MessageBoxA(0, std::to_string(lasterror).c_str(), 0, 0);*/
+		/*	DWORD lasterror = GetLastError();
+			if (lasterror != 0)
+				MessageBoxA(0, std::to_string(lasterror).c_str(), 0, 0);*/
 
+				//if (once123)
+				//once123 = false;
 
-			//End rendering
+		//End rendering
 		Direct3D9.EndFrame();
 	}
 
