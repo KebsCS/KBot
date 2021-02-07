@@ -44,27 +44,32 @@ public:
 
 	int GetLevel()
 	{
-		return Memory.Read<int>((DWORD)this + oSpellSlotLevel);
+		return Memory.Read<int>((DWORD)this + Offsets::oSpellSlotLevel);
 	}
 
 	float GetCooldownExpire()
 	{
-		return Memory.Read<float>((DWORD)this + oSpellCooldownExpire);
+		return Memory.Read<float>((DWORD)this + Offsets::oSpellSlotCooldownExpire);
 	}
 
 	int GetRemainingCharge()
 	{
-		return Memory.Read<int>((DWORD)this + oSpellSlotRemainingCharge);
+		return Memory.Read<int>((DWORD)this + Offsets::oSpellSlotRemainingCharge);
+	}
+
+	bool IsActive()
+	{
+		return Memory.Read<bool>((DWORD)this + Offsets::oSpellSlotIsActive);
 	}
 
 	float GetDamage()
 	{
-		return Memory.Read<float>((DWORD)this + oSpellSlotDamage);
+		return Memory.Read<float>((DWORD)this + Offsets::oSpellSlotDamage);
 	}
 
 	CSpellInfo* GetSpellInfo()
 	{
-		DWORD addr = Memory.Read<DWORD>((DWORD)this + oSpellSlotSpellInfo);
+		DWORD addr = Memory.Read<DWORD>((DWORD)this + Offsets::oSpellSlotSpellInfo);
 
 		return (CSpellInfo*)(addr);
 	}

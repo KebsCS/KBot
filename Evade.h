@@ -13,6 +13,36 @@
 
 #define MathHuge 999999.f
 
+// warning double to float conversion
+#pragma warning (disable: 4305)
+
+/*
+bugs:
+aatrox q doesnt work
+aatrox w is detected as his q
+warwick q shows up as his r
+zoe E doesnt get detected in onprocessspell
+vlad q/e gets detected as his r
+velkoz q todo
+varus q not working with missiles
+yasuo q gets detected but isnt drawn at all by procspell, not sure about dodging
+urgot r and varus r indicator goes twice with missiles on
+*/
+
+/*
+
+Known not working on cast:
+TwistedFate Q
+Varus Q
+Velkoz Q
+Vi Q not full range
+Viktor E
+Xerath Q R
+Zac E
+Zed Q from shadow
+Zoe Q2
+*/
+
 class Evade
 {
 private:
@@ -49,6 +79,7 @@ private:
 		bool exception;
 		bool extend;
 		bool dodge = true;
+		bool useMissile = false;
 	};
 
 	struct EvadeSpell
@@ -1174,21 +1205,21 @@ public:
 		}
 
 		{
-			EvadeSpellDB Blitzcrank;
-			Blitzcrank.hero = "Blitzcrank";
+			EvadeSpellDB Ryze;
+			Ryze.hero = "Ryze";
 
 			EvadeSpell W;
-			W.icon = "BlitzcrankW";
+			W.icon = "RyzeW";
 			W.type = 2;
 			W.displayName = "Overdrive";
-			W.name = "BlitzcrankW";
+			W.name = "RyzeW";
 			W.danger = 3;
 			W.range = 0;
 			W.slot = _W;
 
-			Blitzcrank.spells.emplace_back(W);
+			Ryze.spells.emplace_back(W);
 
-			evadespelldb.emplace_back(Blitzcrank);
+			evadespelldb.emplace_back(Ryze);
 		}
 
 		{
@@ -2210,6 +2241,56 @@ public:
 		}
 
 		{
+			Champ Ashe;
+			Ashe.hero = "Ashe";
+			Spell R;
+			R.name = "EnchantedCrystalArrow";
+			R.icon = "AsheR";
+			R.displayName = "Enchanted Crystal Arrow";
+			R.missileName = "EnchantedCrystalArrow";
+			R.slot = _R;
+			R.type = linear;
+			R.speed = 1600;
+			R.range = 13000;
+			R.delay = 0.25;
+			R.radius = 130;
+			R.angle = 0;
+			R.danger = 4;
+			R.cc = true;
+			R.collision = false;
+			R.windwall = true;
+			R.hitbox = true;
+			R.fow = false;
+			R.exception = false;
+			R.extend = true;
+			Ashe.spells.emplace_back(R);
+
+			Spell W;
+			W.name = "Volley";
+			W.icon = "AsheW";
+			W.displayName = "Volley";
+			W.missileName = "VolleyRightAttack";
+			W.slot = _W;
+			W.type = conic;
+			W.speed = 2000;
+			W.range = 1200;
+			W.delay = 0.25;
+			W.radius = 20;
+			W.angle = 40;
+			W.danger = 1;
+			W.cc = true;
+			W.collision = true;
+			W.windwall = true;
+			W.hitbox = false;
+			W.fow = true;
+			W.exception = false;
+			W.extend = true;
+			Ashe.spells.emplace_back(W);
+
+			champs.emplace_back(Ashe);
+		}
+
+		{
 			Champ Cassiopeia;
 			Cassiopeia.hero = "Cassiopeia";
 			Spell R;
@@ -2235,6 +2316,254 @@ public:
 			Cassiopeia.spells.emplace_back(R);
 
 			champs.emplace_back(Cassiopeia);
+		}
+
+		{
+			Champ Nidalee;
+			Nidalee.hero = "Nidalee";
+			Spell Q;
+			Q.name = "JavelinToss";
+			Q.icon = "NidaleeQ";
+			Q.displayName = "Javelin Toss";
+			Q.missileName = "";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = 1300;
+			Q.range = 1500;
+			Q.delay = 0.25;
+			Q.radius = 40;
+			Q.angle = 0;
+			Q.danger = 1;
+			Q.cc = false;
+			Q.collision = true;
+			Q.windwall = true;
+			Q.hitbox = true;
+			Q.fow = true;
+			Q.exception = false;
+			Q.extend = true;
+			Nidalee.spells.emplace_back(Q);
+
+			champs.emplace_back(Nidalee);
+		}
+
+		{
+			Champ Ryze;
+			Ryze.hero = "Ryze";
+			Spell Q;
+			Q.name = "RocketGrab";
+			Q.icon = "RyzeQ";
+			Q.displayName = "Rocket Grab";
+			Q.missileName = "RocketGrabMissile";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = 1800;
+			Q.range = 1150;
+			Q.delay = 0.25;
+			Q.radius = 70;
+			Q.angle = 0;
+			Q.danger = 3;
+			Q.cc = false;
+			Q.collision = true;
+			Q.windwall = true;
+			Q.hitbox = true;
+			Q.fow = true;
+			Q.exception = false;
+			Q.extend = true;
+			Ryze.spells.emplace_back(Q);
+
+			champs.emplace_back(Ryze);
+		}
+
+		{
+			Champ Ryze;
+			Ryze.hero = "Ryze";
+			Spell Q;
+			Q.name = "RyzeQ";
+			Q.icon = "RyzeQ";
+			Q.displayName = "Overload";
+			Q.missileName = "RocketGrabMissile";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = 1700;
+			Q.range = 1000;
+			Q.delay = 0.25;
+			Q.radius = 55;
+			Q.angle = 0;
+			Q.danger = 1;
+			Q.cc = false;
+			Q.collision = true;
+			Q.windwall = true;
+			Q.hitbox = true;
+			Q.fow = true;
+			Q.exception = false;
+			Q.extend = true;
+			Ryze.spells.emplace_back(Q);
+
+			champs.emplace_back(Ryze);
+		}
+
+		{
+			Champ Nautilus;
+			Nautilus.hero = "Nautilus";
+			Spell Q;
+			Q.name = "NautilusAnchorDragMissile";
+			Q.icon = "NautilusQ";
+			Q.displayName = "Dredge Line";
+			Q.missileName = "NautilusAnchorDragMissile";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = 2000;
+			Q.range = 925;
+			Q.delay = 0.25;
+			Q.radius = 90;
+			Q.angle = 0;
+			Q.danger = 3;
+			Q.cc = true;
+			Q.collision = true;
+			Q.windwall = true;
+			Q.hitbox = true;
+			Q.fow = true;
+			Q.exception = false;
+			Q.extend = true;
+			Nautilus.spells.emplace_back(Q);
+
+			champs.emplace_back(Nautilus);
+		}
+
+		{
+			Champ Jhin;
+			Jhin.hero = "Jhin";
+			Spell W;
+			W.name = "JhinW";
+			W.icon = "JhinW";
+			W.displayName = "Deadly Flourish";
+			W.missileName = "JhinAnchorDragMissile";
+			W.slot = _W;
+			W.type = linear;
+			W.speed = 5000;
+			W.range = 2550;
+			W.delay = 0.75;
+			W.radius = 40;
+			W.angle = 0;
+			W.danger = 1;
+			W.cc = true;
+			W.collision = false;
+			W.windwall = true;
+			W.hitbox = false;
+			W.fow = false;
+			W.exception = false;
+			W.extend = true;
+			Jhin.spells.emplace_back(W);
+
+			champs.emplace_back(Jhin);
+		}
+
+		{
+			Champ Fizz;
+			Fizz.hero = "Fizz";
+			Spell R;
+			R.name = "FizzR";
+			R.icon = "FizzR";
+			R.displayName = "Chum the Waters";
+			R.missileName = "FizzRMissile";
+			R.slot = _R;
+			R.type = linear;
+			R.speed = 1300;
+			R.range = 1300;
+			R.delay = 0.25;
+			R.radius = 150;
+			R.angle = 0;
+			R.danger = 5;
+			R.cc = true;
+			R.collision = false;
+			R.windwall = true;
+			R.hitbox = true;
+			R.fow = true;
+			R.exception = false;
+			R.extend = true;
+			Fizz.spells.emplace_back(R);
+
+			champs.emplace_back(Fizz);
+		}
+
+		{
+			Champ Kaisa;
+			Kaisa.hero = "Kaisa";
+			Spell W;
+			W.name = "KaisaW";
+			W.icon = "KaisaW";
+			W.displayName = "Void Seeker";
+			W.missileName = "KaisaW";
+			W.slot = _W;
+			W.type = linear;
+			W.speed = 1750;
+			W.range = 3000;
+			W.delay = 0.4;
+			W.radius = 100;
+			W.angle = 0;
+			W.danger = 1;
+			W.cc = false;
+			W.collision = true;
+			W.windwall = true;
+			W.hitbox = true;
+			W.fow = true;
+			W.exception = false;
+			W.extend = true;
+			Kaisa.spells.emplace_back(W);
+
+			champs.emplace_back(Kaisa);
+		}
+
+		{
+			Champ Neeko;
+			Neeko.hero = "Neeko";
+			Spell E;
+			E.name = "NeekoE";
+			E.icon = "NeekoE";
+			E.displayName = "NeekoE";
+			E.missileName = "Tangle-Barbs";
+			E.slot = _E;
+			E.type = linear;
+			E.speed = 1300;
+			E.range = 1000;
+			E.delay = 0.25;
+			E.radius = 70;
+			E.angle = 0;
+			E.danger = 3;
+			E.cc = true;
+			E.collision = false;
+			E.windwall = true;
+			E.hitbox = true;
+			E.fow = true;
+			E.exception = false;
+			E.extend = true;
+			Neeko.spells.emplace_back(E);
+
+			champs.emplace_back(Neeko);
+
+			Spell Q;
+			Q.name = "NeekoQ";
+			Q.icon = "NeekoQ";
+			Q.displayName = "NeekoQ";
+			Q.missileName = "Blooming Burst";
+			Q.slot = _Q;
+			Q.type = circular;
+			Q.speed = 1500;
+			Q.range = 800;
+			Q.delay = 0.25;
+			Q.radius = 200;
+			Q.angle = 0;
+			Q.danger = 2;
+			Q.cc = true;
+			Q.collision = false;
+			Q.windwall = true;
+			Q.hitbox = false;
+			Q.fow = true;
+			Q.exception = false;
+			Q.extend = false;
+			Neeko.spells.emplace_back(Q);
+
+			champs.emplace_back(Neeko);
 		}
 
 		{
@@ -2389,6 +2718,34 @@ public:
 		}
 
 		{
+			Champ Syndra;
+			Syndra.hero = "Syndra";
+			Spell Q;
+			Q.name = "SyndraQSpell";
+			Q.icon = "SyndraQ";
+			Q.displayName = "Dark Sphere";
+			Q.missileName = "SyndraQSpell";
+			Q.slot = _Q;
+			Q.type = circular;
+			Q.speed = MathHuge;
+			Q.range = 800;
+			Q.delay = 0.625;
+			Q.radius = 200;
+			Q.angle = 0;
+			Q.danger = 2;
+			Q.cc = false;
+			Q.collision = false;
+			Q.windwall = false;
+			Q.hitbox = false;
+			Q.fow = false;
+			Q.exception = false;
+			Q.extend = false;
+			Syndra.spells.emplace_back(Q);
+
+			champs.emplace_back(Syndra);
+		}
+
+		{
 			Champ Morgana;
 			Morgana.hero = "Morgana";
 			Spell Q;
@@ -2414,6 +2771,63 @@ public:
 			Morgana.spells.emplace_back(Q);
 
 			champs.emplace_back(Morgana);
+		}
+
+		{
+			Champ Talon;
+			Talon.hero = "Talon";
+
+			Spell W;
+			W.name = "TalonW";
+			W.icon = "TalonW";
+			W.displayName = "Rake";
+			W.missileName = "TalonWMissileOne";
+			W.slot = _W;
+			W.type = conic;
+			W.speed = 902;
+			W.range = 700;
+			W.delay = 0.25;
+			W.radius = 75;
+			W.angle = 40;
+			W.danger = 1;
+			W.cc = true;
+			W.collision = false;
+			W.windwall = true;
+			W.hitbox = false;
+			W.fow = true;
+			W.exception = false;
+			W.extend = true;
+			Talon.spells.emplace_back(W);
+			champs.emplace_back(Talon);
+		}
+
+		{
+			Champ Thresh;
+			Thresh.hero = "Thresh";
+
+			Spell Q;
+			Q.name = "ThreshQInternal";
+			Q.icon = "ThreshQ";
+			Q.displayName = "Death Sentence";
+			Q.missileName = "ThreshQMissile";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = 1900;
+			Q.range = 1100;
+			Q.delay = 0.5;
+			Q.radius = 70;
+			Q.angle = 0;
+			Q.danger = 4;
+			Q.cc = true;
+			Q.collision = true;
+			Q.windwall = true;
+			Q.hitbox = false;
+			Q.fow = true;
+			Q.exception = true;
+			Q.extend = true;
+			Q.useMissile = true;
+			Thresh.spells.emplace_back(Q);
+			champs.emplace_back(Thresh);
 		}
 
 		{
@@ -2445,6 +2859,849 @@ public:
 		}
 
 		{
+			Champ Urgot;
+			Urgot.hero = "Urgot";
+			Spell Q;
+			Q.name = "UrgotQ";
+			Q.icon = "UrgotQ";
+			Q.displayName = "Corrosive Charge";
+			Q.missileName = "UrgotQMissile";
+			Q.slot = _Q;
+			Q.type = circular;
+			Q.speed = MathHuge;
+			Q.range = 800;
+			Q.delay = 0.6;
+			Q.radius = 180;
+			Q.danger = 2;
+			Q.cc = true;
+			Q.collision = false;
+			Q.windwall = true;
+			Q.hitbox = false;
+			Q.fow = true;
+			Q.exception = false;
+			Q.extend = false;
+
+			Spell E;
+			E.name = "UrgotE";
+			E.icon = "UrgotE";
+			E.displayName = "Disdain";
+			E.slot = _E;
+			E.type = linear;
+			E.speed = 1540;
+			E.range = 475;
+			E.delay = 0.45;
+			E.radius = 100;
+			E.danger = 2;
+			E.cc = true;
+			E.collision = false;
+			E.windwall = false;
+			E.hitbox = false;
+			E.fow = false;
+			E.exception = false;
+			E.extend = true;
+
+			Spell R;
+			R.name = "UrgotR";
+			R.icon = "UrgotR";
+			R.displayName = "Fear Beyond Death";
+			R.missileName = "UrgotR";
+			R.slot = _R;
+			R.type = linear;
+			R.speed = 3200;
+			R.range = 1600;
+			R.delay = 0.5;
+			R.radius = 80;
+			R.danger = 4;
+			R.cc = true;
+			R.collision = false;
+			R.windwall = true;
+			R.hitbox = false;
+			R.fow = true;
+			R.exception = false;
+			R.extend = true;
+			Urgot.spells.emplace_back(Q);
+			Urgot.spells.emplace_back(E);
+			Urgot.spells.emplace_back(R);
+			champs.emplace_back(Urgot);
+		}
+
+		{
+			Champ Varus;
+			Varus.hero = "Varus";
+
+			Spell Q;
+			Q.name = "VarusQMissile";
+			Q.icon = "VarusQ";
+			Q.displayName = "Piercing Arrow";
+			Q.missileName = "VarusQMissile";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = 1900;
+			Q.range = 1525;
+			Q.radius = 70;
+			Q.danger = 1;
+			Q.cc = false;
+			Q.collision = false;
+			Q.windwall = true;
+			Q.fow = true;
+			Q.exception = true;
+			Q.extend = true;
+			Q.useMissile = true;
+
+			Spell E;
+			E.name = "VarusE";
+			E.icon = "VarusE";
+			E.displayName = "Hail of Arrows";
+			E.missileName = "VarusEMissile";
+			E.slot = _E;
+			E.type = circular;
+			E.speed = 1500;
+			E.range = 925;
+			E.delay = 0.242;
+			E.radius = 260;
+			E.danger = 3;
+			E.cc = true;
+			E.collision = false;
+			E.windwall = true;
+			E.hitbox = false;
+			E.fow = true;
+			E.exception = false;
+			E.extend = false;
+
+			Spell R;
+			R.name = "VarusR";
+			R.icon = "VarusR";
+			R.displayName = "Chain of Corruption";
+			R.missileName = "VarusRMissile";
+			R.slot = _R;
+			R.type = linear;
+			R.speed = 1500;
+			R.range = 1200;
+			R.delay = 0.25;
+			R.radius = 120;
+			R.danger = 4;
+			R.cc = true;
+			R.collision = false;
+			R.windwall = true;
+			R.hitbox = false;
+			R.fow = true;
+			R.exception = false;
+			R.extend = true;
+
+			Varus.spells.emplace_back(Q);
+			Varus.spells.emplace_back(E);
+			Varus.spells.emplace_back(R);
+			champs.emplace_back(Varus);
+		}
+
+		{
+			Champ Veigar;
+			Veigar.hero = "Veigar";
+
+			Spell Q;
+			Q.name = "VeigarBalefulStrike";
+			Q.icon = "VeigarQ";
+			Q.displayName = "Baleful Strike";
+			Q.missileName = "VeigarBalefulStrikeMis";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = 2200;
+			Q.range = 900;
+			Q.delay = 0.25;
+			Q.radius = 70;
+			Q.danger = 2;
+			Q.cc = false;
+			Q.collision = false;
+			Q.windwall = true;
+			Q.hitbox = false;
+			Q.fow = true;
+			Q.exception = false;
+			Q.extend = true;
+
+			Spell W;
+			W.name = "VeigarDarkMatterCastLock";
+			W.icon = "VeigarW";
+			W.displayName = "Dark Matter";
+			W.slot = _W;
+			W.type = circular;
+			W.speed = MathHuge;
+			W.range = 900;
+			W.delay = 1.25;
+			W.radius = 200;
+			W.danger = 1;
+			W.cc = false;
+			W.collision = false;
+			W.windwall = false;
+			W.hitbox = false;
+			W.fow = false;
+			W.exception = false;
+			W.extend = false;
+
+			Veigar.spells.emplace_back(Q);
+			Veigar.spells.emplace_back(W);
+			champs.emplace_back(Veigar);
+		}
+
+		{
+			Champ Velkoz;
+			Velkoz.hero = "Velkoz";
+			Spell Q2;
+			Q2.name = "VelkozQMissileSplit";
+			Q2.icon = "VelkozQ2";
+			Q2.displayName = "Plasma Fission [Split]";
+			Q2.missileName = "VelkozQMissileSplit";
+			Q2.slot = _Q;
+			Q2.type = linear;
+			Q2.speed = 2100;
+			Q2.range = 1100;
+			Q2.radius = 45;
+			Q2.danger = 2;
+			Q2.cc = true;
+			Q2.collision = true;
+			Q2.windwall = true;
+			Q2.hitbox = false;
+			Q2.fow = true;
+			Q2.exception = true;
+			Q2.extend = false;
+
+			Spell Q;
+			Q.name = "VelkozQ";
+			Q.icon = "VelkozQ";
+			Q.displayName = "Plasma Fission";
+			Q.missileName = "VelkozQMissile";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = 1300;
+			Q.range = 1050;
+			Q.delay = 0.25;
+			Q.radius = 50;
+			Q.danger = 1;
+			Q.cc = true;
+			Q.collision = true;
+			Q.windwall = true;
+			Q.hitbox = false;
+			Q.fow = true;
+			Q.exception = false;
+			Q.extend = true;
+
+			Spell W;
+			W.name = "VelkozW";
+			W.icon = "VelkozW";
+			W.displayName = "Void Rift";
+			W.missileName = "VelkozWMissile";
+			W.slot = _W;
+			W.type = linear;
+			W.speed = 1700;
+			W.range = 1050;
+			W.delay = 0.25;
+			W.radius = 87.5;
+			W.danger = 1;
+			W.cc = false;
+			W.collision = false;
+			W.windwall = true;
+			W.hitbox = false;
+			W.fow = true;
+			W.exception = false;
+			W.extend = true;
+
+			Spell E;
+			E.name = "VelkozE";
+			E.icon = "VelkozE";
+			E.displayName = "Tectonic Disruption";
+			E.slot = _E;
+			E.type = circular;
+			E.speed = MathHuge;
+			E.range = 800;
+			E.delay = 0.8;
+			E.radius = 185;
+			E.danger = 2;
+			E.cc = true;
+			E.collision = false;
+			E.windwall = false;
+			E.hitbox = false;
+			E.fow = false;
+			E.exception = false;
+			E.extend = false;
+
+			Velkoz.spells.emplace_back(Q2);
+			Velkoz.spells.emplace_back(Q);
+			Velkoz.spells.emplace_back(W);
+			Velkoz.spells.emplace_back(E);
+			champs.emplace_back(Velkoz);
+		}
+
+		/*{
+			Champ Vi;
+			Vi.hero = "Vi";
+
+			Spell Q;
+			Q.name = "ViQ";
+			Q.icon = "ViQ";
+			Q.displayName = "Vault Breaker";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = 1500;
+			Q.range = 725;
+			Q.delay = 0;
+			Q.radius = 90;
+			Q.danger = 2;
+			Q.cc = true;
+			Q.collision = false;
+			Q.windwall = false;
+			Q.hitbox = false;
+			Q.fow = false;
+			Q.exception = false;
+			Q.extend = true;
+
+			Vi.spells.emplace_back(Q);
+			champs.emplace_back(Vi);
+		}*/
+
+		{
+			Champ Viktor;
+			Viktor.hero = "Viktor";
+
+			Spell W;
+			W.name = "ViktorGravitonField";
+			W.icon = "ViktorW";
+			W.displayName = "Graviton Field";
+			W.slot = _W;
+			W.type = circular;
+			W.speed = MathHuge;
+			W.range = 800;
+			W.delay = 1.75;
+			W.radius = 270;
+			W.danger = 1;
+			W.cc = true;
+			W.collision = false;
+			W.windwall = false;
+			W.hitbox = false;
+			W.fow = false;
+			W.exception = false;
+			W.extend = false;
+
+			Spell E;
+			E.name = "ViktorDeathRayMissile";
+			E.icon = "ViktorE";
+			E.displayName = "Death Ray";
+			E.missileName = "ViktorDeathRayMissile";
+			E.slot = _E;
+			E.type = linear;
+			E.speed = 1050;
+			E.range = 700;
+			E.radius = 80;
+			E.danger = 2;
+			E.cc = false;
+			E.collision = false;
+			E.windwall = true;
+			E.fow = true;
+			E.exception = true;
+			E.extend = true;
+			Viktor.spells.emplace_back(W);
+			Viktor.spells.emplace_back(E);
+			champs.emplace_back(Viktor);
+		}
+
+		/*{
+			Champ Vladimir;
+			Vladimir.hero = "Vladimir";
+			Spell R;
+			R.name = "VladimirHemoplague";
+			R.icon = "VladimirR";
+			R.displayName = "Hemoplague";
+			R.slot = _R;
+			R.type = circular;
+			R.speed = MathHuge;
+			R.range = 700;
+			R.delay = 0.389;
+			R.radius = 350;
+			R.danger = 3;
+			R.cc = false;
+			R.collision = false;
+			R.windwall = false;
+			R.hitbox = false;
+			R.fow = false;
+			R.exception = false;
+			R.extend = false;
+
+			Vladimir.spells.emplace_back(R);
+			champs.emplace_back(Vladimir);
+		}*/
+
+		{
+			Champ Warwick;
+			Warwick.hero = "Warwick";
+
+			Spell R;
+			R.name = "WarwickR";
+			R.icon = "WarwickR";
+			R.displayName = "Infinite Duress";
+			R.slot = _R;
+			R.type = linear;
+			R.speed = 1800;
+			R.range = 3000;
+			R.delay = 0.1;
+			R.radius = 55;
+			R.danger = 4;
+			R.cc = true;
+			R.collision = false;
+			R.windwall = false;
+			R.hitbox = false;
+			R.fow = false;
+			R.exception = false;
+			R.extend = true;
+			Warwick.spells.emplace_back(R);
+			champs.emplace_back(Warwick);
+		}
+
+		{
+			Champ Xayah;
+			Xayah.hero = "Xayah";
+			Spell Q;
+			Q.name = "XayahQ";
+			Q.icon = "XayahQ";
+			Q.displayName = "Double Daggers";
+			Q.missileName = "XayahQ";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = 2075;
+			Q.range = 1100;
+			Q.delay = 0.5;
+			Q.radius = 45;
+			Q.danger = 1;
+			Q.cc = false;
+			Q.collision = false;
+			Q.windwall = true;
+			Q.hitbox = false;
+			Q.fow = true;
+			Q.exception = false;
+			Q.extend = true;
+			Xayah.spells.emplace_back(Q);
+			champs.emplace_back(Xayah);
+		}
+
+		{
+			Champ Xerath;
+			Xerath.hero = "Xerath";
+			/*Spell Q;
+			Q.name = "XerathArcanopulse2";
+			Q.icon = "XerathQ";
+			Q.displayName = "Arcanopulse";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = MathHuge;
+			Q.range = 1400;
+			Q.delay = 0.5;
+			Q.radius = 90;
+			Q.danger = 2;
+			Q.cc = false;
+			Q.collision = false;
+			Q.windwall = false;
+			Q.hitbox = false;
+			Q.fow = false;
+			Q.exception = false;
+			Q.extend = true;*/
+			//Xerath.spells.emplace_back(Q);
+
+			Spell W;
+			W.name = "XerathArcaneBarrage2";
+			W.icon = "XerathW";
+			W.displayName = "Arcane Barrage";
+			W.slot = _W;
+			W.type = circular;
+			W.speed = MathHuge;
+			W.range = 1000;
+			W.delay = 0.75;
+			W.radius = 235;
+			W.danger = 3;
+			W.cc = true;
+			W.collision = false;
+			W.windwall = false;
+			W.hitbox = false;
+			W.fow = false;
+			W.exception = false;
+			W.extend = false;
+
+			Spell E;
+			E.name = "XerathMageSpear";
+			E.icon = "XerathE";
+			E.displayName = "Mage Spear";
+			E.missileName = "XerathMageSpearMissile";
+			E.slot = _E;
+			E.type = linear;
+			E.speed = 1400;
+			E.range = 1050;
+			E.delay = 0.2;
+			E.radius = 60;
+			E.danger = 1;
+			E.cc = true;
+			E.collision = true;
+			E.windwall = true;
+			E.hitbox = false;
+			E.fow = true;
+			E.exception = false;
+			E.extend = true;
+
+			Spell R;
+			R.name = "XerathLocusOfPower2";
+			R.icon = "XerathR";
+			R.displayName = "Rite of the Arcane";
+			R.missileName = "XerathLocusPulse";
+			R.slot = _E;
+			R.type = circular;
+			R.speed = MathHuge;
+			R.range = 5000;
+			R.delay = 0.7;
+			R.radius = 200;
+			R.danger = 3;
+			R.cc = false;
+			R.collision = false;
+			R.windwall = false;
+			R.hitbox = false;
+			R.fow = true;
+			R.exception = true;
+			R.extend = false;
+			R.useMissile = true;
+
+			Xerath.spells.emplace_back(W);
+			Xerath.spells.emplace_back(E);
+			Xerath.spells.emplace_back(R);
+			champs.emplace_back(Xerath);
+		}
+
+		{
+			Champ XinZhao;
+			XinZhao.hero = "XinZhao";
+			Spell W;
+			W.name = "XinZhaoW";
+			W.icon = "XinZhaoW";
+			W.displayName = "Wind Becomes Lightning";
+			W.slot = _W;
+			W.type = linear;
+			W.speed = 5000;
+			W.range = 900;
+			W.delay = 0.5;
+			W.radius = 40;
+			W.danger = 1;
+			W.cc = true;
+			W.collision = false;
+			W.windwall = false;
+			W.hitbox = false;
+			W.fow = false;
+			W.exception = false;
+			W.extend = true;
+
+			XinZhao.spells.emplace_back(W);
+			champs.emplace_back(XinZhao);
+		}
+
+		{
+			Champ Yasuo;
+			Yasuo.hero = "Yasuo";
+			Spell Q1;
+			Q1.name = "YasuoQ1";
+			Q1.icon = "YasuoQ1";
+			Q1.displayName = "Steel Tempest";
+			Q1.slot = _Q;
+			Q1.type = linear;
+			Q1.speed = MathHuge;
+			Q1.range = 450;
+			Q1.delay = 0.25;
+			Q1.radius = 40;
+			Q1.danger = 1;
+			Q1.cc = false;
+			Q1.collision = false;
+			Q1.windwall = false;
+			Q1.hitbox = true;
+			Q1.fow = false;
+			Q1.exception = false;
+			Q1.extend = true;
+
+			Spell Q2;
+			Q2.name = "YasuoQ2";
+			Q2.icon = "YasuoQ2";
+			Q2.displayName = "Steel Wind Rising";
+			Q2.slot = _Q;
+			Q2.type = linear;
+			Q2.speed = MathHuge;
+			Q2.range = 450;
+			Q2.delay = 0.25;
+			Q2.radius = 40;
+			Q2.danger = 1;
+			Q2.cc = false;
+			Q2.collision = false;
+			Q2.windwall = false;
+			Q2.hitbox = true;
+			Q2.fow = false;
+			Q2.exception = false;
+			Q2.extend = true;
+
+			Spell Q3;
+			Q3.name = "YasuoQ3";
+			Q3.icon = "YasuoQ3";
+			Q3.displayName = "Gathering Storm";
+			Q3.missileName = "YasuoQ3Mis";
+			Q3.slot = _Q;
+			Q3.type = linear;
+			Q3.speed = 1200;
+			Q3.range = 1000;
+			Q3.delay = 0.25;
+			Q3.radius = 90;
+			Q3.danger = 2;
+			Q3.cc = true;
+			Q3.collision = false;
+			Q3.windwall = true;
+			Q3.hitbox = true;
+			Q3.fow = true;
+			Q3.exception = false;
+			Q3.extend = true;
+			Q3.useMissile = true;
+
+			Yasuo.spells.emplace_back(Q1);
+			Yasuo.spells.emplace_back(Q2);
+			Yasuo.spells.emplace_back(Q3);
+			champs.emplace_back(Yasuo);
+		}
+
+		{
+			Champ Yone;
+			Yone.hero = "Yone";
+
+			Spell Q;
+			Q.name = "YoneQ";
+			Q.icon = "YoneQ";
+			Q.displayName = "Mortal Steel [Sword]";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = MathHuge;
+			Q.range = 450;
+			Q.delay = 0.25;
+			Q.radius = 40;
+			Q.danger = 1;
+			Q.cc = false;
+			Q.collision = false;
+			Q.windwall = false;
+			Q.hitbox = true;
+			Q.fow = false;
+			Q.exception = false;
+			Q.extend = true;
+
+			Spell Q3;
+			Q3.name = "YoneQ3";
+			Q3.icon = "YoneQ3";
+			Q3.displayName = "Mortal Steel [Storm]";
+			Q3.missileName = "YoneQ3Missile";
+			Q3.slot = _Q;
+			Q3.type = linear;
+			Q3.speed = 1500;
+			Q3.range = 1050;
+			Q3.delay = 0.25;
+			Q3.radius = 80;
+			Q3.danger = 2;
+			Q3.cc = true;
+			Q3.collision = false;
+			Q3.windwall = true;
+			Q3.hitbox = true;
+			Q3.fow = true;
+			Q3.exception = false;
+			Q3.extend = true;
+
+			Spell W;
+			W.name = "YoneW";
+			W.icon = "YoneW";
+			W.displayName = "Spirit Cleave";
+			W.slot = _W;
+			W.type = conic;
+			W.speed = MathHuge;
+			W.range = 575;
+			W.delay = 0.375;
+			W.radius = 0;
+			W.angle = 80;
+			W.danger = 1;
+			W.cc = false;
+			W.collision = false;
+			W.windwall = false;
+			W.hitbox = false;
+			W.fow = false;
+			W.exception = false;
+			W.extend = true;
+
+			Spell R;
+			R.name = "YoneR";
+			R.icon = "YoneR";
+			R.displayName = "Fate Sealed";
+			R.slot = _R;
+			R.type = linear;
+			R.speed = MathHuge;
+			R.range = 1000;
+			R.delay = 0.75;
+			R.radius = 112.5;
+			R.danger = 5;
+			R.cc = true;
+			R.collision = false;
+			R.windwall = false;
+			R.hitbox = true;
+			R.fow = false;
+			R.exception = false;
+			R.extend = true;
+
+			Yone.spells.emplace_back(Q);
+			Yone.spells.emplace_back(Q3);
+			Yone.spells.emplace_back(W);
+			Yone.spells.emplace_back(R);
+			champs.emplace_back(Yone);
+		}
+
+		{
+			Champ Zac;
+			Zac.hero = "Zac";
+			Spell Q;
+			Q.name = "ZacQ";
+			Q.icon = "ZacQ";
+			Q.displayName = "Stretching Strikes";
+			Q.missileName = "ZacQMissile";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = 2800;
+			Q.range = 800;
+			Q.delay = 0.33;
+			Q.radius = 120;
+			Q.danger = 2;
+			Q.cc = true;
+			Q.collision = false;
+			Q.windwall = true;
+			Q.hitbox = false;
+			Q.fow = true;
+			Q.exception = false;
+			Q.extend = true;
+
+			Zac.spells.emplace_back(Q);
+
+			champs.emplace_back(Zac);
+		}
+
+		{
+			Champ Zed;
+			Zed.hero = "Zed";
+
+			Spell Q;
+			Q.name = "ZedQ";
+			Q.icon = "ZedQ";
+			Q.displayName = "Razor Shuriken";
+			Q.missileName = "ZedQMissile";
+			Q.slot = _Q;
+			Q.type = linear;
+			Q.speed = 1700;
+			Q.range = 900;
+			Q.delay = 0.25;
+			Q.radius = 50;
+			Q.danger = 1;
+			Q.cc = false;
+			Q.collision = false;
+			Q.windwall = true;
+			Q.hitbox = true;
+			Q.fow = true;
+			Q.exception = false;
+			Q.extend = true;
+			Q.useMissile = false;
+			Zed.spells.emplace_back(Q);
+
+			champs.emplace_back(Zed);
+		}
+
+		{
+			Champ Ziggs;
+			Ziggs.hero = "Ziggs";
+
+			Spell Q;
+			Q.name = "ZiggsQ";
+			Q.icon = "ZiggsQ";
+			Q.displayName = "Bouncing Bomb";
+			Q.missileName = "ZiggsQSpell";
+			Q.slot = _Q;
+			Q.type = polygon;
+			Q.speed = 1750;
+			Q.range = 850;
+			Q.delay = 0.25;
+			Q.radius = 150;
+			Q.danger = 1;
+			Q.cc = false;
+			Q.collision = true;
+			Q.windwall = true;
+			Q.hitbox = false;
+			Q.fow = true;
+			Q.exception = false;
+			Q.extend = false;
+
+			Spell W;
+			W.name = "ZiggsW";
+			W.icon = "ZiggsW";
+			W.displayName = "Satchel Charge";
+			W.missileName = "ZiggsW";
+			W.slot = _W;
+			W.type = circular;
+			W.speed = 1750;
+			W.range = 1000;
+			W.delay = 0.25;
+			W.radius = 240;
+			W.danger = 2;
+			W.cc = true;
+			W.collision = false;
+			W.windwall = true;
+			W.hitbox = false;
+			W.fow = true;
+			W.exception = false;
+			W.extend = false;
+
+			Spell E;
+			E.name = "ZiggsE";
+			E.icon = "ZiggsE";
+			E.displayName = "Hexplosive Minefield";
+			E.missileName = "ZiggsE";
+			E.slot = _E;
+			E.type = circular;
+			E.speed = 1800;
+			E.range = 900;
+			E.delay = 0.25;
+			E.radius = 250;
+			E.danger = 2;
+			E.cc = true;
+			E.collision = false;
+			E.windwall = true;
+			E.hitbox = false;
+			E.fow = true;
+			E.exception = false;
+			E.extend = false;
+
+			Spell R;
+			R.name = "ZiggsR";
+			R.icon = "ZiggsR";
+			R.displayName = "Mega Inferno Bomb";
+			R.missileName = "ZiggsRBoom";
+			R.slot = _R;
+			R.type = circular;
+			R.speed = 1550;
+			R.range = 5000;
+			R.delay = 0.375;
+			R.radius = 480;
+			R.danger = 4;
+			R.cc = false;
+			R.collision = false;
+			R.windwall = false;
+			R.hitbox = false;
+			R.fow = true;
+			R.exception = false;
+			R.extend = false;
+
+			Ziggs.spells.emplace_back(Q);
+			Ziggs.spells.emplace_back(W);
+			Ziggs.spells.emplace_back(E);
+			Ziggs.spells.emplace_back(R);
+
+			champs.emplace_back(Ziggs);
+		}
+
+		{
 			Champ Zilean;
 			Zilean.hero = "Zilean";
 
@@ -2471,6 +3728,145 @@ public:
 			Zilean.spells.emplace_back(Q);
 			champs.emplace_back(Zilean);
 		}
+
+		{
+			Champ Zoe;
+			Zoe.hero = "Zoe";
+
+			Spell Q1;
+			Q1.name = "ZoeQMissile";
+			Q1.icon = "ZoeQ1";
+			Q1.displayName = "Paddle Star [First]";
+			Q1.missileName = "ZoeQMissile";
+			Q1.slot = _Q;
+			Q1.type = linear;
+			Q1.speed = 1200;
+			Q1.range = 800;
+			Q1.delay = 0.25;
+			Q1.radius = 50;
+			Q1.danger = 1;
+			Q1.cc = false;
+			Q1.collision = true;
+			Q1.windwall = true;
+			Q1.hitbox = false;
+			Q1.fow = true;
+			Q1.exception = false;
+			Q1.extend = true;
+
+			Spell Q2;
+			Q2.name = "ZoeQMis2";
+			Q2.icon = "ZoeQ2";
+			Q2.displayName = "Paddle Star [Second]";
+			Q2.missileName = "ZoeQMis2";
+			Q2.slot = _Q;
+			Q2.type = linear;
+			Q2.speed = 2500;
+			Q2.range = 1600;
+			Q2.delay = 0;
+			Q2.radius = 70;
+			Q2.danger = 2;
+			Q2.cc = false;
+			Q2.collision = true;
+			Q2.windwall = true;
+			Q2.hitbox = false;
+			Q2.fow = true;
+			Q2.exception = true;
+			Q2.extend = true;
+
+			Spell E;
+			E.name = "ZoeE";
+			E.icon = "ZoeE";
+			E.displayName = "Sleepy Trouble Bubble";
+			E.missileName = "ZoeEMis";
+			E.slot = _E;
+			E.type = linear;
+			E.speed = 1700;
+			E.range = 800;
+			E.delay = 0.3;
+			E.radius = 50;
+			E.danger = 2;
+			E.cc = true;
+			E.collision = true;
+			E.windwall = true;
+			E.hitbox = false;
+			E.fow = true;
+			E.exception = false;
+			E.extend = true;
+
+			Zoe.spells.emplace_back(Q1);
+			Zoe.spells.emplace_back(Q2);
+			Zoe.spells.emplace_back(E);
+
+			champs.emplace_back(Zoe);
+		}
+
+		{
+			Champ Zyra;
+			Zyra.hero = "Zyra";
+			Spell Q;
+			Q.name = "ZyraQ";
+			Q.icon = "ZyraQ";
+			Q.displayName = "Deadly Spines";
+			Q.slot = _Q;
+			Q.type = rectangular;
+			Q.speed = MathHuge;
+			Q.range = 800;
+			Q.delay = 0.825;
+			Q.radius = 200;
+			Q.danger = 1;
+			Q.cc = false;
+			Q.collision = false;
+			Q.windwall = false;
+			Q.hitbox = false;
+			Q.fow = false;
+			Q.exception = false;
+			Q.extend = false;
+
+			Spell E;
+			E.name = "ZyraE";
+			E.icon = "ZyraE";
+			E.displayName = "Grasping Roots";
+			E.missileName = "ZyraE";
+			E.slot = _E;
+			E.type = linear;
+			E.speed = 1150;
+			E.range = 1100;
+			E.delay = 0.25;
+			E.radius = 70;
+			E.danger = 1;
+			E.cc = true;
+			E.collision = false;
+			E.windwall = true;
+			E.hitbox = false;
+			E.fow = true;
+			E.exception = false;
+			E.extend = true;
+
+			Spell R;
+			R.name = "ZyraR";
+			R.icon = "ZyraR";
+			R.displayName = "Stranglethorns";
+			R.slot = _R;
+			R.type = circular;
+			R.speed = MathHuge;
+			R.range = 700;
+			R.delay = 2;
+			R.radius = 500;
+			R.danger = 4;
+			R.cc = true;
+			R.collision = false;
+			R.windwall = false;
+			R.hitbox = false;
+			R.fow = false;
+			R.exception = false;
+			R.extend = false;
+
+			Zyra.spells.emplace_back(Q);
+			Zyra.spells.emplace_back(E);
+			Zyra.spells.emplace_back(R);
+
+			champs.emplace_back(Zyra);
+		}
 	}
 
 	std::string SlotToName(int slot)
@@ -2490,6 +3886,7 @@ public:
 		case 5:
 			return "[F]";
 		}
+		return "";
 	}
 
 	void GUI()
@@ -2528,9 +3925,11 @@ public:
 			{
 				for (auto& s : a.spells)
 				{
-					std::string str = "Dodge ##" + s.name;
 					ImGui::Text("%s - %s", SlotToName(s.slot).c_str(), s.displayName.c_str());
+					std::string str = "Dodge ##" + s.name;
 					ImGui::Checkbox(str.c_str(), &s.dodge);
+					std::string strfow = "Fog of War ##" + s.name;
+					ImGui::Checkbox(strfow.c_str(), &s.fow);
 					std::string str2 = "Danger ##" + s.name;
 					ImGui::SliderInt(str2.c_str(), &s.danger, 1, 5);
 					ImGui::Separator();
@@ -2611,8 +4010,49 @@ public:
 
 	void GetPaths(Vector3& startPos, Vector3& endPos, Spell& spellInfo, CObject& unit, Geometry::Polygon& path1, Geometry::Polygon& path2)
 	{
-		if (spellInfo.type == linear || spellInfo.type == polygon)
+		//special spells
+		if (utils->ToLower(spellInfo.name) == utils->ToLower("ZiggsQ"))
 		{
+			auto p1 = Geometry::Circle(endPos, spellInfo.radius).ToPolygon();
+			auto bp1 = Geometry::Circle(endPos, spellInfo.radius + Bounding).ToPolygon();
+			Vector3 e1 = (startPos).Extend(endPos, 1.4 * startPos.Distance(endPos));
+			auto p2 = Geometry::Circle(e1, spellInfo.radius).ToPolygon();
+			auto  bp2 = Geometry::Circle(e1, spellInfo.radius + Bounding).ToPolygon();
+			Vector3 e2 = (endPos).Extend(e1, 1.69 * endPos.Distance(e1));
+			auto p3 = Geometry::Circle(e2, spellInfo.radius).ToPolygon();
+			auto  bp3 = Geometry::Circle(e2, spellInfo.radius + Bounding).ToPolygon();
+			spellInfo.delay += 0.25;
+			AddSpell(bp1, p1, startPos, endPos, spellInfo);
+			spellInfo.delay += 0.5;
+			AddSpell(bp2, p2, startPos, endPos, spellInfo);
+			spellInfo.delay += 0.5;
+			AddSpell(bp3, p3, startPos, endPos, spellInfo);
+		}
+		else if (utils->ToLower(spellInfo.name) == utils->ToLower("AatroxQ2"))
+		{
+			auto dir = (startPos - endPos).Perpendicular().Normalized() * spellInfo.radius;
+			auto s1 = (startPos - dir);
+			auto s2 = (startPos + dir);
+			auto e1 = s1.Rotate(endPos, DEG2RAD(40));
+			auto e2 = s2.Rotate(endPos, -DEG2RAD(40));
+			path1.Add(s1);
+			path1.Add(e1);
+			path1.Add(e2);
+			path1.Add(s2);
+			//todo offset polygon path1
+		}
+		else if (spellInfo.type == linear || spellInfo.type == polygon)
+		{
+			if (utils->ToLower(spellInfo.name) == utils->ToLower("ZoeE"))
+			{
+				Spell tspell = spellInfo;
+				tspell.speed = MathHuge;
+				tspell.delay = 6;
+				tspell.radius = 250;
+				auto p1 = Geometry::Circle(endPos, tspell.radius + Bounding).ToPolygon();
+				auto p2 = Geometry::Circle(endPos, tspell.radius).ToPolygon();
+				AddSpell(p1, p2, startPos, endPos, tspell);
+			}
 			path1 = Geometry::Rectangle(startPos, endPos, spellInfo.radius).ToPolygon(Bounding);
 			path2 = Geometry::Rectangle(startPos, endPos, spellInfo.radius).ToPolygon();
 		}
@@ -2667,7 +4107,7 @@ public:
 			return moveSpeed;
 		if (name == "AnnieE")
 			return (1.2824 + (0.0176 * Local.GetLevel())) * moveSpeed;
-		else if (name == "BlitzcrankW")
+		else if (name == "RyzeW")
 		{
 			float speed[] = { 1.7, 1.75, 1.8, 1.85, 1.9 };
 			return speed[lvl] * moveSpeed;
@@ -3037,16 +4477,16 @@ public:
 		POINT startPos = mouse->GetPos();
 		ImVec2 path = Direct3D9.WorldToScreen(pos);
 		mouse->MouseMoveInstant(path.x, path.y);
-		bool over = false;
-		if (Memory.Read<DWORD>(ClientAddress + oUnderMouseObject) != 0) //if smth under mouse
-		{
-			over = true;
-			keyboard->GenerateKeyScancode(DIK_Z);
-		}
+		//bool over = false;
+		//if (Memory.Read<DWORD>(ClientAddress + oUnderMouseObject) != 0) //if smth under mouse
+		//{
+		//	over = true;
+		//	keyboard->GenerateKeyScancode(DIK_Z);
+		//}
 
 		mouse->RightClick();
-		if (over)
-			keyboard->GenerateKeyScancode(DIK_Z);
+		//if (over)
+		//	keyboard->GenerateKeyScancode(DIK_Z);
 		if (M.Evade.MouseBack || stop)
 			mouse->MouseMoveInstant(startPos.x, startPos.y);
 	}
@@ -3135,6 +4575,8 @@ public:
 	{
 		if (!unit.Address() || !spell.Address())
 			return;
+		//if (info.exception)
+		//	return;
 
 		if (M.bDebug || unit.GetTeam() != Local.GetTeam())
 		{
@@ -3186,6 +4628,11 @@ public:
 	void OnCreateMissile(CObject& unit, CMissileClient& missile, Spell& info)
 	{
 		if (M.Evade.LimitRange && Local.GetDistTo(unit) > M.Evade.LR)
+			return;
+
+		//if (info.exception)
+		//	return;
+		if (info.fow && !unit.IsVisible())
 			return;
 
 		missile.spellInfo->delay = 0;
@@ -3296,8 +4743,8 @@ public:
 						clog.AddLog("0x%x = f%f , d%d , %s", i, Memory.Read<float>(addr + i), Memory.Read<int>(addr + i), Memory.ReadString(addr + i));
 					}*/
 
-					//clog.AddLog("ps%s", spell.spellInfo->name.c_str());
-					//clog.AddLog("ps%s", spell.GetSpellInfo()->GetName().c_str());
+					//clog.AddLog("ps %s", spell.spellInfo->name.c_str());
+					//clog.AddLog("ps1 %s", spell.GetSpellInfo()->GetName().c_str());
 
 				std::string heroName = hero.GetChampName();
 				for (auto h : champs)
@@ -3309,7 +4756,7 @@ public:
 						{
 							bool detected = false;
 							//if spell in db
-							if (utils->ToLower(s.name) == utils->ToLower(spell.spellInfo->name) || utils->ToLower(s.missileName) == utils->ToLower(spell.spellInfo->name))
+							if (utils->StringContains(spell.GetSpellInfo()->GetName(), s.name))
 							{
 								for (auto a : DodgeableSpells)
 									if (a.startPos == spell.GetMissileStartPos() && utils->ToLower(a.spell.name) == utils->ToLower(spell.spellInfo->name))
@@ -3394,7 +4841,7 @@ public:
 					if (source.IsHero())
 					{
 						//clog.AddLog("%x", obj.Address());
-						if (!utils->StringContains(obj.GetName(), "basic", true))
+						if (!utils->StringContains(obj.GetName(), L"basic", true))
 						{
 							/*for (int i = oMissileSpellInfo; i < 10000; i += 4)
 							{
@@ -3414,7 +4861,7 @@ public:
 									{
 										bool detected = false;
 										//if spell in db
-										if (utils->ToLower(s.name) == obj.spellInfo->name || utils->ToLower(s.missileName) == obj.spellInfo->name)
+										if ((utils->ToLower(s.name) == obj.spellInfo->name) || (utils->ToLower(s.missileName) == obj.spellInfo->name))
 										{
 											for (auto a : DodgeableSpells)
 												if (a.startPos == obj.GetMissileStartPos() && (utils->ToLower(a.spell.name) == utils->ToLower(obj.spellInfo->name) || utils->ToLower(a.spell.missileName) == utils->ToLower(obj.spellInfo->name)))

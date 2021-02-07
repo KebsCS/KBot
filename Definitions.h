@@ -83,13 +83,6 @@ enum Arrow_Keys : int
 	DOWN = 4
 };
 
-enum WardType : int
-{
-	NormalWard = 1,
-	ControlWard = 2,
-	BlueWard = 3,
-};
-
 enum SpellSlotID : int
 {
 	Q = 0,

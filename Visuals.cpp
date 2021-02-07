@@ -341,7 +341,7 @@ void Visuals::ScoreBoard(CObject obj)
 	int Spacing = 38;
 	for (int i = 0; i < 10; i++)
 	{
-		if (ChampName == M.sScoreboardNames[i])
+		if (ChampName == M.ScoreBoard[i].first && obj.GetNetworkID() == M.ScoreBoard[i].second)
 		{
 			if (i % 2 == 0)
 			{
@@ -420,7 +420,13 @@ void Visuals::DrawAARanges(CObject obj, int points, float thickness, RGBA color,
 	{
 		if (Position == Vector3(105.0, 33.0, 134.0) || Position == Vector3(14576.0, 466.0, 14693.0)) //if fountain
 			return;
-		draw->CircleRange(Position, points, obj.unitInfo->baseAttackRange + obj.unitInfo->selectionRadius, color, thickness);
+		draw->CircleRange(Position, points, 750 + 130/* obj.unitInfo->baseAttackRange + obj.unitInfo->selectionRadius*/, color, thickness);
+
+		if (M.bDebug)
+		{
+			ImVec2 RealPos = Direct3D9.WorldToScreen(Position);
+			draw->String(RealPos.x, RealPos.y + 20, std::to_string(obj.Address()), RGBA(255, 255, 255));
+		}
 
 		//draw->String(Direct3D9.WorldToScreen(Position), Memory.ReadString(obj.Address() + 0x1014), RGBA(255, 255, 255));
 		return;
@@ -468,7 +474,7 @@ void Visuals::DrawTracers(CObject obj, float thickness)
 		r = g = 0;
 		b = 255;
 
-		if ((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1)))
+		if(draw->IsOnScreen(RealPos))
 			draw->String(obj.GetChampName(), RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
 	}
 
@@ -526,12 +532,8 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 	//clog.AddLog("%f", cd);
 	if (cd > 0.f)
 		return;
-	std::string objName = obj.GetName();
-
-	if (!(objName.find("SRU_Baron") != std::string::npos || objName.find("SRU_Dragon") != std::string::npos || objName.find("SRU_Gromp") != std::string::npos
-		|| objName.find("SRU_Razorbeak3") != std::string::npos || objName.find("SRU_Razorbeak9") != std::string::npos || objName.find("SRU_Blue") != std::string::npos || objName.find("SRU_Red") != std::string::npos
-		|| objName.find("SRU_Murkwolf2") != std::string::npos || objName.find("SRU_Murkwolf8") != std::string::npos || objName.find("SRU_RiftHerald") != std::string::npos
-		|| objName.find("Sru_Crab") != std::string::npos || objName.find("SRU_Krug1") != std::string::npos || objName.find("SRU_Krug5") != std::string::npos))
+	
+	if (!obj.HasUnitTags(Unit_Monster_Camp))
 		return;
 
 	Vector3 Position = obj.GetPosition();
@@ -595,8 +597,6 @@ void Visuals::LastHit(CObject obj, RGBA color)
 		return;
 	if (obj.GetDistTo(Local) > 1500)
 		return;
-	if (obj.GetName().find("Minion_") == std::string::npos)
-		return;
 	if (!obj.HasUnitTags(Unit_Minion_Lane))
 		return;
 
@@ -630,15 +630,13 @@ void Visuals::LastHit(CObject obj, RGBA color)
 
 void Visuals::InhibTimers(CObject obj)
 {
-	//draw->String(Direct3D9.WorldToScreen(obj.GetPosition()), std::to_string(obj.Address()), RGBA(255, 255, 255));
-
 	if (obj.IsDead())
 	{
 		Vector3 Position = obj.GetPosition();
 		ImVec2 RealPos = Direct3D9.WorldToScreen(Position);
 		ImVec2 MapPos = Direct3D9.WorldToMinimap(Position);
 
-		float RespawnTimer = Memory.Read<float>(obj.Address() + oInhiRemainingRespawnTime);
+		float RespawnTimer = Memory.Read<float>(obj.Address() + Offsets::oInhiRemainingRespawnTime);
 
 		draw->String(std::to_string((int)RespawnTimer), MapPos.x, MapPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
 
@@ -647,8 +645,11 @@ void Visuals::InhibTimers(CObject obj)
 		if (RealPos.x == 0.f && RealPos.y == 0.f)
 			return;
 
-		if ((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1)))
+		if (draw->IsOnScreen(RealPos))
 		{
+			if (M.bDebug)
+				draw->String(RealPos.x, RealPos.y + 20, std::to_string(obj.Address()), RGBA(255, 255, 255));
+
 			draw->String(std::to_string((int)RespawnTimer), RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
 		}
 	}
@@ -657,6 +658,8 @@ void Visuals::InhibTimers(CObject obj)
 std::map<int, float>wardTimer;
 void Visuals::WardsRange(CObject obj)
 {
+	if (!obj.IsWard())
+		return;
 	if (obj.GetNetworkID() - (unsigned int)0x40000000 > 0x100000)
 		return;
 	if ((obj.GetTeam() == Local.GetTeam()) && !M.bDebug)
@@ -665,20 +668,16 @@ void Visuals::WardsRange(CObject obj)
 	if (obj.IsDead())
 		return;
 
-	int type = obj.IsWard(); // store ward type for later
-	if (!type)
-		return;
-
 	Vector3 Pos = obj.GetPosition();
 	ImVec2 RealPos = Direct3D9.WorldToScreen(Pos);
 
 	if (RealPos.x == 0.f && RealPos.y == 0.f)
 		return;
 
-	if (!((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1))))
+	if (!draw->IsOnScreen(RealPos))
 		return;
 
-	if (type == NormalWard)
+	if (utils->StringContains(obj.unitInfo->name, "YellowTrinket", true))
 	{
 		if (!wardTimer.count(obj.GetIndex()) || (wardTimer[obj.GetIndex()] - M.fGameTime) < -100) // if timer for a ward doesnt exist
 		{
@@ -695,21 +694,24 @@ void Visuals::WardsRange(CObject obj)
 			draw->CircleRange(Pos, 14, 900, WardColor);
 		}
 	}
-	else if (type == ControlWard)
+	else if (obj.unitInfo->name == utils->ToLower("JammerDevice"))
 	{
 		RGBA ControlWardColor(255, 40, 0);
 		draw->String("Control Ward", RealPos.x, RealPos.y, centered, ControlWardColor, Direct3D9.fontTahomaSmall);
 		draw->CircleRange(Pos, 14, 900, ControlWardColor);
 	}
-	else if (type == BlueWard)
+	else if (obj.unitInfo->name == utils->ToLower("BlueTrinket"))
 	{
 		RGBA BlueWardColor(0, 65, 255);
 		draw->String("Blue Ward", RealPos.x, RealPos.y, centered, BlueWardColor, Direct3D9.fontTahomaSmall);
 		draw->CircleRange(Pos, 14, 500, BlueWardColor);
 	}
-	//for testing
-	std::string testName = obj.GetChampName() + " " + obj.GetName();
-	draw->String(testName, RealPos.x, RealPos.y + 30, centered, RGBA(255, 255, 255), Direct3D9.fontTahomaSmall);
+	else
+	{
+		//for testing
+		std::string testName = obj.unitInfo->name;
+		draw->String(testName, RealPos.x, RealPos.y + 30, centered, RGBA(255, 255, 255), Direct3D9.fontTahomaSmall);
+	}
 }
 
 std::map<int, float>lastEXP;
@@ -785,7 +787,7 @@ void Visuals::GankAlerter(CObject obj)
 		if (RealPos.x == 0.f && RealPos.y == 0.f)
 			return;
 
-		if (!((RealPos.x <= SCREENWIDTH * 1.2) && (RealPos.x >= SCREENWIDTH / 2 * (-1)) && (RealPos.y <= SCREENHEIGHT * 1.5) && (RealPos.y >= SCREENHEIGHT / 2 * (-1))))
+		if (!draw->IsOnScreen(RealPos))	
 			return;
 
 		std::string str = std::to_string(howManyNearby[obj.GetIndex()]) + (howManyNearby[obj.GetIndex()] == 1 ? " CHAMPION" : " CHAMPIONS") + " NEARBY!";

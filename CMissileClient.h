@@ -40,9 +40,9 @@ public:
 	{
 		if (startPos.IsZero())
 		{
-			startPos = Vector3(Memory.Read<float>(base + oMissileStartPos, sizeof(float)),
-				Memory.Read<float>(base + oMissileStartPos + 0x4, sizeof(float)),
-				Memory.Read<float>(base + oMissileStartPos + 0x8, sizeof(float)));
+			startPos = Vector3(Memory.Read<float>(base + Offsets::oMissileStartPos, sizeof(float)),
+				Memory.Read<float>(base + Offsets::oMissileStartPos + 0x4, sizeof(float)),
+				Memory.Read<float>(base + Offsets::oMissileStartPos + 0x8, sizeof(float)));
 			//startPos.y += spellInfo->height;
 		}
 		return startPos;
@@ -52,9 +52,9 @@ public:
 	{
 		if (endPos.IsZero())
 		{
-			endPos = Vector3(Memory.Read<float>(base + oMissileEndPos, sizeof(float)),
-				Memory.Read<float>(base + oMissileEndPos + 0x4, sizeof(float)),
-				Memory.Read<float>(base + oMissileEndPos + 0x8, sizeof(float)));
+			endPos = Vector3(Memory.Read<float>(base + Offsets::oMissileEndPos, sizeof(float)),
+				Memory.Read<float>(base + Offsets::oMissileEndPos + 0x4, sizeof(float)),
+				Memory.Read<float>(base + Offsets::oMissileEndPos + 0x8, sizeof(float)));
 			//endPos.y += spellInfo->height;
 		}
 		return endPos;
@@ -62,7 +62,7 @@ public:
 
 	short GetMissileSourceIndex()
 	{
-		return Memory.Read<short>(base + oMissileSourceIndex, sizeof(short));
+		return Memory.Read<short>(base + Offsets::oMissileSourceIndex, sizeof(short));
 	}
 
 	CObject GetSource()
@@ -72,7 +72,7 @@ public:
 
 	short GetMissileTargetIndex()
 	{
-		return Memory.Read<short>(base + oMissileTargetIndex, sizeof(short));
+		return Memory.Read<short>(base + Offsets::oMissileTargetIndex, sizeof(short));
 	}
 
 	CObject GetTarget()
@@ -84,7 +84,7 @@ public:
 	{
 		if (!dwSpellInfo)
 		{
-			dwSpellInfo = Memory.Read<DWORD>(base + oMissileSpellInfo);
+			dwSpellInfo = Memory.Read<DWORD>(base + Offsets::oMissileSpellInfo);
 		}
 		if (!dwSpellInfo)
 			return 0;

@@ -8,7 +8,7 @@ BYTE Spell::buffer[0x150];
 const char* Spell::spellTypeName[6] = { "Q", "W", "E", "R", "D", "F" };
 const int   Spell::spellSlotKey[6] = { 'Q', 'W', 'E', 'R', 'D', 'F' };
 
-std::map<std::string, SummonerSpellType> Spell::summonerSpellTypeDict = 
+std::map<std::string, SummonerSpellType> Spell::summonerSpellTypeDict =
 {
 	{std::string("summonerhaste"),                   SummonerSpellType::GHOST},
 	{std::string("summonerheal"),                    SummonerSpellType::HEAL},
@@ -23,10 +23,9 @@ std::map<std::string, SummonerSpellType> Spell::summonerSpellTypeDict =
 	{std::string("summonersmite"),                   SummonerSpellType::SMITE},
 	{std::string("s5_summonersmiteplayerganker"),    SummonerSpellType::SMITE},
 	{std::string("s5_summonersmiteduel"),            SummonerSpellType::SMITE},
-
 };
 
-float Spell::GetRemainingCooldown(float gameTime) 
+float Spell::GetRemainingCooldown(float gameTime)
 {
 	return (readyAt > gameTime ? readyAt - gameTime : 0.f);
 }
@@ -36,13 +35,12 @@ const char* Spell::GetTypeStr()
 	return spellTypeName[(int)slot];
 }
 
-void Spell::Trigger() 
+void Spell::Trigger()
 {
 	keyboard->GenerateKeyScancode(spellSlotKey[(int)slot]);
 }
 
 void Spell::LoadFromMem(DWORD base, HANDLE hProcess, bool deepLoad) {
-
 	//addressSlot = base;
 	//Mem::Read(hProcess, base, buffer, 0x150);
 

@@ -1,6 +1,7 @@
 #include "UnitInfo.h"
 
-std::map<std::string, UnitTag> UnitInfo::TagMapping = {
+std::map<std::string, UnitTag> UnitInfo::TagMapping = 
+{
 	{std::string("Unit_"), Unit_},
 	{std::string("Unit_Champion"), Unit_Champion},
 	{std::string("Unit_Champion_Clone"), Unit_Champion_Clone},

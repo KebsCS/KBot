@@ -83,6 +83,20 @@ std::string Utils::ToLower(std::string str)
 	return str;
 }
 
+std::wstring Utils::ToLower(std::wstring str)
+{
+	std::wstring strLower;
+	strLower.resize(str.size());
+
+	std::transform(str.begin(),
+		str.end(),
+		strLower.begin(),
+		::tolower);
+
+	return strLower;
+	return str;
+}
+
 std::string Utils::ToUpper(std::string str)
 {
 	std::string strLower;
@@ -99,7 +113,7 @@ std::string Utils::ToUpper(std::string str)
 
 bool Utils::StringContains(std::string strA, std::string strB, bool ignore_case)
 {
-	if (strA == "" || strB == "")
+	if (strA.empty() || strB.empty())
 		return true;
 
 	if (ignore_case)
@@ -109,6 +123,23 @@ bool Utils::StringContains(std::string strA, std::string strB, bool ignore_case)
 	}
 
 	if (strA.find(strB) != std::string::npos)
+		return true;
+
+	return false;
+}
+
+bool Utils::StringContains(std::wstring strA, std::wstring strB, bool ignore_case)
+{
+	if (strA.empty() || strB.empty())
+		return true;
+
+	if (ignore_case)
+	{
+		strA = ToLower(strA);
+		strB = ToLower(strB);
+	}
+
+	if (strA.find(strB) != std::wstring::npos)
 		return true;
 
 	return false;
@@ -124,9 +155,10 @@ std::string Utils::WstringToString(std::wstring wstr)
 	}
 	catch (std::range_error)
 	{
-		std::stringstream s;
+		/*std::stringstream s;
 		s << wstr.c_str();
-		return s.str();
+		return s.str();*/
+		return "range_error";
 	}
 }
 
@@ -182,6 +214,42 @@ void Utils::CopyToClipboard(std::string text)
 	if (::SetClipboardData(CF_UNICODETEXT, wbuf_handle) == NULL)
 		::GlobalFree(wbuf_handle);
 	::CloseClipboard();
+}
+
+bool Utils::DownloadFile(std::string fileName, std::string directory, std::string url)
+{
+	// Create folder if it doesn't exists
+	if (!std::filesystem::exists(directory))
+		std::filesystem::create_directory(directory);
+	if (fileName[0] == '\\')
+		fileName.erase(0);
+	std::string file = directory + "\\" + fileName;
+
+	// Don't download if file already exists
+	if (std::filesystem::exists(file))
+		return true;
+
+	std::string fullPath = std::filesystem::current_path().string() + "\\" + file;
+	std::string toDownload = url + fileName;
+
+	// Download file
+	HRESULT result = URLDownloadToFileA(NULL, toDownload.c_str(), fullPath.c_str(), 0, NULL);
+
+	if (result != S_OK)
+		return false;
+	return true;
+}
+
+bool Utils::ContainsOnlyASCII(std::string buff)
+{
+	for (int i = 0; i < buff.size(); ++i)
+	{
+		if (buff[i] == 0)
+			return true;
+		if ((unsigned char)buff[i] > 127)
+			return false;
+	}
+	return true;
 }
 
 Utils* utils = new Utils();

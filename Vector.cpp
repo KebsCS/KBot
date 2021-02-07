@@ -66,7 +66,7 @@ Vector3& Vector3::operator/=(float s)
 {
 	this->x /= s;
 	this->y /= s;
-	this->z /= z;
+	this->z /= s;
 	return *this;
 }
 
@@ -233,7 +233,7 @@ float Vector3::DotProduct(Vector3 const& other) const
 {
 	return this->x * other.x + this->y * other.y + this->z * other.z;
 }
-
+//todo
 float Vector3::CrossProduct(Vector3 const& other) const
 {
 	return other.y * this->x - other.x * this->y;

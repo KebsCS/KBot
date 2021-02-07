@@ -23,22 +23,22 @@ public:
 
 	float GetRange()
 	{
-		return Memory.Read<float>((DWORD)this + oMissileRange);
+		return Memory.Read<float>((DWORD)this + Offsets::oSpellDataRange);
 	}
 
 	float GetWidth()
 	{
-		return Memory.Read<float>((DWORD)this + oMissileWidth);
+		return Memory.Read<float>((DWORD)this + Offsets::oSpellDataWidth);
 	}
 
 	float GetSpeed()
 	{
-		return Memory.Read<float>((DWORD)this + oMissileSpeed);
+		return Memory.Read<float>((DWORD)this + Offsets::oSpellDataSpeed);
 	}
 
 	float GetCastRadius()
 	{
-		return Memory.Read<float>((DWORD)this + oMissileCastRadius);
+		return Memory.Read<float>((DWORD)this + Offsets::oSpellDataCastRadius);
 	}
 
 	float GetManaCostByLevel(unsigned int level)
@@ -46,7 +46,7 @@ public:
 		if (level > 4) {
 			return 0.f;
 		}
-		return  Memory.Read<float>((DWORD)this + 0x518 + ((level - 1) * 0x4));
+		return  Memory.Read<float>((DWORD)this + Offsets::oSpellDataMana + ((level - 1) * 0x4));
 	}
 };
 

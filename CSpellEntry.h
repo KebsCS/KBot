@@ -23,13 +23,13 @@ public:
 	CSpellEntry()
 		: base{ 0 }
 	{
-		std::string temp = utils->ToLower(GetSpellInfo()->GetName());
+		std::string temp = utils->ToLower(GetSpellInfo()->GetName()).c_str();
 		spellInfo = GameData::GetSpellInfoByName(temp);
 	}
 	CSpellEntry(DWORD addr)
 		: base{ addr }
 	{
-		std::string temp = utils->ToLower(GetSpellInfo()->GetName());
+		std::string temp = utils->ToLower(GetSpellInfo()->GetName()).c_str();
 		spellInfo = GameData::GetSpellInfoByName(temp);
 	}
 	DWORD Address() const
@@ -39,14 +39,14 @@ public:
 
 	int GetIndex()
 	{
-		return Memory.Read<int>(base + 0x14);
+		return Memory.Read<int>(base + Offsets::oSpellEntryIndex);
 	}
 
 	CSpellInfo* GetSpellInfo()
 	{
 		if (!dwspellinfo)
 		{
-			dwspellinfo = Memory.Read<DWORD>(base + oSpellEntrySpellInfo);
+			dwspellinfo = Memory.Read<DWORD>(base + Offsets::oSpellEntrySpellInfo);
 		}
 		if (!dwspellinfo)
 			return 0;
@@ -55,40 +55,47 @@ public:
 
 	Vector3 GetMissileStartPos()
 	{
-		Vector3 startPos = Vector3(Memory.Read<float>(base + oSpellEntryStartPos, sizeof(float)),
-			Memory.Read<float>(base + oSpellEntryStartPos + 0x4, sizeof(float)),
-			Memory.Read<float>(base + oSpellEntryStartPos + 0x8, sizeof(float)));
+		Vector3 startPos = Vector3(Memory.Read<float>(base + Offsets::oSpellEntryStartPos, sizeof(float)),
+			Memory.Read<float>(base + Offsets::oSpellEntryStartPos + 0x4, sizeof(float)),
+			Memory.Read<float>(base + Offsets::oSpellEntryStartPos + 0x8, sizeof(float)));
 		//startPos.y += spellInfo->height;
 		return startPos;
 	}
 
 	Vector3 GetMissileEndPos()
 	{
-		Vector3 startPos = Vector3(Memory.Read<float>(base + oSpellEntryEndPos, sizeof(float)),
-			Memory.Read<float>(base + oSpellEntryEndPos + 0x4, sizeof(float)),
-			Memory.Read<float>(base + oSpellEntryEndPos + 0x8, sizeof(float)));
+		Vector3 startPos = Vector3(Memory.Read<float>(base + Offsets::oSpellEntryEndPos, sizeof(float)),
+			Memory.Read<float>(base + Offsets::oSpellEntryEndPos + 0x4, sizeof(float)),
+			Memory.Read<float>(base + Offsets::oSpellEntryEndPos + 0x8, sizeof(float)));
 		//startPos.y += spellInfo->height;
 		return startPos;
 	}
 
 	int GetSlot()
 	{
-		return Memory.Read<int>(base + oSpellEntrySlot);
+		return Memory.Read<int>(base + Offsets::oSpellEntrySlot);
 	}
 
 	float GetWindupTime()
 	{
-		return Memory.Read<float>(base + oSpellEntryWindupTime, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oSpellEntryWindupTime, sizeof(float));
 	}
 
 	float GetCastStartTime()
 	{
-		return Memory.Read<float>(base + oSpellEntryCastStartTime, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oSpellEntryCastStartTime, sizeof(float));
 	}
 
 	bool HasSpellFlags(SpellFlags flags) const
 	{
 		return (spellInfo->flags & flags) == flags;
+	}
+
+	inline bool operator ! () const
+	{
+		if (base == 0)
+			return true;
+		return false;
 	}
 };
 

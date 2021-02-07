@@ -19,7 +19,7 @@ public:
 	std::vector<CObject>herolist;
 	std::vector<CObject>turretlist;
 	std::vector<CObject>inhiblist;
-	std::vector<CObject>structurelist;
+	//std::vector<CObject>structurelist;
 
 	std::vector<CObject>objlisttest;
 
@@ -34,15 +34,13 @@ public:
 	void MakeHeroList();
 	void MakeTurretList();
 	void MakeInhibList();
-	void MakeStructureList();
+	//void MakeStructureList();
 
 	void MakeTestList();
 
 	void SetMinimapProperties();
 
 	void SetRendererProperties();
-
-	void InitSpells();
 
 	//makes array of champions in game for GUI scoreboard
 	void CreateChampArray();

@@ -8,7 +8,10 @@
 
 #include "Mouse.h"
 
-#include "API.h"
+#include "HTTP.h"
+#include "LoLAPI.h"
+
+#include "Evade2.h"
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 Direct3D9Render Direct3D9;
@@ -255,6 +258,47 @@ bool RenameExe()
 
 bool once123 = true;
 
+std::vector<Vector3>navpath;
+void DrawNav(CObject obj)
+{
+	navpath.clear();
+	if (!obj.IsMoving())
+		return;
+	AiManager* aimgr = obj.GetAiManager();
+
+	DWORD NaviStart = Memory.Read<DWORD>((DWORD)aimgr + 0x1BC);
+	DWORD NaviEnd = Memory.Read<DWORD>((DWORD)aimgr + 0x1C0);
+	DWORD NavSize = (NaviEnd - NaviStart) / 12;
+	clog.AddLog("navsize %d", NavSize);
+	if (NavSize > 1)
+	{
+		Vector3 MyStart = Local.GetPosition();
+		ImVec2 screen_start_1 = Direct3D9.WorldToScreen(MyStart);
+
+		Vector3 NavLineEnd = Memory.Read<Vector3>(NaviStart + 12);
+		ImVec2 screen_end = Direct3D9.WorldToScreen(NavLineEnd);
+		//draw->Line(screen_start_1, screen_end, RGBA(COLOR_WHITE));
+		navpath.emplace_back(MyStart);
+		navpath.emplace_back(NavLineEnd);
+
+		if (NavSize > 2)
+		{
+			for (int i = 2; i < NavSize; i++)
+			{
+				Vector3 NavLineStart = Memory.Read<Vector3>(NaviStart + ((i - 1) * 12));
+				ImVec2 screen_start = Direct3D9.WorldToScreen(NavLineStart);
+
+				NavLineEnd = Memory.Read<Vector3>(NaviStart + i * 12);
+				screen_end = Direct3D9.WorldToScreen(NavLineEnd);
+
+				navpath.emplace_back(NavLineStart);
+				navpath.emplace_back(NavLineEnd);
+				//draw->Line(screen_start, screen_end, RGBA(COLOR_WHITE));
+			}
+		}
+	}
+}
+
 // Main code
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -287,8 +331,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		::UnregisterClassA(wc.lpszClassName, wc.hInstance);
 		return 0;
 	}
-
-	std::string htmlData = api->GET(XorStr("https://raw.githubusercontent.com"), XorStr("/y3541599/test/main/README.md"));
+	HTTP http;
+	std::string htmlData = http.GET(XorStr("https://raw.githubusercontent.com"), XorStr("/y3541599/test/main/README.md"));
 	size_t nPos = htmlData.find(XorStr("#Version#")) + strlen(XorStr("#Version#"));
 	if (nPos == std::string::npos)
 	{
@@ -307,7 +351,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	std::string NowPatch = htmlData.substr(nPos, htmlData.find(XorStr("$Patch$"), nPos) - nPos);
 
-	if (NowVersion != XorStr("1.0.0") || NowPatch != XorStr("11.2"))
+	if (NowVersion != XorStr("1.0.0") || NowPatch != XorStr("11.3"))
 	{
 		MessageBoxA(0, XorStr("Outdated version"), 0, 0);
 		M.bExitBot = true;
@@ -359,6 +403,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 0;
 	}
 
+	LoLAPI::LoadPlayerListData();
+	//todo turret/inhib size warning based on map
+	/*LoLAPI::GetGameStats();
+	std::vector<API::Event>Events = LoLAPI::GetEvents();*/
 #endif // !NOLEAGUE
 
 	//Initialize Direct3D
@@ -416,12 +464,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//Load static info from files
 	GameData::Load(sDataPath);
 
-	init->StartupInfo();
+	if (M.bDebug)
+		init->StartupInfo();
 
 	Evade* evade = new Evade();
-	evade->MakeWorldMap();
+	//evade->MakeWorldMap();
 	evade->InitSpells();
 	evade->InitEvadeSpells();
+
+	//Evade2 evade2;
 
 	// Main loop
 	MSG msg;
@@ -454,26 +505,34 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		DrawOverlayWindows(*draw);
 
 		//Update Global timer
-		M.fGameTime = Memory.Read<float>(ClientAddress + oGameTime, sizeof(float));
+		M.fGameTime = Memory.Read<float>(ClientAddress + Offsets::oGameTime, sizeof(float));
+		try {
+			//Update ViewMatrix
+			Direct3D9.GetViewProjectionMatrix();
 
-		//Update ViewMatrix
-		Direct3D9.GetViewProjectionMatrix();
+			//Loop through lists
+			Direct3D9.Loops();
 
-		//Loop through lists
-		Direct3D9.Loops();
+			//Execute champion scripts
+			if (championScript)
+				championScript->OnKeyDown(1);
 
-		//Execute champion scripts
-		if (championScript)
-			championScript->OnKeyDown(1);
+			if (M.Evade.Master)
+			{
+				evade->Tick();
+				evade->Draw();
+				if (M.bMenuOpen)
+					evade->GUI();
+			}
+			/*	DrawNav(Local);
+				for (auto a : navpath)
+				{
+					draw->CircleRange(a, 16, 16, RGBA(COLOR_CYAN));
+				}*/
 
-		if (M.Evade.Master)
-		{
-			evade->Tick();
-			evade->Draw();
-			if (M.bMenuOpen)
-				evade->GUI();
+				//evade2.Tick();
 		}
-
+		catch (const std::bad_alloc&) {/*xd*/ }
 		/*	for (int i = 0; i < 100; i++)
 			{
 				int ab = 1 << i;
@@ -502,6 +561,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 				//if (once123)
 				//once123 = false;
+
+		{
+			//DrawNav(Local);
+			//ImVec2 PathStart = Direct3D9.WorldToScreen(Local.GetAiManager()->GetNavBegin());
+			//ImVec2 PathEnd = Direct3D9.WorldToScreen(Local.GetAiManager()->GetNavEnd());
+			//draw->Circle(PathStart, 30, RGBA(COLOR_RED));
+			//draw->Circle(PathEnd, 30, RGBA(COLOR_BLUE));
+			//draw->Line(PathStart, PathEnd, RGBA(COLOR_WHITE));
+		}
 
 		//End rendering
 		Direct3D9.EndFrame();

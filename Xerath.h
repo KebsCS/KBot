@@ -4,6 +4,7 @@
 #define _XERATH_H
 
 #include "Script.h"
+#include <Windows.h>
 
 class Xerath : public IScript {
 private:
@@ -18,6 +19,11 @@ private:
 	virtual bool Evade(Vector3 evadePos);
 
 public:
+
+	bool chargeQ = false;
+	DWORD qTick;
+	float qRange = 0;
+
 	Xerath() : champion(Champion::Xerath)
 	{
 	}

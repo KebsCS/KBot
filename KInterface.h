@@ -8,6 +8,7 @@
 #include <Windows.h>
 #include <apiquery2.h>
 #include <string>
+#include "Utils.h"
 
 #pragma pack( push, 4 )
 template<class Type = DWORD>
@@ -193,7 +194,6 @@ private:
 		}
 		return std::string(buff);
 
-		//todo doesnt work when string is in pointer
 		////should be faster since its 1 read per 16 bytes and DWORD is 4 reads for 16
 		//char buff[24];
 		//Read(ReadAddress, buff, 24);
@@ -211,6 +211,25 @@ private:
 		//memcpy(&str[0], &buff[8], k);
 		//return std::string(str);
 	}
+
+	std::string WStrRead(DWORD ReadAddress)
+	{
+		char buff[24];
+		Read(ReadAddress, buff, 24);
+		int k = 0;
+		for (int i = 8; i < 24; i++)
+		{
+			if (buff[i] == '\0')
+			{
+				k = i;
+				break;
+			}
+		}
+		char str[16];
+		memcpy(&str[0], &buff[8], k);
+		return std::string(str);
+	}
+
 public:
 
 	// Initializer
@@ -337,33 +356,64 @@ public:
 		}
 		return 0;
 	}
-
-	std::string ReadString(DWORD address, int noPtr = -1)
+	// 0 - normal, 1 - pointer
+	std::string ReadString(DWORD address, bool checkASCII = false, int noPtr = -1)
 	{
-		if (noPtr==0)
+		if (noPtr == 0)
 			return StrRead(address);
-		else if(noPtr==1)
+		else if (noPtr == 1)
 			return StrRead(Read<DWORD>(address, sizeof(DWORD)));
 
 		std::string strReturn;
 
-		//todo string offsets from string class instead of memory read
 		int max = Read<int>(address + 0x14); // read string length
 		int max2 = Read<int>(address + 0x08);
 		//clog.AddLog("%x : %i", address, max);
 
 		unsigned char buf = Read<unsigned char>(address, 1);
 
+		bool temp = 0;
 		if (max < 16 && max > 0 && (buf > 0 && buf <= 128) && !(max2 > 0 && max2 < 256))
 		{
 			strReturn = StrRead(address);
+			temp = 0;
 		}
 		else
 		{
 			strReturn = StrRead(Read<DWORD>(address, sizeof(DWORD)));
+			temp = 1;
+		}
+
+		// be extra sure
+		if (checkASCII)
+		{
+			if (!utils->ContainsOnlyASCII(strReturn))
+			{
+				if (temp == 0)
+					return StrRead(Read<DWORD>(address, sizeof(DWORD)));
+				else
+					return StrRead(address);
+			}
 		}
 
 		return strReturn;
+	}
+
+	std::wstring ReadWString(DWORD address)
+	{
+		int max = Read<int>(address + 0x14); // read string length
+		int max2 = Read<int>(address + 0x08);
+		//clog.AddLog("%x : %i", address, max);
+
+		bool temp = 0;
+		if (max < 16 && max > 0 && !(max2 > 0 && max2 < 256))
+		{
+			return utils->StringToWstring(WStrRead(address));
+		}
+		else
+		{
+			return utils->StringToWstring(WStrRead(Read<DWORD>(address, sizeof(DWORD))));
+		}
 	}
 
 	/*bool Write(ULONG WriteAddress, ULONG WriteValue, SIZE_T WriteSize)

@@ -12,6 +12,8 @@
 #include "CSpellSlot.h"
 
 #include "AiManager.h"
+#include "LoLAPI.h"
+
 
 class CObject
 {
@@ -41,7 +43,7 @@ private:
 		int uVar2;
 		int puVar3;
 		int uStack4;
-		int num1 = oAiManager;
+		int num1 = Offsets::oAiManager;
 		uStack4 = Memory.Read<int>(param_1 + (num1 + 8) + (Memory.Read<byte>(param_1 + (num1 + 4))) * 4);
 		puVar3 = param_1 + num1;
 		uVar2 = Memory.Read<int>(puVar3);
@@ -54,7 +56,7 @@ private:
 protected:
 
 	DWORD base = 0;
-	std::string name;
+	std::wstring name;
 	std::string champ;
 	std::string summ1;
 	std::string summ2;
@@ -62,11 +64,10 @@ protected:
 	int team = 0;
 	float bounding = -1;
 
-	int wardType = -1;
-
 public:
 
 	UnitInfo* unitInfo = GameData::UnknownUnit;
+	API::PlayerList* playerAPIInfo = LoLAPI::UnknownPlayer;
 
 	//bool IsTroy()
 	//{
@@ -101,14 +102,14 @@ public:
 	short GetIndex()
 	{
 		if (!index)
-			index = Memory.Read<short>(base + oObjIndex, sizeof(short));
+			index = Memory.Read<short>(base + Offsets::oObjIndex, sizeof(short));
 		return index;
 	}
 
 	int GetTeam()
 	{
 		if (!team)
-			team = Memory.Read<int>(base + oObjTeam);
+			team = Memory.Read<int>(base + Offsets::oObjTeam);
 		return team;
 	}
 	//bool IsEnemy()
@@ -117,21 +118,21 @@ public:
 	//}
 	bool IsVisible()
 	{
-		return Memory.Read<bool>(base + oObjVisibility, sizeof(bool));
+		return Memory.Read<bool>(base + Offsets::oObjVisibility, sizeof(bool));
 	}
-	std::string GetName()
+	std::wstring GetName()
 	{
 		if (name.empty())
-			name = Memory.ReadString(base + oObjName);
+			name = Memory.ReadWString(base + Offsets::oObjName);
 		return name;
 	}
 	float GetHealth()
 	{
-		return Memory.Read<float>(base + oObjHealth, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjHealth, sizeof(float));
 	}
 	float GetMaxHealth()
 	{
-		return Memory.Read<float>(base + oObjMaxHealth, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjMaxHealth, sizeof(float));
 	}
 	float GetHealthPercent()
 	{
@@ -139,93 +140,101 @@ public:
 	}
 	float GetMana()
 	{
-		return Memory.Read<float>(base + oObjMana, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjMana, sizeof(float));
 	}
 	float GetMaxMana()
 	{
-		return Memory.Read<float>(base + oObjMaxMana, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjMaxMana, sizeof(float));
 	}
 	float GetArmor()
 	{
-		return Memory.Read<float>(base + oObjArmor, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjArmor, sizeof(float));
 	}
 	float GetMR()
 	{
-		return Memory.Read<float>(base + oObjMagicRes, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjMagicRes, sizeof(float));
 	}
 	float GetMS()
 	{
-		return Memory.Read<float>(base + oObjMoveSpeed, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjMoveSpeed, sizeof(float));
 	}
 	float GetBaseAD()
 	{
-		return Memory.Read<float>(base + oObjBaseAtk, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjBaseAtk, sizeof(float));
 	}
 	float GetBonusAD()
 	{
-		return Memory.Read<float>(base + oObjBonusAtk, sizeof(float));
-	}
-	float GetBonusAS()
-	{
-		return Memory.Read<float>(base + 0x1284, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjBonusAtk, sizeof(float));
 	}
 	//bool IsAttacking()
 	//{
-	//    return Memory.Read<int>(base + 0x2740) > 0; // changes when player is attacking/casting spell
+	//    return Memory.Read<int>(base + Offsets::0x2740) > 0; // changes when player is attacking/casting spell
 	//}
 	float GetTotalAD()
 	{
 		return GetBaseAD() + GetBonusAD();
 	}
+	float GetBonusAS()
+	{
+		return Memory.Read<float>(base + Offsets::oObjAttackSpeed);
+	}
+	float GetBaseAS()
+	{
+		return Memory.Read<float>(GetUCIPropertiesInstance() + Offsets::oBaseAttackSpeed);
+	}
+	float GetAS()
+	{
+		return GetBonusAS() * GetBaseAS();
+	}
 	float GetAP()
 	{
-		return Memory.Read<float>(base + oObjAbilityPower, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjAbilityPower, sizeof(float));
 	}
 	float GetAARange()
 	{
-		return Memory.Read<float>(base + oObjAtkRange, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjAtkRange, sizeof(float));
 	}
 	Vector3 GetPosition()
 	{
-		return Vector3(Memory.Read<float>(base + oObjPos, sizeof(float)),
-			Memory.Read<float>(base + oObjPos + 0x4, sizeof(float)),
-			Memory.Read<float>(base + oObjPos + 0x8, sizeof(float)));
+		return Vector3(Memory.Read<float>(base + Offsets::oObjPos, sizeof(float)),
+			Memory.Read<float>(base + Offsets::oObjPos + 0x4, sizeof(float)),
+			Memory.Read<float>(base + Offsets::oObjPos + 0x8, sizeof(float)));
 	}
 	CSpellSlot* GetSpellByID(int id)
 	{
-		DWORD addr = Memory.Read<DWORD>(base + oObjSpellBook + 0x478 + (0x4 * id), sizeof(DWORD));
+		DWORD addr = Memory.Read<DWORD>(base + Offsets::oObjSpellBook + 0x478 + (0x4 * id), sizeof(DWORD));
 		return (CSpellSlot*)(addr);
 	}
 	DWORD GetActiveSpellEntry()
 	{
-		return Memory.Read<DWORD>(base + oObjSpellBook + 0x20);
+		return Memory.Read<DWORD>(base + Offsets::oObjSpellBook + 0x20);
 	}
 	std::string GetChampName()
 	{
 		if (champ.empty())
-			champ = Memory.ReadString(base + oObjChampionName);
+			champ = Memory.ReadString(base + Offsets::oObjChampionName);
 		return champ;
 	}
 	std::string SummonerSpell1()
 	{
 		if (summ1.empty())
-			summ1 = Memory.ReadString(base + oObjSummonerSpell1);
+			summ1 = Memory.ReadString(base + Offsets::oObjSummonerSpell1);
 		return summ1;
 	}
 	std::string SummonerSpell2()
 	{
 		if (summ2.empty())
-			summ2 = Memory.ReadString(base + oObjSummonerSpell2);
+			summ2 = Memory.ReadString(base + Offsets::oObjSummonerSpell2);
 		return summ2;
 	}
 	std::string KeystoneName()
 	{
-		return Memory.ReadString(base + oObjKeystone1);
+		return Memory.ReadString(base + Offsets::oObjKeystone1);
 	}
 
 	int GetLevel()
 	{
-		return Memory.Read<int>(base + oObjLevel, sizeof(int));
+		return Memory.Read<int>(base + Offsets::oObjLevel, sizeof(int));
 	}
 	bool IsDead()
 	{
@@ -239,25 +248,25 @@ public:
 	int IsRecalling()
 	{
 		//6 = recall 16= teleport
-		return Memory.Read<int>(base + oRecallState, sizeof(int));
+		return Memory.Read<int>(base + Offsets::oRecallState, sizeof(int));
 	}
 	float GetEXP()
 	{
-		return Memory.Read<float>(base + oObjEXP, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjEXP, sizeof(float));
 	}
 	/* float GetGold()
 	 {
-		 return Memory.Read<float>(base + mGoldTotal, sizeof(float));
+		 return Memory.Read<float>(base + Offsets::mGoldTotal, sizeof(float));
 	 }*/
 	float GetLethality()
 	{
-		return Memory.Read<float>(base + oObjFloatLethality, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjFloatLethality, sizeof(float));
 	}
 
 	//1.0 is 0% armor pen 25% armor pen is 0.75
 	float GetArmorPen()
 	{
-		return Memory.Read<float>(base + oObjPercentArmorPen, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjPercentArmorPen, sizeof(float));
 	}
 
 	float GetTotalDamage(CObject target, float rawdamage = -1)
@@ -294,7 +303,7 @@ public:
 	//0.0 to 1.0
 	float GetCrit()
 	{
-		return Memory.Read<float>(base + oObjCritChance, sizeof(float));
+		return Memory.Read<float>(base + Offsets::oObjCritChance, sizeof(float));
 	}
 
 	// Return the distance from object to another
@@ -308,71 +317,30 @@ public:
 	}
 	int IsWard()
 	{
-		if (!this->HasUnitTags(Unit_Ward))
-		{
-			wardType = 0;
-			return wardType;
-		}
-
-		if (wardType == -1)
-		{
-			float maxHP = this->GetMaxHealth();
-			if (maxHP == 1.f || maxHP == 3.f || maxHP == 4.f)
-			{
-				std::string sName = this->GetName();
-				if (maxHP == 3.f)
-				{
-					wardType = NormalWard;
-					return wardType;
-				}
-				else if (sName == "JammerDevice")
-				{
-					wardType = ControlWard;
-					return wardType;
-				}
-				else if (maxHP == 1.f && this->GetHealth() == 1.f && sName.find("Plant") == std::string::npos
-					&& sName.find("Shen") == std::string::npos && sName.find("Unused") == std::string::npos && sName.find("Honey") == std::string::npos
-					&& sName.find("Bard") == std::string::npos && sName.find("Chime") == std::string::npos && sName.find("Nunu") == std::string::npos
-					&& sName.find("Ivern") == std::string::npos)
-				{
-					wardType = BlueWard;
-					return wardType;
-				}
-				else
-				{
-					wardType = 0; //not a ward
-					return wardType;
-				}
-			}
-			else
-			{
-				wardType = 0; //not a ward
-				return wardType;
-			}
-		}
-		else
-			return wardType;
+		if (this->HasUnitTags(Unit_Ward))
+			return true;
+		return false;
 	}
 
 	bool CheckState(int state)
 	{
-		return  ((Memory.Read<int>(base + oObjActionState) & state) != 0);
+		return  ((Memory.Read<int>(base + Offsets::oObjActionState) & state) != 0);
 	}
 
 	DWORD GetUnitComponentInfo()
 	{
-		return Memory.Read<DWORD>(base + UnitComponentInfo);
+		return Memory.Read<DWORD>(base + Offsets::UnitComponentInfo);
 	}
 	DWORD GetUCIPropertiesInstance()
 	{
-		return Memory.Read<DWORD>(this->GetUnitComponentInfo() + UCIPropertiesInstance);
+		return Memory.Read<DWORD>(this->GetUnitComponentInfo() + Offsets::UCIPropertiesInstance);
 	}
 
 	float GetBoundingRadius()
 	{
 		if (bounding == -1)
 		{
-			float val = Memory.Read<float>(GetUCIPropertiesInstance() + oBoundingRadius);
+			float val = Memory.Read<float>(GetUCIPropertiesInstance() + Offsets::oBoundingRadius);
 			if (val > 250.f)
 			{
 				bounding = 65.f;
@@ -389,12 +357,12 @@ public:
 	}
 	float GetSelectionRadius()
 	{
-		return Memory.Read<float>(GetUCIPropertiesInstance() + oSelectionRadius);
+		return Memory.Read<float>(GetUCIPropertiesInstance() + Offsets::oSelectionRadius);
 	}
 
 	float GetPathingRadius()
 	{
-		return Memory.Read<float>(GetUCIPropertiesInstance() + oPathingRadius);
+		return Memory.Read<float>(GetUCIPropertiesInstance() + Offsets::oPathingRadius);
 	}
 
 	bool HasUnitTags(const UnitTag& type1) const
@@ -412,6 +380,7 @@ public:
 		team = this->GetTeam();
 		std::string temp = utils->ToLower(champ);
 		unitInfo = GameData::GetUnitInfoByName(temp);
+		playerAPIInfo = LoLAPI::GetAPIPlayerByChampName(champ);
 	}
 	void SetObjConsts()
 	{
@@ -427,7 +396,7 @@ public:
 	void SetTurretConsts()
 	{
 		SetStructureConsts();
-		std::string temp = utils->ToLower(Memory.ReadString(base + oTurretName));
+		std::string temp = utils->ToLower(Memory.ReadString(base + Offsets::oTurretName));
 		unitInfo = GameData::GetUnitInfoByName(temp);
 	}
 	float GetHpBarHeight() const
@@ -437,7 +406,7 @@ public:
 
 	unsigned int GetNetworkID()
 	{
-		return Memory.Read<unsigned int>(base + oObjNetworkID);
+		return Memory.Read<unsigned int>(base + Offsets::oObjNetworkID);
 	}
 
 	inline bool operator == (const CObject& A) const
@@ -562,7 +531,7 @@ public:
 inline std::vector<CObject>g_MinionList;
 inline void MinionListLoop()
 {
-	DWORD dwMinionList = Memory.Read<DWORD>(ClientAddress + oMinionList);
+	DWORD dwMinionList = Memory.Read<DWORD>(ClientAddress + Offsets::oMinionList);
 	while (true)
 	{
 		//Read minions to temporary array

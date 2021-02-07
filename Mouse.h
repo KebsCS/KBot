@@ -113,7 +113,7 @@ public:
 
 	inline Vector3 GetWorldPos()
 	{
-		DWORD MousePtr = ClientAddress + oHudInstance;
+		/*DWORD MousePtr = ClientAddress + oHudInstance;
 		auto aux1 = Memory.Read<DWORD>(MousePtr);
 		aux1 += 0x14;
 		auto aux2 = Memory.Read<DWORD>(aux1);
@@ -123,7 +123,11 @@ public:
 		float Y = Memory.Read<float>(aux2 + 0x4);
 		float Z = Memory.Read<float>(aux2 + 0x8);
 
-		return Vector3{ X, Y, Z };
+		return Vector3{ X, Y, Z };*/
+
+		DWORD HudInstance = Memory.Read<DWORD>(ClientAddress + Offsets::oHudInstance);
+
+		return Memory.Read<Vector3>(HudInstance + 0x11C);
 	}
 };
 

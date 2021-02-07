@@ -30,12 +30,12 @@ public:
 
 	std::string GetName()
 	{
-		return Memory.ReadString((DWORD)this + oSpellInfoSpellName);
+		return Memory.ReadString((DWORD)this + Offsets::oSpellInfoSpellName, true);
 	}
 	//crashes when i try write to var spelldata
 	CSpellData* GetSpellData()
 	{
-		DWORD addr = Memory.Read<DWORD>((DWORD)this + oSpellInfoSpellData);
+		DWORD addr = Memory.Read<DWORD>((DWORD)this + Offsets::oSpellInfoSpellData);
 
 		return (CSpellData*)(addr);
 	}

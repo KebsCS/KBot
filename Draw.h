@@ -58,7 +58,6 @@ public:
 		Circle(ImVec2(x, y), radius, color);
 	}
 
-
 	void Rect(const Vector4& box, const RGBA& color, float rounding = 0, float thickness = 1.0)
 	{
 		overlay->AddRect(ImVec2(box.x, box.y), ImVec2(box.z, box.w), ImColor(color.R, color.G, color.B, color.A), rounding, 15, thickness);

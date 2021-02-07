@@ -218,7 +218,7 @@ int Direct3D9Render::Render()
 								ImGui::PushID(n);
 								if ((n % 2) != 0)
 									ImGui::SameLine();
-								ImGui::Button(M.sScoreboardNames[n].c_str(), ImVec2(100, 25));
+								ImGui::Button(M.ScoreBoard[n].first.c_str(), ImVec2(100, 25));
 
 								// Our buttons are both drag sources and drag targets here!
 								if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
@@ -228,7 +228,7 @@ int Direct3D9Render::Render()
 
 									// Display preview (could be anything, e.g. when dragging an image we could decide to display
 									// the filename and a small preview of the image, etc.)
-									ImGui::Text("Swap %s", M.sScoreboardNames[n].c_str());
+									ImGui::Text("Swap %s", M.ScoreBoard[n].first.c_str());
 									ImGui::EndDragDropSource();
 								}
 								if (ImGui::BeginDragDropTarget())
@@ -237,9 +237,9 @@ int Direct3D9Render::Render()
 									{
 										IM_ASSERT(payload->DataSize == sizeof(int));
 										int payload_n = *(const int*)payload->Data;
-										std::string tmp = M.sScoreboardNames[n];
-										M.sScoreboardNames[n] = M.sScoreboardNames[payload_n];
-										M.sScoreboardNames[payload_n] = tmp;
+										std::pair<std::string, DWORD> tmp = M.ScoreBoard[n];
+										M.ScoreBoard[n] = M.ScoreBoard[payload_n];
+										M.ScoreBoard[payload_n] = tmp;
 									}
 									ImGui::EndDragDropTarget();
 								}
@@ -256,7 +256,7 @@ int Direct3D9Render::Render()
 							if (ImGui::Button("Swap", ImVec2(200, 50)))
 							{
 								for (int i = 0; i < 10; i += 2)
-									std::swap(M.sScoreboardNames[i], M.sScoreboardNames[i + 1]);
+									std::swap(M.ScoreBoard[i], M.ScoreBoard[i + 1]);
 							}
 
 							ImGui::Columns(1);
@@ -308,7 +308,9 @@ int Direct3D9Render::Render()
 				ImGui::SameLine(); HelpMarker("Don't scan missiles at long range");
 				ImGui::SliderFloat("##EvadeLR", &M.Evade.LR, 500.f, 10000.f, "Max Range: %lg", 1.f);
 				ImGui::SliderInt("Diagonal Search Step", &M.Evade.DS, 5, 100);
+				ImGui::SameLine(); HelpMarker("How far away are the detected points apart from each other");
 				ImGui::SliderInt("Diagonal Points Count", &M.Evade.DC, 1, 8);
+				ImGui::SameLine(); HelpMarker("How many evade points to detect");
 				ImGui::Checkbox("Return mouse to original position", &M.Evade.MouseBack);
 				ImGui::Checkbox("Force ##Evade", &M.Evade.Force);
 				ImGui::Checkbox("On Key ##Evade", &M.Evade.OnKey);
@@ -642,12 +644,12 @@ DirectX::XMMATRIX Direct3D9Render::ReadMatrix(DWORD address)
 DirectX::XMMATRIX Direct3D9Render::GetViewMatrix()
 {
 	//DWORD Renderer = Memory.Read<DWORD>(ClientAddress + oRenderer, sizeof(DWORD));
-	return ReadMatrix(ClientAddress + oViewMatrix);
+	return ReadMatrix(ClientAddress + Offsets::oViewMatrix);
 }
 DirectX::XMMATRIX Direct3D9Render::GetProjectionMatrix()
 {
 	//DWORD Renderer = Memory.Read<DWORD>(ClientAddress + oRenderer, sizeof(DWORD));
-	return ReadMatrix(ClientAddress + oViewMatrix + 0x40);
+	return ReadMatrix(ClientAddress + Offsets::oViewMatrix + 0x40);
 }
 
 void Direct3D9Render::GetViewProjectionMatrix()

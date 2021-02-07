@@ -1,23 +1,55 @@
 #include "Xerath.h"
 #include "DirectX.h"
 
+#include "Mouse.h"
+#include "Keyboard.h"
+#include "CSpellEntry.h"
+
 void Xerath::OnKeyDown(int)
 {
+	Harass();
 }
 
 void Xerath::OnKeyUp(int)
 {
 }
 
-Vector3 Calculate(CObject target, float range, float casttime)
+Vector3 PredictLinear(CObject target, float range, float missilespeed, float casttime)
 {
-	//auto aim = target->GetAIManager();
-	Vector3 veloc = Vector3(0, 0, 0); //aim->GetVelocity();
-	//veloc.Y = 0.f;
-	Vector3 orientation = Vector3(0, 0, 0);//veloc.Normalize(); //target->GetAllShield->vVelocity.Normalized();
+	float t = Vector3(target.GetPosition() - Local.GetPosition()).Length() / missilespeed;
+	t += casttime;
+	auto aim = target.GetAiManager();
+	auto veloc = aim->GetVelocity();
+	veloc.y = 0.f;
+	Vector3 orientation = veloc.Normalized();
 
-	if (!(target.GetHealth() > 0.f && target.GetDistTo(Local) < range))
+	if (!(target.Address() && target.GetHealth() > 0.f && target.GetDistTo(Local) < range))
 	{
+		return Vector3(0.f, 0.f, 0.f);
+	}
+
+	if (veloc.x == 0.f && veloc.z == 0.f)
+	{
+		return target.GetPosition();
+	}
+
+	Vector3 result = target.GetPosition() + (orientation * target.GetMS() * t);
+
+	if (result.Distance(Local.GetPosition()) > range) {
+		return Vector3(0.f, 0.f, 0.f);
+	}
+
+	return result;
+}
+
+Vector3 PredictCircular(CObject target, float range, float casttime)
+{
+	auto aim = target.GetAiManager();
+	auto veloc = aim->GetVelocity();
+	veloc.y = 0.f;
+	Vector3 orientation = veloc.Normalized(); //target->GetAllShield->vVelocity.Normalized();
+
+	if (!(target.Address() && target.GetHealth() > 0.f && target.GetDistTo(Local) < range)) {
 		return Vector3(0.f, 0.f, 0.f);
 	}
 
@@ -31,56 +63,132 @@ Vector3 Calculate(CObject target, float range, float casttime)
 	return result;
 }
 
-Vector3 PredictCircular(CObject target, SpellSlotID slot, bool checkCharges = false)
+CObject GetTarget(float range, int type)
 {
-	//CSpellSlot* spell = Local.GetSpellByID(slot);
-	//if (checkCharges && (spell->GetCharges() < 1))
-	//	return Vector(0.f, 0.f, 0.f);
-	//else
-	/*if (!(spell->GetLevel() >= 1 && (M.GameTime >= spell->GetCooldownExpire())))
-		return Vector3(0.f, 0.f, 0.f);*/
-		//auto spellData = spell->GetSpellInfo()->GetSpellData();
-		//if (spellData->GetManaCostByLevel(spell->GetLevel()) > localObj->GetMana())
-		//	return Vector(0.f, 0.f, 0.f);
-		//DWORD spellData = Memory.Read<DWORD>(Memory.Read<DWORD>(spell + 0x134) + 0x44);
-	auto vec = Calculate(target, 1000.f/*spellData.GetSpellRange()*/, 0.f);
+	std::vector<CObject> possibleTargets;
 
-	return vec;
+	for (auto obj : init->herolist)
+	{
+		if (!obj.IsDead() && obj.GetTeam() != Local.GetTeam())
+		{
+			if (obj.GetDistTo(Local) > range)
+				continue;
+			possibleTargets.push_back(obj);
+		}
+	}
+	if (possibleTargets.empty())
+		return 0;
+
+	if (possibleTargets.size() > 1)
+	{
+		//closest to player
+		/*std::sort(possibleTargets.begin(), possibleTargets.end(),
+			[](CObject pFirst, CObject pSecond)
+			{
+				return (pFirst.GetDistTo(Local) < pSecond.GetDistTo(Local));
+			});*/
+
+			//closest to mouse pos
+		std::sort(possibleTargets.begin(), possibleTargets.end(),
+			[](CObject pFirst, CObject pSecond)
+			{
+				Vector3 mpos = mouse->GetWorldPos();
+				return (pFirst.GetDistTo(mpos) < pSecond.GetDistTo(mpos));
+			});
+	}
+	return possibleTargets.front();
+}
+
+void useQclose(CObject target, Vector3 qPred)
+{
+	if (Local.GetPosition().Distance(qPred) < 750)//&& /*Game.Timer() - OnWaypoint(target).time > 0.05*/)
+	{
+		/*ReleaseSpell(HK_Q, qPred, self.Q.range, 75)
+		self.lastTarget = target
+		self.lastTarget_tick = GetTickCount() + 200*/
+	}
 }
 
 void Xerath::Harass()
 {
-	std::vector<CObject> possibleTargets;
+	//std::vector<CObject> possibleTargets;
 
-	for (auto pObject : init->herolist)
+	//for (auto pObject : init->herolist)
+	//{
+	//	if (!pObject.IsDead() && pObject.GetTeam() != Local.GetTeam())
+	//	{
+	//		possibleTargets.push_back(pObject);
+	//	}
+	//}
+	//if (possibleTargets.empty())
+	//	return;
+
+	//if (possibleTargets.size() > 1)
+	//{
+	//	//closest to player
+	//	/*std::sort(possibleTargets.begin(), possibleTargets.end(),
+	//		[](CObject pFirst, CObject pSecond)
+	//		{
+	//			return (pFirst.GetDistTo(Local) < pSecond.GetDistTo(Local));
+	//		});*/
+
+	//		//closest to mouse pos
+	//	std::sort(possibleTargets.begin(), possibleTargets.end(),
+	//		[](CObject pFirst, CObject pSecond)
+	//		{
+	//			Vector3 mpos = mouse->GetWorldPos();
+	//			return (pFirst.GetDistTo(mpos) < pSecond.GetDistTo(mpos));
+	//		});
+	//}
+
+	if (chargeQ)
 	{
-		if (!pObject.IsDead() && pObject.GetTeam() != Local.GetTeam())
+		qRange = 750 + 500 * (GetTickCount() - qTick) / 1000;
+		if (qRange > 1500)
+			qRange = 1500;
+	}
+
+	if (CSpellEntry spell(Local.GetActiveSpellEntry()); spell.Address() != 0)
+	{
+		//if is casting q
+		if (utils->StringContains(spell.GetSpellInfo()->GetName(), "XerathArcanopulse"))
 		{
-			possibleTargets.push_back(pObject);
+			if (!chargeQ)
+			{
+				qTick = GetTickCount();
+				chargeQ = true;
+			}
+		}
+		else
+		{
+			chargeQ = false;
+			qRange = 750;
 		}
 	}
-	if (possibleTargets.empty())
-		return;
-
-	if (possibleTargets.size() > 1)
+	else
 	{
-		std::sort(possibleTargets.begin(), possibleTargets.end(),
-			[](CObject pFirst, CObject pSecond)
-			{
-				return (pFirst.GetDistTo(Local) < pSecond.GetDistTo(Local));
-			});
+		chargeQ = false;
+		qRange = 750;
 	}
 
-	auto vec = PredictCircular(possibleTargets.front(), SpellSlotID::W);
-	if (!(vec == Vector3(0.f, 0.f, 0.f)))
+	CObject target = GetTarget(1500, 1);
+	if (target.Address() != 0)
 	{
-		ImVec2 RealPos = Direct3D9.WorldToScreen(vec);
-		/*mouse->StoreCurrentPos();
-		mouse->MouseMoveInstant(RealPos.x, RealPos.y);
-		keyboard->GenerateKeyScancode(DIK_W, false);*/
-		//POINT LastMousePos = mouse->GetStoredPos();
-		//mouse->MouseMoveInstant(LastMousePos.x, LastMousePos.y);
+		Vector3 qPred = PredictLinear(target, qRange, 999999, 0.35 + M.Evade.GP / 1000);
+		Vector3 qPred2 = PredictLinear(target, qRange, 999999, 1);
+		draw->Line(Direct3D9.WorldToScreen(qPred), Direct3D9.WorldToScreen(Local.GetPosition()), RGBA(COLOR_CRIMSON));
+		draw->Line(Direct3D9.WorldToScreen(qPred2), Direct3D9.WorldToScreen(Local.GetPosition()), RGBA(COLOR_CRIMSON));
+
+		if (qPred2.Distance(target.GetPosition()) < 1500)
+		{
+			keyboard->GenerateKeyScancode(DIK_Q);
+		}
+		if (chargeQ)
+		{
+		}
 	}
+
+	draw->CircleRange(Local.GetPosition(), 16, qRange, RGBA(COLOR_CRIMSON));
 }
 
 bool Xerath::Evade(Vector3 evadePos)

@@ -5,8 +5,6 @@
 
 #include "Definitions.h"
 #include "Pixel.h"
-#include "KInterface.h"
-
 #include <filesystem>
 
 //URLDownloadToFileA
@@ -48,12 +46,14 @@ public:
 
 	//converts whole string to lowercase
 	std::string ToLower(std::string str);
+	std::wstring ToLower(std::wstring str);
 
 	//converts whole string to uppercase
 	std::string ToUpper(std::string str);
 
 	//check if strA contains strB
 	bool StringContains(std::string strA, std::string strB, bool ignore_case = false);
+	bool StringContains(std::wstring strA, std::wstring strB, bool ignore_case = false);
 
 	//string to wstring
 	std::wstring StringToWstring(std::string str);
@@ -66,30 +66,12 @@ public:
 
 	void CopyToClipboard(std::string text);
 
+	bool DownloadFile(std::string fileName, std::string directory = "Data", std::string url = "https://raw.githubusercontent.com/y3541599/test/main/");
 
-	bool DownloadFile(std::string fileName, std::string directory = "Data", std::string url = "https://raw.githubusercontent.com/y3541599/test/main/")
-	{
-		// Create folder if it doesn't exists
-		if (!std::filesystem::exists(directory))
-			std::filesystem::create_directory(directory);
-		if (fileName[0] == '\\')
-			fileName.erase(0);
-		std::string file = directory + "\\" + fileName;
+	bool ContainsOnlyASCII(std::string buff);
 
-		// Don't download if file already exists
-		if (std::filesystem::exists(file))
-			return true;
 
-		std::string fullPath = std::filesystem::current_path().string() + "\\" + file;
-		std::string toDownload = url + fileName;
 
-		// Download file
-		HRESULT result = URLDownloadToFileA(NULL, toDownload.c_str(), fullPath.c_str(), 0, NULL);
-
-		if (result != S_OK)
-			return false;
-		return true;
-	}
 
 	//bool IsLeagueForeGround()
 	//{
@@ -117,7 +99,6 @@ public:
 	//	//CloseHandle(handle);
 	//	return true;
 	//}
-
 };
 
 extern Utils* utils;

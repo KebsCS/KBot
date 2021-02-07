@@ -12,52 +12,55 @@ public:
 
 	bool IsMoving()
 	{
-		return Memory.Read<bool>((DWORD)this + oAiManagerIsMoving, sizeof(bool));
+		return Memory.Read<bool>((DWORD)this + Offsets::oAiManagerIsMoving, sizeof(bool));
 	}
 
 	Vector3 GetTargetPos()
 	{
-		return Vector3(Memory.Read<float>((DWORD)this + oAiManagerTargetPos, sizeof(float)),
-			Memory.Read<float>((DWORD)this + oAiManagerTargetPos + 0x4, sizeof(float)),
-			Memory.Read<float>((DWORD)this + oAiManagerTargetPos + 0x8, sizeof(float)));
+		return Vector3(Memory.Read<float>((DWORD)this + Offsets::oAiManagerTargetPos, sizeof(float)),
+			Memory.Read<float>((DWORD)this + Offsets::oAiManagerTargetPos + 0x4, sizeof(float)),
+			Memory.Read<float>((DWORD)this + Offsets::oAiManagerTargetPos + 0x8, sizeof(float)));
 	}
 
 	Vector3 GetServerPos()
 	{
-		return Vector3(Memory.Read<float>((DWORD)this + oAiManagerServerPos, sizeof(float)),
-			Memory.Read<float>((DWORD)this + oAiManagerServerPos + 0x4, sizeof(float)),
-			Memory.Read<float>((DWORD)this + oAiManagerServerPos + 0x8, sizeof(float)));
+		return Vector3(Memory.Read<float>((DWORD)this + Offsets::oAiManagerServerPos, sizeof(float)),
+			Memory.Read<float>((DWORD)this + Offsets::oAiManagerServerPos + 0x4, sizeof(float)),
+			Memory.Read<float>((DWORD)this + Offsets::oAiManagerServerPos + 0x8, sizeof(float)));
 	}
 
-	//todo
-	//Vector3 GetNavBegin()
-	//{
-	//	DWORD ptr = Memory.Read<DWORD>((DWORD)this + oAiManagerNavBegin);
-	//	return Vector3(Memory.Read<float>(ptr, sizeof(float)),
-	//		Memory.Read<float>(ptr + 0x4, sizeof(float)),
-	//		Memory.Read<float>(ptr + 0x8, sizeof(float)));
-	//}
+	Vector3 GetNavBegin()
+	{
+		return Vector3(Memory.Read<float>((DWORD)this + Offsets::oAiManagerNavBegin, sizeof(float)),
+			Memory.Read<float>((DWORD)this + Offsets::oAiManagerNavBegin + 0x4, sizeof(float)),
+			Memory.Read<float>((DWORD)this + Offsets::oAiManagerNavBegin + 0x8, sizeof(float)));
+	}
 
 	Vector3 GetNavEnd()
 	{
-		return Vector3(Memory.Read<float>((DWORD)this + oAiManagerNavEnd, sizeof(float)),
-			Memory.Read<float>((DWORD)this + oAiManagerNavEnd + 0x4, sizeof(float)),
-			Memory.Read<float>((DWORD)this + oAiManagerNavEnd + 0x8, sizeof(float)));
+		return Vector3(Memory.Read<float>((DWORD)this + Offsets::oAiManagerNavEnd, sizeof(float)),
+			Memory.Read<float>((DWORD)this + Offsets::oAiManagerNavEnd + 0x4, sizeof(float)),
+			Memory.Read<float>((DWORD)this + Offsets::oAiManagerNavEnd + 0x8, sizeof(float)));
+	}
+
+	Vector3 GetVelocity()
+	{
+		return Memory.Read<Vector3>((DWORD)this + Offsets::oAiManagerVelocity);
 	}
 
 	int GetPassedWaypoints()
 	{
-		return Memory.Read<int>((DWORD)this + oAiManagerPassedWaypoints, sizeof(int));
+		return Memory.Read<int>((DWORD)this + Offsets::oAiManagerPassedWaypoints, sizeof(int));
 	}
 
 	bool IsDashing()
 	{
-		return Memory.Read<bool>((DWORD)this + oAiManagerIsDashing, sizeof(bool));
+		return Memory.Read<bool>((DWORD)this + Offsets::oAiManagerIsDashing, sizeof(bool));
 	}
 
 	float GetDashSpeed()
 	{
-		return Memory.Read<float>((DWORD)this + oAiManagerDashSpeed, sizeof(float));
+		return Memory.Read<float>((DWORD)this + Offsets::oAiManagerDashSpeed, sizeof(float));
 	}
 };
 

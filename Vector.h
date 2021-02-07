@@ -24,7 +24,7 @@ struct Vector4
 class Vector3
 {
 public:
-	float x, z, y;
+	float x, y, z;
 
 	Vector3();
 	Vector3(float x, float y, float z = 0);

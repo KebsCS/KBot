@@ -417,7 +417,7 @@ namespace Geometry
 				t1 = 0.f;
 			}
 
-			return (!isnan(t1)) ? Vector3(sP1x + S * t1,0, sP1y + K * t1) : Vector3(0, 0, 0);
+			return (!isnan(t1)) ? Vector3(sP1x + S * t1, 0, sP1y + K * t1) : Vector3(0, 0, 0);
 		}
 
 		static Vector3 PositionAfter(std::vector<Vector3> self, int t, int speed, int delay = 0)

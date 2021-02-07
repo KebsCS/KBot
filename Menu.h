@@ -24,7 +24,7 @@ struct Menu
 	std::string sServerInfo;
 
 	std::string sChampion;
-	std::string sScoreboardNames[10]; //for GUI scoreboard
+	std::pair<std::string, DWORD> ScoreBoard[10]; //for GUI scoreboard
 
 	//minimap
 	float fMinimapPos[2] = { 1653.f,812.f };

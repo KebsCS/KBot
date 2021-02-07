@@ -6,9 +6,6 @@
 
 //TODO change spellslot to DWORD so i can read CSpellSlot spell(obj.getspellbyid) and then this file is useless bcs i can use spelinfo directly from spellslot
 
-
-
-
 /// Type of summoner spell
 enum class SummonerSpellType {
 	NONE, GHOST, HEAL, BARRIER, EXHAUST, CLARITY, SNOWBALL, FLASH, TELEPORT, CLEANSE, IGNITE, SMITE
@@ -17,10 +14,8 @@ enum class SummonerSpellType {
 /// Class that represents a spell some of this data is loaded from disk and the rest is read from memory
 class Spell
 {
-
 public:
 	Spell(SpellSlotID slot) :slot(slot) {}
-
 
 	float               GetRemainingCooldown(float gameTime);
 	const char* GetTypeStr();
