@@ -4,14 +4,13 @@
 #include <ntifs.h>
 #include <ntddk.h>
 
-#define IO_GET_ID_REQUEST  CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6210, METHOD_BUFFERED, FILE_SPECIAL_ACCESS) 
+#define IO_GET_ID_REQUEST  CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6210, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 
-#define IO_READ_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6211, METHOD_BUFFERED, FILE_SPECIAL_ACCESS) 
+#define IO_READ_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6211, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 
-#define IO_WRITE_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6212, METHOD_BUFFERED, FILE_SPECIAL_ACCESS) 
+#define IO_WRITE_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6212, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 
-#define IO_GET_MODULE_REQUEST  CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6213, METHOD_BUFFERED, FILE_SPECIAL_ACCESS) 
-
+#define IO_GET_MODULE_REQUEST  CTL_CODE(FILE_DEVICE_UNKNOWN, 0x6213, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 
 ULONG processId, ClientAddress;
 PDEVICE_OBJECT pDeviceObject;
@@ -23,7 +22,6 @@ typedef struct _KERNEL_READ_REQUEST
 	ULONG Address; // address of memory to start reading from
 	PVOID pBuff; // return value
 	ULONG Size; // size of memory to read
-
 } KERNEL_READ_REQUEST, * PKERNEL_READ_REQUEST;
 
 typedef struct _KERNEL_WRITE_REQUEST
@@ -32,7 +30,6 @@ typedef struct _KERNEL_WRITE_REQUEST
 	ULONG Address; // address of memory to start reading from
 	PVOID pBuff; // return value
 	ULONG Size; // size of memory to read
-
 } KERNEL_WRITE_REQUEST, * PKERNEL_WRITE_REQUEST;
 
 NTSTATUS NTAPI MmCopyVirtualMemory
@@ -46,7 +43,6 @@ NTSTATUS NTAPI MmCopyVirtualMemory
 	PSIZE_T ReturnSize
 );
 
-
 NTSTATUS KernelReadVirtualMemory(PEPROCESS Process, PVOID SourceAddress, PVOID TargetAddress, SIZE_T Size)
 {
 	PSIZE_T Bytes;
@@ -58,8 +54,6 @@ NTSTATUS KernelWriteVirtualMemory(PEPROCESS Process, PVOID SourceAddress, PVOID 
 	PSIZE_T Bytes;
 	return MmCopyVirtualMemory(PsGetCurrentProcess(), SourceAddress, Process, TargetAddress, Size, KernelMode, &Bytes);
 }
-
-
 
 NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath);
 NTSTATUS UnloadDriver(PDRIVER_OBJECT DriverObject);
@@ -88,7 +82,7 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
 
 	pDeviceObject->Flags |= DO_DIRECT_IO;
 	pDeviceObject->Flags &= ~DO_DEVICE_INITIALIZING;
-	
+
 	return STATUS_SUCCESS;
 }
 
@@ -96,22 +90,18 @@ NTSTATUS UnloadDriver(PDRIVER_OBJECT DriverObject)
 {
 	//DbgPrintEx(0, 0, "Unloaded");
 
-
 	PsRemoveLoadImageNotifyRoutine(ImageLoadCallback);
 	IoDeleteSymbolicLink(&dos);
 	IoDeleteDevice(DriverObject->DeviceObject);
 
 	return STATUS_SUCCESS;
-
 }
 
 //searches for lol
 PLOAD_IMAGE_NOTIFY_ROUTINE ImageLoadCallback(PUNICODE_STRING FullImageName, HANDLE ProcessId, PIMAGE_INFO ImageInfo)
 {
-
-	if (wcsstr(FullImageName->Buffer, L"\\Riot Games\\League of Legends\\Game\\League of Legends.exe")) 
+	if (wcsstr(FullImageName->Buffer, L"\\Riot Games\\League of Legends\\Game\\League of Legends.exe"))
 	{
-
 		//DbgPrintEx(0, 0, "Lol found\n");
 		//DbgPrintEx(0, 0, "Found at PID: %d \n", ProcessId);
 
@@ -130,14 +120,11 @@ NTSTATUS IoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 
 	PIO_STACK_LOCATION stack = IoGetCurrentIrpStackLocation(Irp);
 
-
 	//listen to user mode
 	ULONG ControlCode = stack->Parameters.DeviceIoControl.IoControlCode;
 
-
-	if(ControlCode == IO_READ_REQUEST)
+	if (ControlCode == IO_READ_REQUEST)
 	{
-		
 		PKERNEL_READ_REQUEST ReadInput = (PKERNEL_READ_REQUEST)Irp->AssociatedIrp.SystemBuffer;
 		PKERNEL_READ_REQUEST ReadOutput = (PKERNEL_READ_REQUEST)Irp->AssociatedIrp.SystemBuffer;
 		PEPROCESS Process;
@@ -149,7 +136,7 @@ NTSTATUS IoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 		{
 			KernelReadVirtualMemory(Process, ReadInput->Address, &ReadInput->pBuff, ReadInput->Size);
 		}
-		
+
 		UNREFERENCED_PARAMETER(ReadOutput);
 		/*	DbgPrintEx(0, 0, "Read Params:  %lu, %#010x, %d\n", ReadInput->ProcessId, ReadInput->Address, ReadInput->Size);
 		DbgPrintEx(0, 0, "Value: %lu , 0x%x\n", ReadOutput->pBuff, ReadOutput->pBuff);
@@ -160,7 +147,6 @@ NTSTATUS IoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 	}
 	else if (ControlCode == IO_WRITE_REQUEST)
 	{
-
 		PKERNEL_WRITE_REQUEST WriteInput = (PKERNEL_WRITE_REQUEST)Irp->AssociatedIrp.SystemBuffer;
 		PEPROCESS Process;
 
@@ -216,7 +202,6 @@ NTSTATUS CreateCall(PDEVICE_OBJECT DeviceObject, PIRP irp)
 
 	IoCompleteRequest(irp, IO_NO_INCREMENT);
 	return STATUS_SUCCESS;
-
 }
 
 NTSTATUS CloseCall(PDEVICE_OBJECT DeviceObject, PIRP irp)
@@ -229,5 +214,4 @@ NTSTATUS CloseCall(PDEVICE_OBJECT DeviceObject, PIRP irp)
 
 	IoCompleteRequest(irp, IO_NO_INCREMENT);
 	return STATUS_SUCCESS;
-
 }

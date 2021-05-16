@@ -356,7 +356,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	std::string NowPatch = htmlData.substr(nPos, htmlData.find(XorStr("$Patch$"), nPos) - nPos);
 
-	if (NowVersion != XorStr("1.0.0") || NowPatch != XorStr("11.4"))
+	if (NowVersion != XorStr("1.0.0") || NowPatch != XorStr("11.10"))
 	{
 		MessageBoxA(0, XorStr("Outdated version"), 0, 0);
 		M.bExitBot = true;
