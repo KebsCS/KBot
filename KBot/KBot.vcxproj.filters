@@ -1,0 +1,282 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Pliki źródłowe">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Pliki nagłówkowe">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Pliki zasobów">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="API">
+      <UniqueIdentifier>{d85d369e-2e50-4c81-b1be-86c9d012fc88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{39f3f4ee-1b47-408d-878c-49f78f0b4615}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Champion Scripts">
+      <UniqueIdentifier>{b29b6f7d-ac45-4266-9eec-bd840224e106}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{d93a5466-4744-463a-9ce6-a346869d913c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Evade">
+      <UniqueIdentifier>{fc910c4f-a279-4cfd-b340-09171a79d3a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{a7c215a9-d830-4b79-99fd-3573f3156428}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Old">
+      <UniqueIdentifier>{0e10fe4a-31a0-4037-89ba-b348943dfa24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Orbwalker">
+      <UniqueIdentifier>{9f3ee551-a31e-46f3-a436-b17187322d95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Classes">
+      <UniqueIdentifier>{3042b7ae-e06e-437c-8d73-2a723701d34b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vector">
+      <UniqueIdentifier>{e6cd6d0d-645e-420f-ac4d-2f529d561a20}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="xor.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="Visuals.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptUtils.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="Script.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="offsets.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="KInterface.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="Initialize.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="Definitions.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="API.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="HTTP.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="LoLAPI.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="Bytes.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_impl_dx11.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imconfig.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_impl_win32.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imstb_rectpack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imstb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imstb_truetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Lux.h">
+      <Filter>Champion Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="Xerath.h">
+      <Filter>Champion Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="Pantheon.h">
+      <Filter>Champion Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="Talon.h">
+      <Filter>Champion Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="GameData.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="SpellInfo.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="UnitInfo.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Evade2.h">
+      <Filter>Evade</Filter>
+    </ClInclude>
+    <ClInclude Include="Evade.h">
+      <Filter>Evade</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>Evade</Filter>
+    </ClInclude>
+    <ClInclude Include="clipper.hpp">
+      <Filter>Evade</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectX.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Draw.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="RGBA.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyboard.h">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse.h">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="Pixel.h">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="Orbwalker.h">
+      <Filter>Orbwalker</Filter>
+    </ClInclude>
+    <ClInclude Include="CMissileClient.h">
+      <Filter>Game Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="AiManager.h">
+      <Filter>Game Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="CObjectManager.h">
+      <Filter>Game Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="CSpellData.h">
+      <Filter>Game Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="CSpellEntry.h">
+      <Filter>Game Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="CSpellInfo.h">
+      <Filter>Game Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="CSpellSlot.h">
+      <Filter>Game Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector.h">
+      <Filter>Vector</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Visuals.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="KBot.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="Initialize.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="Config.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="LoLAPI.cpp">
+      <Filter>API</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_impl_dx11.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_impl_win32.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Lux.cpp">
+      <Filter>Champion Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="Talon.cpp">
+      <Filter>Champion Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="Xerath.cpp">
+      <Filter>Champion Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="Pantheon.cpp">
+      <Filter>Champion Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="GameData.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="SpellInfo.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="UnitInfo.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="clipper.cpp">
+      <Filter>Evade</Filter>
+    </ClCompile>
+    <ClCompile Include="Evade2.cpp">
+      <Filter>Evade</Filter>
+    </ClCompile>
+    <ClCompile Include="Draw.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectX.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="Keyboard.cpp">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="Mouse.cpp">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="Pixel.cpp">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="Orbwalker.cpp">
+      <Filter>Orbwalker</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector.cpp">
+      <Filter>Vector</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
