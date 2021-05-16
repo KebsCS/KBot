@@ -19,7 +19,6 @@
 
 #include <DirectXMath.h>
 
-#include "Draw.h"
 //#include "CObjectManager.h"
 #include "ScriptUtils.h"
 #include "Config.h"
@@ -46,16 +45,14 @@ private:
 	DirectX::XMMATRIX GetViewMatrix();
 	DirectX::XMMATRIX GetProjectionMatrix();
 
-	void HelpMarker(const char* desc);
+	void ArrowButtonDisabled(const char* id, ImGuiDir dir);
 
 public:
 	void GetViewProjectionMatrix();
 
-	int fontArial = 0;
+	/*int fontArial = 0;
 	int fontTahoma = 0;
-	int fontTahomaSmall = 0;
-
-	void MissileThread();
+	int fontTahomaSmall = 0;*/
 
 	Direct3D9Render()
 	{
@@ -98,12 +95,14 @@ public:
 
 	void TurretLoop();
 
+	void HotkeyButton(int& key, bool mouse = false);
+	void HelpMarker(const char* desc);
+
 	ImVec2 GetHpBarPos(CObject& obj)
 	{
 		Vector3 pos = obj.GetPosition();
 		pos.y += obj.GetHpBarHeight();
-		Direct3D9Render Direct3D9;
-		ImVec2 w2s = Direct3D9.WorldToScreen(pos);
+		ImVec2 w2s = WorldToScreen(pos);
 		w2s.y -= (M.nRendererHeight * 0.00083333335f * obj.GetHpBarHeight());
 
 		return w2s;

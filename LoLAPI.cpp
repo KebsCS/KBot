@@ -20,7 +20,7 @@ void LoLAPI::LoadPlayerListData()
 	{
 		auto playerObj = players.GetItem(i).AsObject();
 
-		API::PlayerList* player = new API::PlayerList(); 
+		API::PlayerList* player = new API::PlayerList();
 		player->championName = std::string(playerObj.GetString("championName").c_str());
 		player->isBot = playerObj.GetBool("isBot");
 		player->isDead = playerObj.GetBool("isDead");
@@ -46,7 +46,7 @@ void LoLAPI::LoadPlayerListData()
 		player->rawSkinName = std::string(playerObj.GetString("rawSkinName").c_str());
 		player->respawnTimer = (float)playerObj.GetDouble("respawnTimer");
 
-		if (player->championName != "TargetDummy")
+		if (player->championName != "Target Dummy")
 		{
 			auto runesObj = playerObj.GetObject("runes");
 			auto keystoneObj = runesObj.GetObject("keystone");
@@ -80,7 +80,7 @@ void LoLAPI::LoadPlayerListData()
 		player->summonerName = std::string(playerObj.GetString("summonerName").c_str());
 
 		auto summonerSpellsObj = playerObj.GetObject("summonerSpells");
-		if (player->championName != "TargetDummy")
+		if (player->championName != "Target Dummy")
 		{
 			auto summonerSpellOneeObj = summonerSpellsObj.GetObject("summonerSpellOne");
 			player->summonerSpells.summonerSpellOne.displayName = std::string(summonerSpellOneeObj.GetString("displayName").c_str());

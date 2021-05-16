@@ -17,3 +17,11 @@ bool Lux::Evade(Vector3 evadePos)
 {
 	return false;
 }
+
+void Lux::Tick()
+{
+}
+
+void Lux::GUI()
+{
+}

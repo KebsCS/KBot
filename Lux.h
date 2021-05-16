@@ -17,6 +17,10 @@ private:
 
 	virtual bool Evade(Vector3 evadePos);
 
+	virtual void Tick();
+
+	virtual void GUI();
+
 public:
 	Lux() : champion(Champion::Lux)
 	{

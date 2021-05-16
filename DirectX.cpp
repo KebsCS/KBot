@@ -83,6 +83,38 @@ void Direct3D9Render::HelpMarker(const char* desc)
 	}
 }
 
+void Direct3D9Render::HotkeyButton(int& key, bool mouse)
+{
+	char buf[128];
+
+	sprintf(buf, XorStr("[ %s ]"), key ? keyNames[key] : "key");
+
+	ImGui::Button(buf, ImVec2(90, 20));
+
+	if (!ImGui::IsItemHovered())
+		return;
+
+	ImGui::SetTooltip("Press any key to change keybind");
+	ImGuiIO& io = ImGui::GetIO();
+	for (int i = 0; i < IM_ARRAYSIZE(io.KeysDown); i++)
+		if (ImGui::IsKeyPressed(i) && i != M.Misc.MenuKey)
+			key = i != VK_ESCAPE ? i : 0;
+
+	if (mouse)
+	{
+		for (int i = 0; i < IM_ARRAYSIZE(io.MouseDown); i++)
+			if (ImGui::IsMouseDown(i) && i + (i > 1 ? 2 : 1) != M.Misc.MenuKey)
+				key = i + (i > 1 ? 2 : 1);
+	}
+}
+
+void Direct3D9Render::ArrowButtonDisabled(const char* id, ImGuiDir dir)
+{
+	ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+	ImGui::ArrowButton(id, dir);
+	ImGui::PopStyleVar();
+}
+
 void Direct3D9Render::StartFrame()
 {
 	// Start the Dear ImGui frame
@@ -314,15 +346,20 @@ int Direct3D9Render::Render()
 				ImGui::Checkbox("Return mouse to original position", &M.Evade.MouseBack);
 				ImGui::Checkbox("Force ##Evade", &M.Evade.Force);
 				ImGui::Checkbox("On Key ##Evade", &M.Evade.OnKey);
-				ImGui::Combo("Evade Key", &M.Evade.EvadeKey, keyNames, ARRAYSIZE(keyNames));
+				HotkeyButton(M.Evade.EvadeKey);
+				ImGui::SameLine(); ImGui::Text("Evade Key");
 				//draw->ImageFromMemory(draw->textureKEKW, 0, 0, "", 99, 256, 256, true);
 
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Orbwalker"))
 			{
-				ImGui::Checkbox("Enable - just a placeholder ##Orbwalker", &M.Orbwalker.Master);
-				ImGui::Combo("Hold Key", &M.Orbwalker.HoldKey, keyNames, ARRAYSIZE(keyNames));
+				ImGui::Checkbox("Enable##Orbwalker", &M.Orbwalker.Master);
+				//ImGui::Combo("Hold Key", &M.Orbwalker.HoldKey, keyNames, ARRAYSIZE(keyNames));
+				HotkeyButton(M.Orbwalker.HoldKey);
+				ImGui::SameLine(); ImGui::Text("Hold Key");
+				//ArrowButtonDisabled("asdas", ImGuiDir_Down);
+				//ImGui::ArrowButton("asd", ImGuiDir_Up);
 				//draw->ImageFromMemory(draw->textureSks, 0, 0, "", 99, 256 * 1.25, 256 * 1.25, true);
 
 				ImGui::EndTabItem();
@@ -355,7 +392,8 @@ int Direct3D9Render::Render()
 				ImGui::SameLine(); HelpMarker("Higher for slower PCs");
 
 				ImGui::Separator();
-				ImGui::Combo("Menu Key", &M.Misc.MenuKey, keyNames, ARRAYSIZE(keyNames));
+				HotkeyButton(M.Misc.MenuKey);
+				ImGui::SameLine(); ImGui::Text("Menu Key");
 
 				ImGui::Separator();
 				ImGui::EndTabItem();
@@ -363,23 +401,10 @@ int Direct3D9Render::Render()
 
 			if (ImGui::BeginTabItem(M.sChampion.c_str()))
 			{
-				if (M.sChampion == "Talon")
-				{
-					ImGui::Checkbox("Damage Calculator", &M.Talon.DmgCalc);
-					ImGui::Separator();
-					ImGui::Checkbox("Pixel Perfect Jumps", &M.Talon.Jumps);
-					ImGui::Combo("Jumps Key", &M.Talon.JumpsKey, keyNames, ARRAYSIZE(keyNames));
-					if (M.Talon.Jumps)
-					{
-						ImGui::Selectable("Drake", &M.Talon.JumpsType[0]);
-						ImGui::Selectable("Blue-side Raptors", &M.Talon.JumpsType[1]);
-						ImGui::Selectable("Botlane", &M.Talon.JumpsType[2]);
-						ImGui::Selectable("Toplane", &M.Talon.JumpsType[3]);
-						ImGui::Selectable("Red-side Raptors TODO", &M.Talon.JumpsType[4]);
-					}
-				}
+				if (championScript)
+					championScript->GUI();
 				else
-					ImGui::Text("Only Talon for now");
+					ImGui::Text(XorStr("No available scripts for this champion"));
 
 				ImGui::EndTabItem();
 			}
@@ -519,6 +544,22 @@ void Direct3D9Render::MenuInit()
 	io.IniFilename = ".\\configs\\imgui.ini";
 	io.IniSavingRate = 7.f;
 	io.ConfigWindowsResizeFromEdges = 0;
+
+	/*if (PWSTR fontPath; SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Fonts, 0, nullptr, &fontPath)))
+	{
+		const std::filesystem::path path = fontPath;
+		CoTaskMemFree(fontPath);
+
+		static constexpr ImWchar ranges[]{ 0x0020, 0xFFFF, 0 };
+		ImFontConfig cfg;
+		cfg.OversampleV = 3;
+		io.FontDefault = NULL;
+		fontArial = io.Fonts->AddFontFromFileTTF((path / "arial.ttf").string().c_str(), 32.f, &cfg, ranges);
+		fontTahoma = io.Fonts->AddFontFromFileTTF((path / "tahoma.ttf").string().c_str(), 16.f, &cfg, ranges);
+		fontTahomaSmall = io.Fonts->AddFontFromFileTTF((path / "tahoma.ttf").string().c_str(), 12.f, &cfg, ranges);
+	}*/
+
+	io.FontDefault = NULL;
 
 	ImGuiStyle& style = ImGui::GetStyle();
 

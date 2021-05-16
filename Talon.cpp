@@ -6,6 +6,23 @@
 
 void Talon::OnKeyDown(int)
 {
+}
+
+void Talon::OnKeyUp(int)
+{
+}
+
+void Talon::Harass()
+{
+}
+
+bool Talon::Evade(Vector3 evadePos)
+{
+	return false;
+}
+
+void Talon::Tick()
+{
 	//TODO CHECKING PLAYER POSITION INSTEAD OF SLEEPS
 	if (M.Talon.Master)
 	{
@@ -229,15 +246,19 @@ void Talon::OnKeyDown(int)
 	}
 }
 
-void Talon::OnKeyUp(int)
+void Talon::GUI()
 {
-}
-
-void Talon::Harass()
-{
-}
-
-bool Talon::Evade(Vector3 evadePos)
-{
-	return false;
+	ImGui::Checkbox("Damage Calculator", &M.Talon.DmgCalc);
+	ImGui::Separator();
+	ImGui::Checkbox("Pixel Perfect Jumps", &M.Talon.Jumps);
+	Direct3D9.HotkeyButton(M.Talon.JumpsKey);
+	ImGui::SameLine(); ImGui::Text("Jump on key");
+	if (M.Talon.Jumps)
+	{
+		ImGui::Selectable("Drake", &M.Talon.JumpsType[0]);
+		ImGui::Selectable("Blue-side Raptors", &M.Talon.JumpsType[1]);
+		ImGui::Selectable("Botlane", &M.Talon.JumpsType[2]);
+		ImGui::Selectable("Toplane", &M.Talon.JumpsType[3]);
+		ImGui::Selectable("Red-side Raptors TODO", &M.Talon.JumpsType[4]);
+	}
 }

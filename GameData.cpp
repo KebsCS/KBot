@@ -11,13 +11,10 @@ using namespace std::experimental;
 
 UnitInfo* GameData::UnknownUnit = new UnitInfo();
 SpellInfo* GameData::UnknownSpell = new SpellInfo();
-//ItemInfo* GameData::UnknownItem = new ItemInfo();
 std::map<std::string, UnitInfo*>  GameData::Units = {};
 std::map<std::string, SpellInfo*> GameData::Spells = {};
-//std::map<std::string, Texture2D*> GameData::Images = {};
-//std::map<int, ItemInfo*>          GameData::Items = {};
 
-void GameData::Load(std::string& dataFolder)
+bool GameData::Load(std::string& dataFolder)
 {
 	std::string unitData = dataFolder + "/UnitData.json";
 	std::string spellData = dataFolder + "/SpellData.json";
@@ -27,22 +24,20 @@ void GameData::Load(std::string& dataFolder)
 	std::string champIcons = dataFolder + "/icons_champs";
 	std::string extraIcons = dataFolder + "/icons_extra";
 
-	//LoadItemData(itemData);
+	if (!utils->DownloadFile(unitData.substr(dataFolder.size(), unitData.size() - dataFolder.size()), dataFolder))
+		return false;
+	LoadUnitData(unitData);
 
-	if (utils->DownloadFile(unitData.substr(dataFolder.size(), unitData.size() - dataFolder.size()), dataFolder))
-		LoadUnitData(unitData);
+	if (!utils->DownloadFile(spellData.substr(dataFolder.size(), spellData.size() - dataFolder.size()), dataFolder))
+		return false;
+	LoadSpellData(spellData);
 
-	if (utils->DownloadFile(spellData.substr(dataFolder.size(), spellData.size() - dataFolder.size()), dataFolder))
-		LoadSpellData(spellData);
-
-	if (utils->DownloadFile(spellDataCustom.substr(dataFolder.size(), spellDataCustom.size() - dataFolder.size()), dataFolder))
-		LoadSpellData(spellDataCustom);
-
-	//LoadIcons(spellIcons);
-	//LoadIcons(champIcons);
-	//LoadIcons(extraIcons);
+	if (!utils->DownloadFile(spellDataCustom.substr(dataFolder.size(), spellDataCustom.size() - dataFolder.size()), dataFolder))
+		return false;
+	LoadSpellData(spellDataCustom);
 
 	clog.AddLog("[start] Loaded json files");
+	return true;
 }
 
 UnitInfo* GameData::GetUnitInfoByName(std::string& name)
@@ -60,14 +55,6 @@ SpellInfo* GameData::GetSpellInfoByName(std::string& name)
 		return it->second;
 	return UnknownSpell;
 }
-
-//ItemInfo* GameData::GetItemInfoById(int id)
-//{
-//	auto it = Items.find(id);
-//	if (it != Items.end())
-//		return it->second;
-//	return UnknownItem;
-//}
 
 void GameData::LoadUnitData(std::string& path)
 {
@@ -135,66 +122,3 @@ void GameData::LoadSpellData(std::string& path)
 		Spells[info->name] = info;
 	}
 }
-
-//void GameData::LoadIcons(std::string& path)
-//{
-//	std::string folder(path);
-//	WIN32_FIND_DATAA findData;
-//	HANDLE hFind;
-//
-//
-//	int nrFiles = std::distance(filesystem::directory_iterator(path), filesystem::directory_iterator());
-//	int nrFile = 0;
-//	hFind = FindFirstFileA((folder + "\\*.png").c_str(), &findData);
-//	do {
-//		if (hFind != INVALID_HANDLE_VALUE) {
-//			if (nrFile % 100 == 0)
-//				printf("\r	Loading %d/%d      ", nrFile, nrFiles);
-//
-//			std::string filePath = folder + "/" + findData.cFileName;
-//			Texture2D* image = Texture2D::LoadFromFile(Overlay::GetDxDevice(), filePath);
-//			if (image == nullptr)
-//				printf("Failed to load: %s\n", filePath.c_str());
-//			else {
-//				std::string fileName(findData.cFileName);
-//				fileName.erase(fileName.find(".png"), 4);
-//				Images[Character::ToLower(fileName)] = image;
-//			}
-//		}
-//		nrFile++;
-//	} while (FindNextFileA(hFind, &findData));
-//}
-
-//void GameData::LoadItemData(std::string& path)
-//{
-//	std::ifstream inputItems;
-//	inputItems.open(path);
-//
-//	if (!inputItems.is_open())
-//		throw std::runtime_error("Can't open item data file");
-//
-//	JsonValue itemsData(inputItems);
-//
-//	auto items = itemsData.View().AsArray();
-//	for (size_t i = 0; i < items.GetLength(); ++i) {
-//		auto item = items.GetItem(i).AsObject();
-//		ItemInfo* info = new ItemInfo();
-//
-//		info->movementSpeed = (float)item.GetDouble("movementSpeed");
-//		info->health = (float)item.GetDouble("health");
-//		info->crit = (float)item.GetDouble("crit");
-//		info->abilityPower = (float)item.GetDouble("abilityPower");
-//		info->mana = (float)item.GetDouble("mana");
-//		info->armour = (float)item.GetDouble("armour");
-//		info->magicResist = (float)item.GetDouble("magicResist");
-//		info->physicalDamage = (float)item.GetDouble("physicalDamage");
-//		info->attackSpeed = (float)item.GetDouble("attackSpeed");
-//		info->lifeSteal = (float)item.GetDouble("lifeSteal");
-//		info->hpRegen = (float)item.GetDouble("hpRegen");
-//		info->movementSpeedPercent = (float)item.GetDouble("movementSpeedPercent");
-//		info->cost = (float)item.GetDouble("cost");
-//		info->id = item.GetInteger("id");
-//
-//		Items[info->id] = info;
-//	}
-//}

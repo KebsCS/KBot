@@ -7,6 +7,7 @@
 #include "Talon.h"
 #include "Lux.h"
 #include "Xerath.h"
+#include "Pantheon.h"
 
 #include "Menu.h"
 
@@ -26,6 +27,10 @@ public:
 		else if (championName == "Xerath")
 		{
 			return new Xerath();
+		}
+		else if (championName == "Pantheon")
+		{
+			return new Pantheon();
 		}
 
 		return nullptr;

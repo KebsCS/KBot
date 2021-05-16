@@ -8,7 +8,7 @@
 #include <bitset>
 #include <array>
 
-enum UnitTag 
+enum UnitTag
 {
 	Unit_ = 1,
 	Unit_Champion = 2,
@@ -68,7 +68,7 @@ enum UnitTag
 };
 
 /// Static data for game units
-struct UnitInfo 
+struct UnitInfo
 {
 public:
 	std::string name;

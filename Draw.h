@@ -22,6 +22,10 @@
 //static std::list<image> image_list;
 //
 
+static ImFont* fontArial = nullptr;
+static ImFont* fontTahoma = nullptr;
+static ImFont* fontTahomaSmall = nullptr;
+
 class Draw
 {
 private:
@@ -40,13 +44,13 @@ public:
 
 	void CircleRange(const Vector3& worldPos, int numPoints, float radius, RGBA color, float thickness = 1.f, bool filled = 0) const;
 
-	void String(const ImVec2& pos, const std::string text, const RGBA& color);
-	void String(const int& x, const int& y, const std::string text, const RGBA& color);
+	void String(const std::string text, const ImVec2& pos, const RGBA& color = RGBA(255, 255, 255), ImFont* font = fontTahoma);
+	void String(const std::string text, const int& x, const int& y, const RGBA& color = RGBA(255, 255, 255), ImFont* font = fontTahoma);
 
-	void String(std::string text, int x, int y, int orientation, RGBA color, int font, bool bordered = true, RGBA bcolor = RGBA(1, 0, 0))
+	/*void String(std::string text, int x, int y, int orientation, RGBA color, int font, bool bordered = true, RGBA bcolor = RGBA(1, 0, 0))
 	{
 		String(x, y, text, color);
-	}
+	}*/
 
 	void Circle(const ImVec2& pos, float radius, const RGBA& color)
 	{

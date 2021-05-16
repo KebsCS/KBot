@@ -195,3 +195,11 @@ bool Xerath::Evade(Vector3 evadePos)
 {
 	return false;
 }
+
+void Xerath::Tick()
+{
+}
+
+void Xerath::GUI()
+{
+}

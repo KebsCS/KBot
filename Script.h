@@ -168,6 +168,8 @@ public:
 	virtual void OnKeyUp(int vKey) = 0;
 	virtual void Harass() = 0;
 	virtual bool Evade(Vector3 evadePos) = 0;
+	virtual void Tick() = 0;
+	virtual void GUI() = 0;
 };
 
 extern IScript* championScript;

@@ -9,13 +9,15 @@ void Draw::Line(const int& x, const int& y, const int& x2, const int& y2, const 
 	Line(ImVec2(x, y), ImVec2(x2, y2), color, thickness);
 }
 
-void Draw::String(const ImVec2& pos, const std::string text, const RGBA& color)
+void Draw::String(const std::string text, const ImVec2& pos, const RGBA& color, ImFont* font)
 {
+	ImGui::PushFont(font);
 	overlay->AddText(ImVec2(pos.x, pos.y), ImColor(color.R, color.G, color.B, color.A), text.c_str());
+	ImGui::PopFont();
 }
-void Draw::String(const int& x, const int& y, const std::string text, const RGBA& color)
+void Draw::String(const std::string text, const int& x, const int& y, const RGBA& color, ImFont* font)
 {
-	String(ImVec2(x, y), text.c_str(), color);
+	String(text.c_str(), ImVec2(x, y), color);
 }
 
 void Draw::CircleRange2(const Vector3& Pos, const float& points, float r, const RGBA& color, float thickness)

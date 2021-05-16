@@ -149,6 +149,7 @@ private:
 private:
 	void Init();
 	void InitSpells();
+	void InitEvadeSpells();
 	void InitWorldMap();
 
 	std::vector<Geometry::Polygon> WorldMap;
@@ -159,17 +160,20 @@ public:
 	Evade2()
 	{
 		InitSpells();
+		InitEvadeSpells();
 		Init();
+
 		//InitWorldMap();
 	}
 
 	void Tick();
 	void StartEvading();
 	void Draw();
+	void GUI();
 
 	void MoveToPos(Vector3 pos, bool stop = false);
 	void SetEvading(bool b);
-	bool IsPosSafe(Vector3 pos);
+	bool IsDangerous(Vector3 pos);
 
 	void OnCreateMissile(Spell& spell);
 	void OnSpellCast(Spell& spell);
@@ -179,9 +183,25 @@ public:
 	std::vector<Vector3> GetPossibleEvadePoints();
 	Vector3 GetEvadingPosition();
 
+	float NewTimer = 0;
+	float OldTimer = 0;
+	bool Evading = false;
+	Vector3 mWorldPos = 0;
+	Vector3 SafePos;
+	Vector3 ExtendedPos;
 	Vector3 GetMovePath();
 	int CoreManager(Spell s);
+	int SlotToScancode(int slot);
+	Vector3 PrependVector(Vector3 pos1, Vector3 pos2, float dist);
+	void DodgeSpell();
+	std::vector<Vector3> FindIntersections(Geometry::Polygon poly, Vector3 p1, Vector3 p2);
+	Vector3 GetExtendedSafePos(Vector3 pos);
+	void CastSpell(int slot, Vector3 pos);
+	int Avoid(Spell spell, Vector3 dodgePos, EvadeSpell data);
 	Vector3 GetBestEvadePos(std::vector<Spell> spells, float radius, int mode, int extra, bool force);
+	bool IsSafePos(Vector3 pos, int extra);
+	bool IsAboutToHit(Spell& spell, Vector3 pos1, int extra);
+	float GetMovementSpeed(bool extra, EvadeSpell evadeSpell);
 
 	bool IsValid(Spell& spell);
 
@@ -191,6 +211,26 @@ public:
 	//Vector3 ExtendedPos = 0;
 	//Vector3 SafePos = 0;
 	//bool Evading = 0;
+
+	std::string SlotToName(int slot)
+	{
+		switch (slot)
+		{
+		case 0:
+			return "[Q]";
+		case 1:
+			return "[W]";
+		case 2:
+			return "[E]";
+		case 3:
+			return "[R]";
+		case 4:
+			return "[D]";
+		case 5:
+			return "[F]";
+		}
+		return "";
+	}
 };
 
 #endif

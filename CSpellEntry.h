@@ -76,6 +76,11 @@ public:
 		return Memory.Read<int>(base + Offsets::oSpellEntrySlot);
 	}
 
+	bool IsBasic()
+	{
+		return Memory.Read<bool>(base + Offsets::oSpellEntryIsBasicAttack);
+	}
+
 	float GetWindupTime()
 	{
 		return Memory.Read<float>(base + Offsets::oSpellEntryWindupTime, sizeof(float));

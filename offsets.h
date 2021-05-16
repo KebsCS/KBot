@@ -6,28 +6,28 @@
 namespace Offsets
 {
 	//Main
-	constexpr auto oUnderMouseObject = 0x2300BD8;
-	constexpr auto oLocalPlayer = 0x2f4f764; //			A1 ?? ?? ?? ?? 85 C0 74 07 05 ?? ?? ?? ?? EB 02 33 C0 56 // dword_[offset]
-	constexpr auto oGameTime = 0x2f4759c; // 				F3 0F 11 05 ? ? ? ? 8B 49 // dword_[offset]
-	constexpr auto oObjManager = 0x16b2a74; //			8B 0D ? ? ? ? 89 74 24 14 // dword_[offset]
-	constexpr auto oHudInstance = 0x16b2aac; //			8B 0D ? ? ? ? FF 77 20 8B 49 14 // dword_[offset]
-	constexpr auto oViewMatrix = 0x2F71098; //B9 ? ? ? ? E8 ? ? ? ? B9 ? ? ? ? E9 ? ? ? ? CC CC CC CC CC CC CC CC
+	constexpr auto oUnderMouseObject = 0x2fb6218;
+	constexpr auto oLocalPlayer = 0x2FB5814; //			A1 ?? ?? ?? ?? 85 C0 74 07 05 ?? ?? ?? ?? EB 02 33 C0 56 // dword_[offset]
+	constexpr auto oGameTime = 0x2fadb80; // 				F3 0F 11 05 ? ? ? ? 8B 49 // dword_[offset]
+	constexpr auto oObjManager = 0x1719438; //			8B 0D ? ? ? ? 89 74 24 14 // dword_[offset]
+	constexpr auto oHudInstance = 0x1719470; //			8B 0D ? ? ? ? FF 77 20 8B 49 14 // dword_[offset]
+	constexpr auto oViewMatrix = 0x2fd92a8; //B9 ? ? ? ? E8 ? ? ? ? B9 ? ? ? ? E9 ? ? ? ? CC CC CC CC CC CC CC CC
 
 	//Object lists
-	constexpr auto oHeroList = 0x16b09e4; //				A1 ? ? ? ? 53 55 56 8B 68 04 8B 40 08 57 33 FF
-	constexpr auto oMinionList = 0x22fee74; //A1 ? ? ? ? 53 55 8B 6C 24 1C				A1 ? ? ? ? 8B 50 04 8D 48 04 89 44 24 1C				//E8 ? ? ? ? EB 02 33 C0 6A 14 A3 ? ? ? ? E8 ? ? ? ? 83 C4 04
-	constexpr auto oTurretList = 0x2F46558;//				8B 0D ? ? ? ? E8 ? ? ? ? 85 C0 74 13 8B 10
-	constexpr auto oInhibitorList = 0x2F4F888; //			8B 15 ? ? ? ? 8B 7A 04 8B 42 08 8D 0C 87 3B F9 73 31 66 90
+	constexpr auto oHeroList = 0x17173d8; //				A1 ? ? ? ? 53 55 56 8B 68 04 8B 40 08 57 33 FF
+	constexpr auto oMinionList = 0x2fa884c; //A1 ? ? ? ? 53 55 8B 6C 24 1C				A1 ? ? ? ? 8B 50 04 8D 48 04 89 44 24 1C				//E8 ? ? ? ? EB 02 33 C0 6A 14 A3 ? ? ? ? E8 ? ? ? ? 83 C4 04
+	constexpr auto oTurretList = 0x2FACAF8;//				8B 0D ? ? ? ? E8 ? ? ? ? 85 C0 74 13 8B 10
+	constexpr auto oInhibitorList = 0x2FB6B8C; //			8B 15 ? ? ? ? 8B 7A 04 8B 42 08 8D 0C 87 3B F9 73 31 66 90
 	//constexpr auto oStructureList = ;  // FF 30 8B 0D ? ? ? ? E8 ? ? ? ?
-	constexpr auto oMissileMap = 0x2F4E2D4; // 8B 15 ? ? ? ? 85 D2 74 44  //mov edx, offset
+	constexpr auto oMissileMap = 0x2FB4BA8; // 8B 15 ? ? ? ? 85 D2 74 44  //mov edx, offset
 
 	//Renderer
-	constexpr auto oRenderer = 0x2f73e78;	//8B 15 ? ? ? ? 83 EC 08 F3
+	constexpr auto oRenderer = 0x2fdc11c;	//8B 15 ? ? ? ? 83 EC 08 F3
 	constexpr auto oRendererWidth = 0x10;
 	constexpr auto oRendererHeight = 0x14;
 
 	//Minimap
-	constexpr auto oMinimapObject = 0x2f4f3c8; //FF 52 04 8B 0D ? ? ? ? E8 ? ? ? ?		//mov ecx, offset
+	constexpr auto oMinimapObject = 0x2fb5810; //8B 0D ? ? ? ? 6A 00 E8 ? ? ? ? C7
 	constexpr auto oMinimapObjectHud = 0x88;
 	constexpr auto oMinimapHudPos = 0x60;
 	constexpr auto oMinimapHudSize = 0x68;
@@ -36,7 +36,7 @@ namespace Offsets
 	//go into call function
 	//this[offset]
 	//offset-4
-	constexpr auto oAiManager = 0x301C;
+	constexpr auto oAiManager = 0x2D1C;
 
 	//constexpr auto mHPMaxPenalty = 0xDE4;
 	//constexpr auto mAllShield = 0xE04;
@@ -60,44 +60,45 @@ namespace Offsets
 	constexpr auto oObjHealth = 0xD98;
 	constexpr auto oObjMaxHealth = 0xDA8;
 
-	constexpr auto oObjActionState = 0x1044;
+	constexpr auto oObjActionState = 0x106C;
 
-	constexpr auto oObjFlatMagicPen = 0x1198;
-	constexpr auto oObjPercentArmorPen = 0x119C;
-	constexpr auto oObjPercentMagicPen = 0x11A0;
-	constexpr auto oObjFloatLethality = 0x11B4;
-	constexpr auto oObjBonusAtk = 0x11F0;
-	constexpr auto oObjAbilityPower = 0x1200;
-	constexpr auto oObjLifeSteal = 0x125C;
-	constexpr auto oObjAttackSpeed = 0x126C;
-	constexpr auto oObjBaseAtk = 0x1270;
-	constexpr auto oObjCritChance = 0x1294;
-	constexpr auto oObjArmor = 0x1298;
-	constexpr auto oObjBonusArmor = 0x129C;
-	constexpr auto oObjMagicRes = 0x12A0;
-	constexpr auto oObjBonusMagicRes = 0x12A4;
-	constexpr auto oObjMoveSpeed = 0x12B0;
-	constexpr auto oObjAtkRange = 0x12B8;
+	constexpr auto oObjFlatMagicPen = 0x11C0;
+	constexpr auto oObjPercentArmorPen = 0x11C4;
+	constexpr auto oObjPercentMagicPen = 0x11C8;
+	constexpr auto oObjFloatLethality = 0x11DC;
+	constexpr auto oObjBonusAtk = 0x1218;
+	constexpr auto oObjAbilityPower = 0x1228;
+	constexpr auto oObjLifeSteal = 0x1284;
+	constexpr auto oObjAttackSpeed = 0x129C;
+	constexpr auto oObjBaseAtk = 0x12A0;
+	constexpr auto oObjCritChance = 0x12C4;
+	constexpr auto oObjArmor = 0x12C8;
+	constexpr auto oObjBonusArmor = 0x12CC;
+	constexpr auto oObjMagicRes = 0x12D0;
+	constexpr auto oObjBonusMagicRes = 0x12D4;
+	constexpr auto oObjHealthRegen = 0x12DC;
+	constexpr auto oObjMoveSpeed = 0x12E0;
+	constexpr auto oObjAtkRange = 0x12E8;
 
-	//constexpr auto oObjBuffMgr = 0x213C;
-	constexpr auto oObjSpellBook = 0x2708; // (0x2B60 - = 0x478)
+	constexpr auto oObjBuffMgr = 0x2254;
+	constexpr auto oObjSpellBook = 0x2408; // (-0x478)
 
-	constexpr auto UnitComponentInfo = 0x2F44;
+	constexpr auto UnitComponentInfo = 0x2C44;
 	constexpr auto UCIPropertiesInstance = 0x1C;
 
-	constexpr auto oObjChampionName = 0x3134;
+	constexpr auto oObjChampionName = 0x2E34;
 
-	constexpr auto oObjEXP = 0x36AC;
-	constexpr auto oObjLevel = 0x36BC;
-	constexpr auto oObjAvaiableSpellPoints = 0x36E4;
+	constexpr auto oObjEXP = 0x33CC;
+	constexpr auto oObjLevel = 0x33DC;
+	constexpr auto oObjAvaiableSpellPoints = 0x3404;
 
-	constexpr auto oObjSummonerSpell1 = 0x3B80;
-	constexpr auto oObjSummonerSpell2 = 0x3B8C;
-	constexpr auto oObjKeystone1 = 0x3BA0; //perk_displayname
-	constexpr auto oObjKeystone2 = 0x3BAC;//perk_tooltip
+	constexpr auto oObjSummonerSpell1 = 0x38A0;
+	constexpr auto oObjSummonerSpell2 = 0x38AC;
+	constexpr auto oObjKeystone1 = 0x38C0; //perk_displayname
+	constexpr auto oObjKeystone2 = 0x38CC;//perk_tooltip
 
-	constexpr auto oInhiRemainingRespawnTime = 0x1014;
-	constexpr auto oTurretName = 0x102C;
+	constexpr auto oInhiRemainingRespawnTime = 0xFA4;
+	constexpr auto oTurretName = 0xFA4;
 
 	//UCIProperties
 	constexpr auto oSelectionRadius = 0x044C;
@@ -105,7 +106,7 @@ namespace Offsets
 	constexpr auto oBoundingRadius = 0x0454;
 	constexpr auto oBaseAttackSpeed = 0x1D4;
 
-	//MissileInfo
+	//MissileInfo not tested
 	constexpr auto oMissileSpellInfo = 0x230;
 	constexpr auto oMissileSlot = 0x234;
 	constexpr auto oMissileLevel = 0x288;
@@ -120,12 +121,13 @@ namespace Offsets
 	constexpr auto oSpellEntrySlot = 0xC;
 	constexpr auto oSpellEntryStartPos = 0x80;
 	constexpr auto oSpellEntryEndPos = 0x8C;
+	constexpr auto oSpellEntryIsBasicAttack = 0xBC;
 	constexpr auto oSpellEntryWindupTime = 0x4C0;
 	constexpr auto oSpellEntryCastStartTime = 0x544;
 
 	//SpellInfo
-	constexpr auto oSpellInfoSpellData = 0x44;
 	constexpr auto oSpellInfoSpellName = 0x18;
+	constexpr auto oSpellInfoSpellData = 0x44;
 
 	//SpellData
 	constexpr auto oSpellDataRange = 0x3C0;

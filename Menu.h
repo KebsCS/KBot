@@ -142,6 +142,11 @@ struct Menu
 		//0-drake 1-blue raptors 2-botlane 3-toplane 4-red raptors
 		bool JumpsType[5];
 	}Talon;
+
+	struct
+	{
+		bool DrawExecute = 0;
+	}Pantheon;
 };
 
 extern Menu M;

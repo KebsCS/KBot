@@ -2,6 +2,7 @@
 #include "Mouse.h"
 #include "Keyboard.h"
 #include "Utils.h"
+#include "Draw.h"
 
 //std::string Visuals::getSpellImg(std::string name)
 //{
@@ -161,10 +162,10 @@ void Visuals::CooldownTimers(CObject obj)
 
 	if (M.Cooldowns.Type[0]) //text on champ
 	{
-		draw->String(sQcd, RealPos.x - 20, RealPos.y + 15, centered, Qcolor, Direct3D9.fontTahoma);
-		draw->String(sWcd, RealPos.x - 0, RealPos.y + 15, centered, Wcolor, Direct3D9.fontTahoma);
-		draw->String(sEcd, RealPos.x + 20, RealPos.y + 15, centered, Ecolor, Direct3D9.fontTahoma);
-		draw->String(sRcd, RealPos.x + 40, RealPos.y + 15, centered, Rcolor, Direct3D9.fontTahoma);
+		draw->String(sQcd, RealPos.x - 20, RealPos.y + 15, Qcolor);
+		draw->String(sWcd, RealPos.x - 0, RealPos.y + 15, Wcolor);
+		draw->String(sEcd, RealPos.x + 20, RealPos.y + 15, Ecolor);
+		draw->String(sRcd, RealPos.x + 40, RealPos.y + 15, Rcolor);
 	}
 
 	int Dcooldown = GetDCooldownExpire - GameTime + 1;
@@ -189,13 +190,13 @@ void Visuals::CooldownTimers(CObject obj)
 
 	if (M.Cooldowns.Type[0]) //text on champ
 	{
-		draw->String(sDcd, RealPos.x - 10, RealPos.y + 30, centered, Dcolor, Direct3D9.fontTahoma);
-		draw->String(sFcd, RealPos.x + 30, RealPos.y + 30, centered, Fcolor, Direct3D9.fontTahoma);
+		draw->String(sDcd, RealPos.x - 10, RealPos.y + 30, Dcolor);
+		draw->String(sFcd, RealPos.x + 30, RealPos.y + 30, Fcolor);
 
 		if (obj.SummonerSpell1() == "summonersmite")
 		{
 			float SmiteDamage = Summ1->GetDamage();
-			draw->String(std::to_string((int)SmiteDamage), RealPos.x - 7, RealPos.y + 28, lefted, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+			draw->String(std::to_string((int)SmiteDamage), RealPos.x - 7, RealPos.y + 28, RGBA(0, 200, 255));
 			//int SmiteStacks = Memory.Read<int>(Summ1 + 0x58);
 
 			//if (SmiteStacks == 2)
@@ -213,7 +214,7 @@ void Visuals::CooldownTimers(CObject obj)
 			//int SmiteStacks = Memory.Read<int>(Summ2 + oSpellSlotRemainingCharge);
 			float SmiteDamage = Summ2->GetDamage();
 			//clog.AddLog("%i", SmiteStacks);
-			draw->String(std::to_string((int)SmiteDamage), RealPos.x + 33, RealPos.y + 28, lefted, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+			draw->String(std::to_string((int)SmiteDamage), RealPos.x + 33, RealPos.y + 28, RGBA(0, 200, 255));
 			/*if (SmiteStacks == 2)
 				int a;
 			else if (SmiteStacks == 0)
@@ -354,31 +355,31 @@ void Visuals::ScoreBoard(CObject obj)
 			{
 				for (int item = 0; item < 6; item++)
 				{
-					draw->String(sItemsCD[item], FirstSumm.x + 318 + item * 35, FirstSumm.y + 40 + Spacing * i, centered, ItemsColor[item], Direct3D9.fontTahoma);
+					draw->String(sItemsCD[item], FirstSumm.x + 318 + item * 35, FirstSumm.y + 40 + Spacing * i, ItemsColor[item]);
 				}
 			}
 
 			//todo when disabled dont rpm
 			if (M.Cooldowns.Scoreboard.Ults)
-				draw->String(sRcd, FirstSumm.x + 83, FirstSumm.y + 40 + Spacing * i, centered, Rcolor, Direct3D9.fontTahoma);
+				draw->String(sRcd, FirstSumm.x + 83, FirstSumm.y + 40 + Spacing * i, Rcolor);
 
 			if (M.Cooldowns.Scoreboard.Exp)
-				draw->String(spercentLevel, FirstSumm.x + 133, FirstSumm.y + 40 + Spacing * i, lefted, RGBA(0, 200, 255), Direct3D9.fontTahoma);
+				draw->String(spercentLevel, FirstSumm.x + 133, FirstSumm.y + 40 + Spacing * i, RGBA(0, 200, 255));
 
 			if (M.Cooldowns.Scoreboard.Summs)
 			{
-				draw->String(sDcd, FirstSumm.x, FirstSumm.y + Spacing * i, centered, Dcolor, Direct3D9.fontTahoma);
-				draw->String(sFcd, FirstSumm.x, FirstSumm.y + 30 + Spacing * i, centered, Fcolor, Direct3D9.fontTahoma);
+				draw->String(sDcd, FirstSumm.x, FirstSumm.y + Spacing * i, Dcolor);
+				draw->String(sFcd, FirstSumm.x, FirstSumm.y + 30 + Spacing * i, Fcolor);
 
 				if (obj.SummonerSpell1() == "summonersmite")
 				{
 					float SmiteDamage = Summ1->GetDamage();
-					draw->String(std::to_string((int)SmiteDamage), FirstSumm.x + 5, FirstSumm.y + Spacing * i, lefted, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+					draw->String(std::to_string((int)SmiteDamage), FirstSumm.x + 5, FirstSumm.y + Spacing * i, RGBA(0, 200, 255), fontTahomaSmall);
 				}
 				else if (obj.SummonerSpell2() == "summonersmite")
 				{
 					float SmiteDamage = Summ2->GetDamage();
-					draw->String(std::to_string((int)SmiteDamage), FirstSumm.x + 5, FirstSumm.y + 30 + Spacing * i, lefted, RGBA(0, 200, 255), Direct3D9.fontTahomaSmall);
+					draw->String(std::to_string((int)SmiteDamage), FirstSumm.x + 5, FirstSumm.y + 30 + Spacing * i, RGBA(0, 200, 255), fontTahomaSmall);
 				}
 			}
 
@@ -425,7 +426,7 @@ void Visuals::DrawAARanges(CObject obj, int points, float thickness, RGBA color,
 		if (M.bDebug)
 		{
 			ImVec2 RealPos = Direct3D9.WorldToScreen(Position);
-			draw->String(RealPos.x, RealPos.y + 20, std::to_string(obj.Address()), RGBA(255, 255, 255));
+			draw->String(std::to_string(obj.Address()), RealPos.x, RealPos.y + 20, RGBA(255, 255, 255));
 		}
 
 		//draw->String(Direct3D9.WorldToScreen(Position), Memory.ReadString(obj.Address() + 0x1014), RGBA(255, 255, 255));
@@ -474,8 +475,8 @@ void Visuals::DrawTracers(CObject obj, float thickness)
 		r = g = 0;
 		b = 255;
 
-		if(draw->IsOnScreen(RealPos))
-			draw->String(obj.GetChampName(), RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
+		if (draw->IsOnScreen(RealPos))
+			draw->String(obj.GetChampName(), RealPos.x, RealPos.y, RGBA(255, 255, 255));
 	}
 
 	RGBA color(r, g, b);
@@ -493,6 +494,9 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 		return;
 
 	if (obj.GetNetworkID() - (unsigned int)0x40000000 > 0x100000)
+		return;
+
+	if (!(obj.HasUnitTags(Unit_Monster_Large) || obj.HasUnitTags(Unit_Monster_Epic)))
 		return;
 
 	if (obj.GetTeam() == Local.GetTeam())
@@ -532,7 +536,7 @@ void Visuals::AutoSmite(CObject obj, int slot, int mode, float mouseSpeed)
 	//clog.AddLog("%f", cd);
 	if (cd > 0.f)
 		return;
-	
+
 	if (!obj.HasUnitTags(Unit_Monster_Camp))
 		return;
 
@@ -638,7 +642,7 @@ void Visuals::InhibTimers(CObject obj)
 
 		float RespawnTimer = Memory.Read<float>(obj.Address() + Offsets::oInhiRemainingRespawnTime);
 
-		draw->String(std::to_string((int)RespawnTimer), MapPos.x, MapPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
+		draw->String(std::to_string((int)RespawnTimer), MapPos.x, MapPos.y, RGBA(255, 255, 255));
 
 		//clog.AddLog("%x", obj.Address());
 
@@ -648,9 +652,9 @@ void Visuals::InhibTimers(CObject obj)
 		if (draw->IsOnScreen(RealPos))
 		{
 			if (M.bDebug)
-				draw->String(RealPos.x, RealPos.y + 20, std::to_string(obj.Address()), RGBA(255, 255, 255));
+				draw->String(std::to_string(obj.Address()), RealPos.x, RealPos.y + 20, RGBA(255, 255, 255));
 
-			draw->String(std::to_string((int)RespawnTimer), RealPos.x, RealPos.y, centered, RGBA(255, 255, 255), Direct3D9.fontTahoma);
+			draw->String(std::to_string((int)RespawnTimer), RealPos.x, RealPos.y, RGBA(255, 255, 255));
 		}
 	}
 }
@@ -677,7 +681,7 @@ void Visuals::WardsRange(CObject obj)
 	if (!draw->IsOnScreen(RealPos))
 		return;
 
-	if (utils->StringContains(obj.unitInfo->name, "YellowTrinket", true))
+	if (obj.unitInfo->name == utils->ToLower("yellowtrinket") || obj.unitInfo->name == utils->ToLower("sightward"))
 	{
 		if (!wardTimer.count(obj.GetIndex()) || (wardTimer[obj.GetIndex()] - M.fGameTime) < -100) // if timer for a ward doesnt exist
 		{
@@ -687,9 +691,9 @@ void Visuals::WardsRange(CObject obj)
 		}
 		if (wardTimer[obj.GetIndex()] - M.fGameTime > 0) //draw only if timer above 0
 		{
-			draw->String(std::to_string((int)(wardTimer[obj.GetIndex()] - M.fGameTime)), RealPos.x, RealPos.y + 10, centered, RGBA(255, 255, 255), Direct3D9.fontTahomaSmall);
+			draw->String(std::to_string((int)(wardTimer[obj.GetIndex()] - M.fGameTime)), RealPos.x, RealPos.y + 10, RGBA(255, 255, 255));
 			RGBA WardColor(255, 170, 0);
-			draw->String("Ward", RealPos.x, RealPos.y, centered, WardColor, Direct3D9.fontTahomaSmall);
+			draw->String("Ward", RealPos.x, RealPos.y, WardColor);
 			//draw->String(std::to_string(obj.Address()), RealPos.x, RealPos.y, centered, WardColor, Direct3D9.fontTahomaSmall);
 			draw->CircleRange(Pos, 14, 900, WardColor);
 		}
@@ -697,20 +701,34 @@ void Visuals::WardsRange(CObject obj)
 	else if (obj.unitInfo->name == utils->ToLower("JammerDevice"))
 	{
 		RGBA ControlWardColor(255, 40, 0);
-		draw->String("Control Ward", RealPos.x, RealPos.y, centered, ControlWardColor, Direct3D9.fontTahomaSmall);
+		draw->String("Control Ward", RealPos.x, RealPos.y, ControlWardColor);
 		draw->CircleRange(Pos, 14, 900, ControlWardColor);
 	}
 	else if (obj.unitInfo->name == utils->ToLower("BlueTrinket"))
 	{
 		RGBA BlueWardColor(0, 65, 255);
-		draw->String("Blue Ward", RealPos.x, RealPos.y, centered, BlueWardColor, Direct3D9.fontTahomaSmall);
+		draw->String("Blue Ward", RealPos.x, RealPos.y, BlueWardColor);
 		draw->CircleRange(Pos, 14, 500, BlueWardColor);
+	}
+	else if (obj.unitInfo->name == utils->ToLower("perkszombieward"))
+	{
+		if (!wardTimer.count(obj.GetIndex()) || (wardTimer[obj.GetIndex()] - M.fGameTime) < -100)
+		{
+			wardTimer[obj.GetIndex()] = M.fGameTime + obj.GetMana();
+		}
+		if (wardTimer[obj.GetIndex()] - M.fGameTime > 0) //draw only if timer above 0
+		{
+			draw->String(std::to_string((int)(wardTimer[obj.GetIndex()] - M.fGameTime)), RealPos.x, RealPos.y + 10, RGBA(255, 255, 255));
+			RGBA WardColor(255, 170, 0);
+			draw->String("Zombie Ward", RealPos.x, RealPos.y, WardColor);
+			draw->CircleRange(Pos, 14, 900, WardColor);
+		}
 	}
 	else
 	{
 		//for testing
 		std::string testName = obj.unitInfo->name;
-		draw->String(testName, RealPos.x, RealPos.y + 30, centered, RGBA(255, 255, 255), Direct3D9.fontTahomaSmall);
+		draw->String(testName, RealPos.x, RealPos.y + 30, RGBA(255, 255, 255));
 	}
 }
 
@@ -787,11 +805,11 @@ void Visuals::GankAlerter(CObject obj)
 		if (RealPos.x == 0.f && RealPos.y == 0.f)
 			return;
 
-		if (!draw->IsOnScreen(RealPos))	
+		if (!draw->IsOnScreen(RealPos))
 			return;
 
 		std::string str = std::to_string(howManyNearby[obj.GetIndex()]) + (howManyNearby[obj.GetIndex()] == 1 ? " CHAMPION" : " CHAMPIONS") + " NEARBY!";
-		draw->String(str, RealPos.x, RealPos.y, centered, RGBA(255, 50, 50), Direct3D9.fontTahoma);
+		draw->String(str, RealPos.x, RealPos.y, RGBA(255, 50, 50));
 	}
 }
 

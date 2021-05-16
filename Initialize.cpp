@@ -362,5 +362,4 @@ void Initialize::CreateChampArray()
 	}
 }
 
-
 Initialize* init = new Initialize();

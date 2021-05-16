@@ -14,7 +14,6 @@
 #include "AiManager.h"
 #include "LoLAPI.h"
 
-
 class CObject
 {
 private:
@@ -238,7 +237,7 @@ public:
 	}
 	bool IsDead()
 	{
-		return this->GetHealth() <= 0.01f;
+		return this->GetHealth() <= 0.0f;
 	}
 	bool IsMoving()
 	{
@@ -317,7 +316,7 @@ public:
 	}
 	int IsWard()
 	{
-		if (this->HasUnitTags(Unit_Ward))
+		if (this->HasUnitTags(Unit_Ward) && !this->HasUnitTags(Unit_Plant))
 			return true;
 		return false;
 	}

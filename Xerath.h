@@ -18,6 +18,10 @@ private:
 
 	virtual bool Evade(Vector3 evadePos);
 
+	virtual void Tick();
+
+	virtual void GUI();
+
 public:
 
 	bool chargeQ = false;

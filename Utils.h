@@ -70,9 +70,6 @@ public:
 
 	bool ContainsOnlyASCII(std::string buff);
 
-
-
-
 	//bool IsLeagueForeGround()
 	//{
 	//	HWND handle = GetForegroundWindow();

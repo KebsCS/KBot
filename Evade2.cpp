@@ -122,7 +122,7 @@ void Evade2::Tick()
 			for (Spell& s : champ.spells)
 			{
 				// If spell exists in DB
-				clog.AddLog("%s", spell.GetSpellInfo()->GetName().c_str());
+				//clog.AddLog("%s", spell.GetSpellInfo()->GetName().c_str());
 				if (utils->StringContains(spell.GetSpellInfo()->GetName(), s.name))
 				{
 					s.startTime = GameTimer - M.Evade.GP / 1000;
@@ -211,7 +211,7 @@ void Evade2::Tick()
 							clog.AddLog("0x%x = f%f , d%d , %s", i, Memory.Read<float>(obj.Address() + i), Memory.Read<int>(obj.Address() + i), Memory.ReadString(obj.Address() + i));
 						}*/
 
-						clog.AddLog("mis %s", obj.GetSpellInfo()->GetName().c_str());
+						//clog.AddLog("mis %s", obj.GetSpellInfo()->GetName().c_str());
 
 						//if spell exists in database
 						std::string heroName = source.GetChampName();
@@ -263,16 +263,14 @@ void Evade2::Tick()
 
 void Evade2::MoveToPos(Vector3 pos, bool stop)
 {
-	if (stop)
-		keyboard->GenerateKeyScancode(DIK_S);
 	if (!draw->IsOnScreen(pos))
 		return;
-	/*if (!Local.CheckState(CanMove))
+	if (!Local.CheckState(CanMove))
 		return;
-	if (!IsSafePos(pos, false))
-		return;*/
+	if (!IsDangerous(pos))
+		return;
 	POINT startPos = mouse->GetPos();
-	ImVec2 path = Direct3D9.WorldToScreen(pos);
+	ImVec2 path = Direct3D9.WorldToScreen(pos.Extend(MyHeroPos, -BoundingRadius));
 	mouse->MouseMoveInstant(path.x, path.y);
 	//bool over = false;
 	//if (Memory.Read<DWORD>(ClientAddress + oUnderMouseObject) != 0) //if smth under mouse
@@ -284,7 +282,7 @@ void Evade2::MoveToPos(Vector3 pos, bool stop)
 	mouse->RightClick();
 	//if (over)
 	//	keyboard->GenerateKeyScancode(DIK_Z);
-	if (M.Evade.MouseBack)
+	if (M.Evade.MouseBack || stop)
 		mouse->MouseMoveInstant(startPos.x, startPos.y);
 }
 
@@ -300,7 +298,7 @@ void Evade2::SetEvading(bool b)
 	IsEvading = b;
 }
 
-bool Evade2::IsPosSafe(Vector3 pos)
+bool Evade2::IsDangerous(Vector3 pos)
 {
 	for (auto& spell : DetectedSkillshots)
 	{
@@ -311,6 +309,93 @@ bool Evade2::IsPosSafe(Vector3 pos)
 	}
 
 	return true;
+}
+
+void Evade2::DodgeSpell()
+{
+	//if is channeling
+	/*if Buffsand Buffs[myHero.charName] and
+		self:HasBuff(Buffs[myHero.charName]) then
+		self.SafePos, self.ExtendedPos = nil, nil
+		end*/
+
+	if (!ExtendedPos.IsZero())
+	{
+		MoveToPos(ExtendedPos);
+	}
+}
+
+void Evade2::GUI()
+{
+	ImGui::SetNextWindowPos(ImVec2(548, 189), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(361, 377), ImGuiCond_FirstUseEver);
+
+	if (MyEvadeSpells.size() > 0)
+	{
+		ImGui::Begin("Spells usage");
+
+		for (auto& s : MyEvadeSpells)
+		{
+			/*if (ImGui::CollapsingHeader(a.hero.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+			{*/
+			/*	for (auto& s : a.spells)
+				{*/
+			std::string str = "Use ##" + s.name;
+			ImGui::Text("%s - %s", SlotToName(s.slot).c_str(), s.displayName.c_str());
+			ImGui::Checkbox(str.c_str(), &s.use);
+			std::string str2 = "Danger ##" + s.name;
+			ImGui::SliderInt(str2.c_str(), &s.danger, 1, 5);
+			ImGui::Separator();
+			//}
+		//}
+		}
+
+		ImGui::End();
+	}
+
+	ImGui::SetNextWindowPos(ImVec2(429, 189), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(361, 377), ImGuiCond_FirstUseEver);
+
+	ImGui::Begin("Spells to dodge");
+
+	for (auto& a : ChampsInGame)
+	{
+		if (ImGui::CollapsingHeader(a.hero.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			for (auto& s : a.spells)
+			{
+				ImGui::Text("%s - %s", SlotToName(s.slot).c_str(), s.displayName.c_str());
+				std::string str = "Dodge ##" + s.name;
+				ImGui::Checkbox(str.c_str(), &s.enabled);
+				std::string strfow = "Fog of War ##" + s.name;
+				ImGui::Checkbox(strfow.c_str(), &s.fow);
+				std::string str2 = "Danger ##" + s.name;
+				ImGui::SliderInt(str2.c_str(), &s.danger, 1, 5);
+				ImGui::Separator();
+			}
+		}
+	}
+
+	ImGui::End();
+}
+
+std::vector<Vector3> Evade2::FindIntersections(Geometry::Polygon poly, Vector3 p1, Vector3 p2)
+{
+	std::vector<Vector3>intersections;
+	for (size_t i = 0; i < poly.Points.size(); ++i)
+	{
+		auto startPos = poly.Points[i];
+		auto endPos = poly.Points[(i == poly.Points.size() - 1) ? 0 : i + 1];
+		auto temp = startPos.Intersection(endPos, p1, p2).Point;
+		if (!temp.IsZero())
+			intersections.emplace_back(temp);
+	}
+	return intersections;
+}
+
+Vector3 Evade2::PrependVector(Vector3 pos1, Vector3 pos2, float dist)
+{
+	return pos1 + (pos2 - pos1).Normalized() * dist;
 }
 
 void Evade2::StartEvading()
@@ -361,32 +446,71 @@ void Evade2::StartEvading()
 
 	// shielding allies
 
-	bool IsMyPosSafe = IsPosSafe(MyHeroPos);
-
-	//Continue evading
-	if (IsEvading && IsPosSafe(EvadePoint))
+	if (DetectedSkillshots.size() > 0)
 	{
-		if (IsMyPosSafe)
+		int result = 0;
+		for (Spell& spell : DetectedSkillshots)
+			result += CoreManager(spell);
+
+		Vector3 movePath = GetMovePath();
+		if (!movePath.IsZero() && !Evading)
 		{
-			//We are safe, stop evading.
-			SetEvading(false);
-		}
-		else
-		{
-			if (GameTimer - LastClick > 15)
+			std::vector<Vector3> ints;
+			for (auto s : DetectedSkillshots)
 			{
-				LastClick = GameTimer;
-				MoveToPos(EvadePoint);
+				auto poly = s.path;
+				if (!poly.IsInside(MyHeroPos))
+				{
+					ints = FindIntersections(poly, MyHeroPos, movePath);
+				}
 			}
+			if (ints.size() > 0)
+			{
+				std::sort(ints.begin(), ints.end(), [&](Vector3 const& a, Vector3 const& b)
+					{
+						return MyHeroPos.DistanceSquared(a) < MyHeroPos.DistanceSquared(b);
+					});
+				auto movePos = PrependVector(MyHeroPos, ints.front(), BoundingRadius / 2);
+				MoveToPos(movePos, true);
+			}
+		}
 
-			return;
+		if (Evading)
+			DodgeSpell();
+		if (result == 0)
+		{
+			Evading = false;
+			SafePos = 0;
+			ExtendedPos = 0;
 		}
 	}
-	//Stop evading if the point is not safe.
-	else if (IsEvading)
-	{
-		SetEvading(false);
-	}
+
+	//bool IsMyPosSafe = IsPosSafe(MyHeroPos);
+
+	////Continue evading
+	//if (IsEvading && IsPosSafe(EvadePoint))
+	//{
+	//	if (IsMyPosSafe)
+	//	{
+	//		//We are safe, stop evading.
+	//		SetEvading(false);
+	//	}
+	//	else
+	//	{
+	//		if (GameTimer - LastClick > 15)
+	//		{
+	//			LastClick = GameTimer;
+	//			MoveToPos(EvadePoint);
+	//		}
+
+	//		return;
+	//	}
+	//}
+	////Stop evading if the point is not safe.
+	//else if (IsEvading)
+	//{
+	//	SetEvading(false);
+	//}
 
 	////The path is not safe.
 	//if (!is_my_path_safe.is_safe)
@@ -441,176 +565,205 @@ void Evade2::StartEvading()
 		TestPoints();*/
 }
 
-int Evade2::CoreManager(Spell s)
+Vector3 Evade2::GetExtendedSafePos(Vector3 pos)
 {
-	//if (s.path.IsInside(MyHeroPos) && Local.CheckState(CanMove))
-	//{
-	//	std::vector<EvadeSpell> evadeSpells;
-	//	if (1)
-	//	{
-	//		/*		for (auto e : evadespelldb)
-	//					if (e.hero == Local.GetChampName())
-	//					{
-	//						for (auto es : e.spells)
-	//						{
-	//							if (es.use)
-	//								evadeSpells.emplace_back(es);
-	//						}
-	//					}*/
-	//					/*	local evadeSpells = self.EvadeSpellData
-	//							local flashUsage = self.Flash2 and self.JEMenu.Spells.Flash.US:Value()
-	//							and self : IsReady(self.Flash2) and s.danger == 5*/
-	//		Vector3 safePos = GetBestEvadePos(DangerSkillshots, s.radius, 2, 0, false);
-	//		int result = 0;
-	//		if (!safePos.IsZero())
-	//		{
-	//			ExtendedPos = GetExtendedSafePos(safePos);
-	//			SafePos = safePos;
-	//			Evading = true;
-	//		}
-	//		else if (evadeSpells.size() > 0)//|| flashUsage)
-	//		{
-	//			for (int i = 0; i < evadeSpells.size(); i++)
-	//			{
-	//				Vector3 alternPos = GetBestEvadePos(DangerSkillshots, s.radius, 1, i + 1, false);
-	//				result = Avoid(s, alternPos, evadeSpells[i]);
-	//				if (result > 0)
-	//				{
-	//					if (result == 1)
-	//					{
-	//						ExtendedPos = GetExtendedSafePos(alternPos);
-	//						SafePos = alternPos;
-	//						Evading = true;
-	//					}
-	//					break;
-	//				}
-	//			}
-	//		}
-	//		else
-	//		{
-	//			if (result == 0)
-	//			{
-	//				Vector3 dodgePos = GetBestEvadePos(DangerSkillshots, s.radius, 1, true, true);
-	//				if (!dodgePos.IsZero())
-	//				{
-	//					/*if (flashUsage)
-	//					{
-	//						result = 1;
-	//						CastSpell(Flash, DodgePos);
-	//					}*/
-	//					if (M.Evade.Force)
-	//					{
-	//						clog.AddLog("Forced dodge");
-	//						ExtendedPos = GetExtendedSafePos(dodgePos);
-	//						SafePos = dodgePos;
-	//						Evading = true;
-	//					}
-	//				}
-	//			}
-	//			if (result == 0)
-	//				clog.AddLog("Impossible to dodge");
-	//			//impossible dodge
-	//			//for i = 1, #self.OnImpDodgeCBs do self.OnImpDodgeCBs[i](s.danger) end
-	//		}
-
-	//	}
-
-	//	return 1;
-	//}
+	if (!M.Evade.Smooth)
+		return pos;
+	float distance = MyHeroPos.Distance(pos);
+	std::vector<Vector3>positions;
+	for (CObject& minion : g_MinionList)
+	{
+		if (minion.GetNetworkID() - (unsigned int)0x40000000 > 0x100000)
+			continue;
+		if (minion.Address() && minion.HasUnitTags(Unit_Minion_Lane) && !minion.IsDead())
+		{
+			Vector3 minionPos = minion.GetPosition();
+			if (MyHeroPos.Distance(minionPos) <= distance)
+			{
+				positions.emplace_back(minionPos);
+			}
+		}
+	}
+	for (int i = 1; i < 8; i++)
+	{
+		bool collision = false;
+		auto ext = MyHeroPos.Append(MyHeroPos, pos, BoundingRadius * i);
+		if (i > 1 && InWall(ext) || i == 1)
+		{
+			for (auto& minionPos : positions)
+			{
+				if (ext.Distance(minionPos) <= BoundingRadius)
+				{
+					collision = true;
+					break;
+				}
+			}
+			if (!collision)
+				return ext;
+		}
+	}
 	return 0;
 }
 
-Vector3 Evade2::GetBestEvadePos(std::vector<Spell> spells, float radius, int mode, int extra, bool force)
+int Evade2::SlotToScancode(int slot)
 {
-	//std::vector<Vector3> points;
+	switch (slot)
+	{
+	case 0:
+		return DIK_Q;
+	case 1:
+		return DIK_W;
+	case 2:
+		return DIK_E;
+	case 3:
+		return DIK_R;
+	case 4:
+		return DIK_D;
+	case 5:
+		return DIK_F;
+	default:
+		return 0;
+	}
+	return 0;
+}
 
-	//std::vector<Geometry::Polygon> polygons;
+void Evade2::CastSpell(int slot, Vector3 pos)
+{
+	if (!draw->IsOnScreen(pos))
+		return;
 
-	//for (auto const& spell : spells)
-	//{
-	//	polygons.push_back(spell.path);
-	//	//draw->Polygon(spell.path, RGBA(255, 255, 0));
-	//}
+	POINT startPos = mouse->GetPos();
+	ImVec2 path = Direct3D9.WorldToScreen(pos);
+	mouse->MouseMoveInstant(path.x, path.y);
+	keyboard->GenerateKeyScancode(SlotToScancode(slot));
+	mouse->MouseMoveInstant(startPos.x, startPos.y);
+}
 
-	////clipping polygons moves them?
-	//auto danger_polygons = polygons;
-	////auto danger_polygons = Geometry::Geometry::ToPolygons(Geometry::Geometry::ClipPolygons(polygons));
+int Evade2::Avoid(Spell spell, Vector3 dodgePos, EvadeSpell data)
+{
+	CSpellSlot* slot;
+	slot = Local.GetSpellByID(data.slot);
+	if (slot->IsReady(Local.GetMana()))
+	{
+		if (!dodgePos.IsZero() && !IsDangerous(dodgePos) && (data.type == 1 || data.type == 2))
+		{
+			if (data.type == 1) //dash
+			{
+				Vector3 dashPos = MyHeroPos.Extend(dodgePos, data.range);
+				CastSpell(data.slot, dashPos);
+				return 1;
+			}
+			else if (data.type == 2) //ms buff
+			{
+				CastSpell(data.slot, MyHeroPos);
+				return 1;
+			}
+		}
+		else if (data.type == 3) //untargetble fizz e vlad w xayah r
+		{
+			CastSpell(data.slot, MyHeroPos);
+			return 2;
+		}
+		else if (data.type == 4)//yi q zed r
+		{
+			for (auto hero : init->herolist)
+			{
+				if (hero.GetTeam() != Local.GetTeam() && hero.IsVisible() && !hero.IsDead())
+				{
+					CastSpell(data.slot, hero.GetPosition());
+					return 2;
+				}
+			}
+		}
+		else if (data.type == 5 && spell.cc) //spellshield
+		{
+			CastSpell(data.slot, MyHeroPos);
+			return 2;
+		}
+		//else if 6 //widnwall
+		else if (data.type == 7 && spell.cc) //fiora parry
+		{
+			CastSpell(data.slot, spell.startPos);
+			return 2;
+		}
+	}
 
-	////Scan the sides of each polygon to find the safe point.
-	//for (Geometry::Polygon poly : danger_polygons)
-	//{
-	//	//draw->Polygon(poly, RGBA(COLOR_YELLOW));
-	//	for (size_t i = 0; i < poly.Points.size(); ++i)
-	//	{
-	//		auto startPos = poly.Points[i];
-	//		auto endPos = poly.Points[(i == poly.Points.size() - 1) ? 0 : i + 1];
+	return 0;
+}
 
-	//		auto my_position = MyHeroPos;
-	//		auto original = my_position.ProjectOn(startPos, endPos).SegmentPoint;
+int Evade2::CoreManager(Spell s)
+{
+	if (s.path.IsInside(MyHeroPos) && Local.CheckState(CanMove))
+	{
+		if (OldTimer != NewTimer)
+		{
+			std::vector<EvadeSpell> evadeSpells;
+			for (auto es : MyEvadeSpells)
+			{
+				if (es.use)
+					evadeSpells.emplace_back(es);
+			}
+			/*	local evadeSpells = self.EvadeSpellData
+					local flashUsage = self.Flash2 and self.JEMenu.Spells.Flash.US:Value()
+					and self : IsReady(self.Flash2) and s.danger == 5*/
+			Vector3 safePos = GetBestEvadePos(DangerSkillshots, s.radius, 2, 0, false);
+			int result = 0;
+			if (!safePos.IsZero())
+			{
+				ExtendedPos = GetExtendedSafePos(safePos);
+				SafePos = safePos;
+				Evading = true;
+			}
+			else if (evadeSpells.size() > 0)//|| flashUsage)
+			{
+				for (int i = 0; i < evadeSpells.size(); i++)
+				{
+					Vector3 alternPos = GetBestEvadePos(DangerSkillshots, s.radius, 1, i + 1, false);
+					result = Avoid(s, alternPos, evadeSpells[i]);
+					if (result > 0)
+					{
+						if (result == 1)
+						{
+							ExtendedPos = GetExtendedSafePos(alternPos);
+							SafePos = alternPos;
+							Evading = true;
+						}
+						break;
+					}
+				}
+			}
+			else
+			{
+				if (result == 0)
+				{
+					Vector3 dodgePos = GetBestEvadePos(DangerSkillshots, s.radius, 1, true, true);
+					if (!dodgePos.IsZero())
+					{
+						/*if (flashUsage)
+						{
+							result = 1;
+							CastSpell(Flash, DodgePos);
+						}*/
+						if (M.Evade.Force)
+						{
+							clog.AddLog("Forced dodge");
+							ExtendedPos = GetExtendedSafePos(dodgePos);
+							SafePos = dodgePos;
+							Evading = true;
+						}
+					}
+				}
+				if (result == 0)
+					clog.AddLog("Impossible to dodge");
+				//impossible dodge
+				//for i = 1, #self.OnImpDodgeCBs do self.OnImpDodgeCBs[i](s.danger) end
+			}
 
-	//		auto distSqr = original.DistanceSquared(my_position);
+			OldTimer = NewTimer;
+		}
 
-	//		if (distSqr <= 360000)
-	//		{
-	//			if (force)
-	//			{
-	//				auto candidate = MyHeroPos.Append(MyHeroPos, original, 5);
-	//				if (distSqr && !IsPosSafe(candidate) && !InWall(candidate))
-	//					points.push_back(candidate);
-	//			}
-	//			else
-	//			{
-	//				auto side_distance = endPos.DistanceSquared(startPos);
-	//				auto direction = (endPos - startPos).Normalized();
-	//				int step = (distSqr < 200 * 200 && side_distance > 90 * 90) ? M.Evade.DC : 0;
-
-	//				for (int j = -step; j <= step; j++)
-	//				{
-	//					auto candidate = original + direction * (j * M.Evade.DS);
-	//					Vector3 extended = MyHeroPos.Append(MyHeroPos, candidate, BoundingRadius);
-	//					candidate = MyHeroPos.Append(MyHeroPos, candidate, 5);
-
-	//					if (IsPosSafe(candidate, extra) && !InWall(candidate))
-	//					{
-	//						points.push_back(candidate);
-	//						if (M.bDebug)
-	//							draw->CircleRange(ExtendedPos, 16, BoundingRadius, RGBA(255, 255, 255));
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
-	//if (points.size() > 0)
-	//{
-	//	Vector3 tempMyHeroPos = MyHeroPos;
-	//	float tempRB = radius + BoundingRadius;
-	//	Vector3 tempMPos = mouse->GetWorldPos();
-	//	//todo
-	//	//for no reason when we are stuck, sometimes it sometimes throws invalid comparator
-	//	//so for now we just ignore it
-	//	try
-	//	{
-	//		if (mode == 1)
-	//		{
-	//			std::sort(points.begin(), points.end(), [&tempMyHeroPos](Vector3 const& a, Vector3 const& b)
-	//				{
-	//					return a.DistanceSquared(tempMyHeroPos) < b.DistanceSquared(tempMyHeroPos);
-	//				});
-	//		}
-	//		else if (mode == 2)
-	//		{
-	//			std::sort(points.begin(), points.end(), [&tempMyHeroPos, &tempRB, &tempMPos](Vector3 const& a, Vector3 const& b)
-	//				{
-	//					Vector3 mPos = tempMyHeroPos.Extend(tempMPos, tempRB);
-	//					return a.DistanceSquared(mPos) < b.DistanceSquared(mPos);
-	//				});
-	//		}
-	//	}
-	//	catch (std::exception const&) {}
-	//	return points.front();
-	//}
-
+		return 1;
+	}
 	return 0;
 }
 
@@ -638,6 +791,16 @@ void Evade2::Draw()
 			if (draw->IsOnScreen(obj.GetPosition()))
 				draw->CircleRange(obj.GetPosition(), 16, obj.GetBoundingRadius(), RGBA(255, 255, 255));
 		}
+	}
+
+	if (!ExtendedPos.IsZero())
+	{
+		draw->CircleRange(ExtendedPos, 16, BoundingRadius, RGBA(255, 80, 0));
+	}
+	if (!SafePos.IsZero())
+	{
+		draw->CircleRange(SafePos, 16, BoundingRadius, RGBA(0, 255, 0));
+		//draw->Line(Direct3D9.WorldToScreen(MyHeroPos), Direct3D9.WorldToMinimap(ExtendedPos), RGBA(255, 255, 255));
 	}
 }
 
@@ -677,11 +840,12 @@ void Evade2::OnCreateMissile(Spell& spell)
 	{
 		DetectedSkillshots.emplace_back(spell);
 	}
+	NewTimer = GameTimer;
 }
 
 void Evade2::OnSpellCast(Spell& spell)
 {
-	if (!spell.obj || !spell.spell)
+	if (!spell.obj || !spell.spell || !spell.enabled)
 		return;
 
 	if (M.Evade.LimitRange && Local.GetDistTo(spell.obj) > M.Evade.LR)
@@ -728,6 +892,7 @@ void Evade2::OnSpellCast(Spell& spell)
 			}
 		}
 	}
+	NewTimer = GameTimer;
 }
 
 void Evade2::TestPoints()
@@ -779,90 +944,317 @@ void Evade2::TestPoints()
 	}
 }
 
-std::vector<Vector3> Evade2::GetPossibleEvadePoints()
-{
-	std::vector<Vector3> result;
-	std::vector<Geometry::Polygon> polygon_list;
+//std::vector<Vector3> Evade2::GetPossibleEvadePoints()
+//{
+//	std::vector<Vector3> result;
+//	std::vector<Geometry::Polygon> polygon_list;
+//
+//	for (auto const& skillshot_instance : EnabledSkillshots)
+//	{
+//		polygon_list.push_back(skillshot_instance.path);
+//	}
+//
+//	//clipping polygons doesnt account their height and results in moving them, todo
+//	auto danger_polygons = polygon_list;
+//	//auto danger_polygons = Geometry::Geometry::ToPolygons(Geometry::Geometry::ClipPolygons(polygon_list));
+//	auto my_position = MyHeroPos;
+//
+//	//Scan the sides of each polygon to find the safe point.
+//	for (auto& poly : danger_polygons)
+//	{
+//		for (size_t i = 0; i <= poly.Points.size() - 1; ++i)
+//		{
+//			auto side_start = poly.Points[i];
+//			auto side_end = poly.Points[(i == poly.Points.size() - 1) ? 0 : i + 1];
+//
+//			auto original_candidate = my_position.ProjectOn(side_start, side_end).SegmentPoint;
+//			auto distance_to_evade_point = original_candidate.DistanceSquared(my_position);
+//
+//			if (distance_to_evade_point < 600 * 600)
+//			{
+//				auto side_distance = side_end.DistanceSquared(side_start);
+//				auto direction = (side_end - side_start).Normalized();
+//				int s = (distance_to_evade_point < 200 * 200 && side_distance > 90 * 90) ? M.Evade.DC : 0;
+//
+//				for (int j = -s; j <= s; j++)
+//				{
+//					auto candidate = original_candidate + direction * (j * M.Evade.DS);
+//
+//					/*	if (InWall(candidate))
+//							continue;*/
+//
+//					if (!IsPosSafe(candidate))
+//						continue;
+//
+//					draw->CircleRange(candidate, 16, 16, RGBA(COLOR_LIGHTGREEN));
+//
+//					result.push_back(candidate);
+//				}
+//			}
+//		}
+//	}
+//
+//	return result;
+//}
+//template<typename T>
+//struct min_max
+//{
+//	T min;
+//	T max;
+//
+//	void emplace_value(T& val)
+//	{
+//		if (val > max)
+//			max = val;
+//
+//		if (val < min)
+//			min = val;
+//	}
+//	float percentage(T& val) { return (float(val - min)) / float(max - min); }
+//};
+//
+//Vector3 Evade2::GetEvadingPosition()
+//{
+//	//sort positions and return best one
+//
+//	std::vector<Vector3>points = GetPossibleEvadePoints();
+//
+//	if (points.size() > 0)
+//	{
+//		Vector3 tempMyHeroPos = MyHeroPos;
+//
+//		std::sort(points.begin(), points.end(), [&tempMyHeroPos](Vector3 const& a, Vector3 const& b)
+//			{
+//				return a.DistanceSquared(tempMyHeroPos) < b.DistanceSquared(tempMyHeroPos);
+//			});
+//
+//		return points.front();
+//	}
+//
+//	return 0;
+//}
 
-	for (auto const& skillshot_instance : EnabledSkillshots)
+float Evade2::GetMovementSpeed(bool extra, EvadeSpell evadeSpell)
+{
+	float moveSpeed = Local.GetMS();
+	if (!extra)
+		return moveSpeed;
+	if (evadeSpell.type == 0)
+		return 9999;
+	CSpellSlot* slot;
+	slot = Local.GetSpellByID(evadeSpell.slot);
+	auto lvl = slot->GetLevel();
+	auto name = evadeSpell.name;
+	if (!lvl || lvl == 0)
+		return moveSpeed;
+	if (name == "AnnieE")
+		return (1.2824 + (0.0176 * Local.GetLevel())) * moveSpeed;
+	else if (name == "RyzeW")
 	{
-		polygon_list.push_back(skillshot_instance.path);
+		float speed[] = { 1.7, 1.75, 1.8, 1.85, 1.9 };
+		return speed[lvl] * moveSpeed;
+	}
+	else if (name == "DravenW")
+	{
+		float speed[] = { 1.4, 1.45, 1.5, 1.55, 1.6 };
+		return speed[lvl] * moveSpeed;
+	}
+	else if (name == "GarenQ")
+		return 1.3 * moveSpeed;
+	else if (name == "KaisaE")
+	{
+		float speed[] = { 1.55, 1.6, 1.65, 1.7, 1.75 };
+		return speed[lvl] * 2 * min(1, Local.GetBonusAS()) * moveSpeed;//todo maybe full as
+	}
+	else if (name == "KatarinaW")
+	{
+		float speed[] = { 1.5, 1.6, 1.7, 1.8, 1.9 };
+		return speed[lvl] * moveSpeed;
+	}
+	else if (name == "KennenE")
+		return 2 * moveSpeed;
+	else if (name == "RumbleW")
+	{
+		float speed[] = { 1.2, 1.25, 1.3, 1.35, 1.4 };
+		return speed[lvl] * moveSpeed;
+	}
+	else if (name == "ShyvanaW")
+	{
+		float speed[] = { 1.3, 1.35, 1.4, 1.45, 1.5 };
+		return speed[lvl] * moveSpeed;
+	}
+	else if (name == "SkarnerW")
+	{
+		float speed[] = { 1.08, 1.1, 1.12, 1.14, 1.16 };
+		return speed[lvl] * moveSpeed;
+	}
+	else if (name == "SonaE")
+	{
+		float speed[] = { 1.1, 1.11, 1.12, 1.13, 1.14 };
+		return (speed[lvl] + Local.GetAP() / 100 * 0.03) * moveSpeed;
+	}
+	else if (name == "TeemoW")
+	{
+		float speed[] = { 1.1, 1.14, 1.18, 1.22, 1.26 };
+		return speed[lvl] * moveSpeed;
+	}
+	else if (name == "UdyrE")
+	{
+		float speed[] = { 1.15, 1.2, 1.25, 1.3, 1.35, 1.4 };
+		return speed[lvl] * moveSpeed;
+	}
+	else if (name == "VolibearQ")
+	{
+		float speed[] = { 1.15, 1.175, 1.2, 1.225, 1.25 };
+		return speed[lvl] * moveSpeed;
 	}
 
-	//clipping polygons doesnt account their height and results in moving them, todo
-	auto danger_polygons = polygon_list;
-	//auto danger_polygons = Geometry::Geometry::ToPolygons(Geometry::Geometry::ClipPolygons(polygon_list));
-	auto my_position = MyHeroPos;
+	return moveSpeed;
+}
+
+bool Evade2::IsAboutToHit(Spell& spell, Vector3 pos1, int extra)
+{
+	EvadeSpell evadeSpell;
+	for (auto es : MyEvadeSpells)
+	{
+		if (es.type == 2 && es.use)
+			evadeSpell = es;
+	}
+
+	if (extra && evadeSpell.type != 2) //movement speed buff
+		return false;
+	float moveSpeed = GetMovementSpeed(extra, evadeSpell);
+	Vector3 myPos = MyHeroPos;
+	float diff = GameTimer - spell.startTime;
+	Vector3 pos = myPos.Append(myPos, pos1, 99999);
+	if (spell.speed != MathHuge && spell.type == linear || spell.type == threeway)
+	{
+		if (spell.delay > 0 && diff <= spell.delay)
+		{
+			myPos = (myPos).Extend(pos, (spell.delay - diff) * moveSpeed);
+			if (!spell.path.IsInside(myPos))
+				return false;
+			auto va = (pos - myPos).Normalized() * moveSpeed;
+			auto vb = (spell.endPos - spell.startPos).Normalized() * spell.speed;
+			auto da = (myPos - spell.startPos);
+			auto db = (va - vb);
+			auto a = db.DotProduct(db);
+			auto b = 2 * da.DotProduct(db);
+			auto c = da.DotProduct(da) - std::pow((spell.radius + BoundingRadius * 2), 2);
+			auto delta = b * b - 4 * a * c;
+			if (delta >= 0)
+			{
+				auto rtDelta = std::sqrtf(delta);
+				auto t1 = (-b + rtDelta) / (2 * a);
+				auto t2 = (-b - rtDelta) / (2 * a);
+
+				return max(t1, t2) >= 0;
+			}
+			return false;
+		}
+	}
+	auto t = max(0, spell.range / spell.speed + spell.delay - diff - 0.07);
+	return spell.path.IsInside(myPos.Extend(pos, moveSpeed * t));
+}
+
+bool Evade2::IsSafePos(Vector3 pos, int extra)
+{
+	for (Spell& s : DetectedSkillshots)
+	{
+		if (s.path.IsInside(pos) || IsAboutToHit(s, pos, extra))
+			return false;
+	}
+	return true;
+}
+
+Vector3 Evade2::GetBestEvadePos(std::vector<Spell> spells, float radius, int mode, int extra, bool force)
+{
+	std::vector<Vector3> points;
+
+	std::vector<Geometry::Polygon> polygons;
+
+	for (auto const& spell : spells)
+	{
+		polygons.push_back(spell.path);
+		//draw->Polygon(spell.path, RGBA(255, 255, 0));
+	}
+
+	//clipping polygons moves them?
+	auto danger_polygons = polygons;
+	//auto danger_polygons = Geometry::Geometry::ToPolygons(Geometry::Geometry::ClipPolygons(polygons));
 
 	//Scan the sides of each polygon to find the safe point.
-	for (auto& poly : danger_polygons)
+	for (Geometry::Polygon poly : danger_polygons)
 	{
-		for (size_t i = 0; i <= poly.Points.size() - 1; ++i)
+		//draw->Polygon(poly, RGBA(COLOR_YELLOW));
+		for (size_t i = 0; i < poly.Points.size(); ++i)
 		{
-			auto side_start = poly.Points[i];
-			auto side_end = poly.Points[(i == poly.Points.size() - 1) ? 0 : i + 1];
+			auto startPos = poly.Points[i];
+			auto endPos = poly.Points[(i == poly.Points.size() - 1) ? 0 : i + 1];
 
-			auto original_candidate = my_position.ProjectOn(side_start, side_end).SegmentPoint;
-			auto distance_to_evade_point = original_candidate.DistanceSquared(my_position);
+			auto my_position = MyHeroPos;
+			auto original = my_position.ProjectOn(startPos, endPos).SegmentPoint;
 
-			if (distance_to_evade_point < 600 * 600)
+			auto distSqr = original.DistanceSquared(my_position);
+
+			if (distSqr <= 360000)
 			{
-				auto side_distance = side_end.DistanceSquared(side_start);
-				auto direction = (side_end - side_start).Normalized();
-				int s = (distance_to_evade_point < 200 * 200 && side_distance > 90 * 90) ? M.Evade.DC : 0;
-
-				for (int j = -s; j <= s; j++)
+				if (force)
 				{
-					auto candidate = original_candidate + direction * (j * M.Evade.DS);
+					auto candidate = MyHeroPos.Append(MyHeroPos, original, 5);
+					if (distSqr && !IsDangerous(candidate) && !InWall(candidate))
+						points.push_back(candidate);
+				}
+				else
+				{
+					auto side_distance = endPos.DistanceSquared(startPos);
+					auto direction = (endPos - startPos).Normalized();
+					int step = (distSqr < 200 * 200 && side_distance > 90 * 90) ? M.Evade.DC : 0;
 
-					/*	if (InWall(candidate))
-							continue;*/
+					for (int j = -step; j <= step; j++)
+					{
+						auto candidate = original + direction * (j * M.Evade.DS);
+						Vector3 extended = MyHeroPos.Append(MyHeroPos, candidate, BoundingRadius);
+						candidate = MyHeroPos.Append(MyHeroPos, candidate, 5);
 
-					if (!IsPosSafe(candidate))
-						continue;
-
-					draw->CircleRange(candidate, 16, 16, RGBA(COLOR_LIGHTGREEN));
-
-					result.push_back(candidate);
+						if (IsSafePos(candidate, extra) && !InWall(candidate))
+						{
+							points.push_back(candidate);
+							if (M.bDebug)
+								draw->CircleRange(ExtendedPos, 16, BoundingRadius, RGBA(255, 255, 255));
+						}
+					}
 				}
 			}
 		}
 	}
-
-	return result;
-}
-template<typename T>
-struct min_max
-{
-	T min;
-	T max;
-
-	void emplace_value(T& val)
-	{
-		if (val > max)
-			max = val;
-
-		if (val < min)
-			min = val;
-	}
-	float percentage(T& val) { return (float(val - min)) / float(max - min); }
-};
-
-Vector3 Evade2::GetEvadingPosition()
-{
-	//sort positions and return best one
-
-	std::vector<Vector3>points = GetPossibleEvadePoints();
-
 	if (points.size() > 0)
 	{
 		Vector3 tempMyHeroPos = MyHeroPos;
-
-		std::sort(points.begin(), points.end(), [&tempMyHeroPos](Vector3 const& a, Vector3 const& b)
+		float tempRB = radius + BoundingRadius;
+		Vector3 tempMPos = mouse->GetWorldPos();
+		//todo
+		//for no reason when we are stuck, sometimes it sometimes throws invalid comparator
+		//so for now we just ignore it
+		try
+		{
+			if (mode == 1)
 			{
-				return a.DistanceSquared(tempMyHeroPos) < b.DistanceSquared(tempMyHeroPos);
-			});
-
+				std::sort(points.begin(), points.end(), [&tempMyHeroPos](Vector3 const& a, Vector3 const& b)
+					{
+						return a.DistanceSquared(tempMyHeroPos) < b.DistanceSquared(tempMyHeroPos);
+					});
+			}
+			else if (mode == 2)
+			{
+				std::sort(points.begin(), points.end(), [&tempMyHeroPos, &tempRB, &tempMPos](Vector3 const& a, Vector3 const& b)
+					{
+						Vector3 mPos = tempMyHeroPos.Extend(tempMPos, tempRB);
+						return a.DistanceSquared(mPos) < b.DistanceSquared(mPos);
+					});
+			}
+		}
+		catch (std::exception const&) {}
 		return points.front();
 	}
 
@@ -1109,53 +1501,174 @@ void Evade2::InitSpells()
 	}
 
 	{
-		Champ Brand;
-		Brand.hero = "Brand";
+		Champ Ahri;
+		Ahri.hero = "Ahri";
+
 		Spell Q;
-		Q.name = "BrandQ";
-		Q.icon = "BrandQ";
-		Q.displayName = "Sear";
-		Q.missileName = "BrandQMissile";
+		Q.name = "AhriOrbofDeception";
+		Q.icon = "AhriQ";
+		Q.displayName = "Orb of Deception";
+		Q.missileName = "AhriOrbMissile";
 		Q.slot = _Q;
 		Q.type = linear;
-		Q.speed = 1600;
-		Q.range = 1050;
+		Q.speed = 2500;
+		Q.range = 880;
 		Q.delay = 0.25;
-		Q.radius = 60;
+		Q.radius = 100;
 		Q.angle = 0;
-		Q.danger = 1;
+		Q.danger = 2;
 		Q.cc = false;
-		Q.collision = true;
+		Q.collision = false;
 		Q.windwall = true;
 		Q.hitbox = true;
 		Q.fow = true;
 		Q.exception = false;
 		Q.extend = true;
-		Brand.spells.emplace_back(Q);
+		Ahri.spells.emplace_back(Q);
 
-		Spell W;
-		W.name = "BrandW";
-		W.icon = "BrandW";
-		W.displayName = "Pillar of Flame";
-		W.missileName = "BrandWMissile";
-		W.slot = _W;
-		W.type = circular;
-		W.speed = MathHuge;
-		W.range = 900;
-		W.delay = 0.85;
-		W.radius = 250;
-		W.angle = 0;
-		W.danger = 2;
-		W.cc = false;
-		W.collision = false;
-		W.windwall = false;
-		W.hitbox = false;
-		W.fow = false;
-		W.exception = false;
-		W.extend = false;
-		Brand.spells.emplace_back(W);
+		Spell E;
+		E.name = "AhriSeduce";
+		E.icon = "AhriE";
+		E.displayName = "Seduce";
+		E.missileName = "AhriSeduceMissile";
+		E.slot = _E;
+		E.type = linear;
+		E.speed = 1500;
+		E.range = 975;
+		E.delay = 0.25;
+		E.radius = 60;
+		E.angle = 0;
+		E.danger = 1;
+		E.cc = true;
+		E.collision = true;
+		E.windwall = true;
+		E.hitbox = true;
+		E.fow = true;
+		E.exception = false;
+		E.extend = true;
+		Ahri.spells.emplace_back(E);
 
-		SpellDB.emplace_back(Brand);
+		SpellDB.emplace_back(Ahri);
+	}
+
+	{
+		Champ Akali;
+		Akali.hero = "Akali";
+
+		Spell Q;
+		Q.name = "AkaliQ";
+		Q.icon = "AkaliQ";
+		Q.displayName = "Five Point Strike";
+		Q.missileName = "";
+		Q.slot = _Q;
+		Q.type = conic;
+		Q.speed = 3200;
+		Q.range = 550;
+		Q.delay = 0.25;
+		Q.radius = 60;
+		Q.angle = 45;
+		Q.danger = 2;
+		Q.cc = false;
+		Q.collision = false;
+		Q.windwall = true;
+		Q.hitbox = false;
+		Q.fow = false;
+		Q.exception = false;
+		Q.extend = true;
+		Akali.spells.emplace_back(Q);
+
+		Spell E;
+		E.name = "AkaliE";
+		E.icon = "AkaliE";
+		E.displayName = "Shuriken Flip";
+		E.missileName = "AkaliEMis";
+		E.slot = _E;
+		E.type = linear;
+		E.speed = 1800;
+		E.range = 825;
+		E.delay = 0.25;
+		E.radius = 70;
+		E.angle = 0;
+		E.danger = 2;
+		E.cc = false;
+		E.collision = true;
+		E.windwall = true;
+		E.hitbox = true;
+		E.fow = true;
+		E.exception = false;
+		E.extend = true;
+		Akali.spells.emplace_back(E);
+
+		Spell R;
+		R.name = "AkaliR";
+		R.icon = "AkaliR";
+		R.displayName = "Perfect Execution [First]";
+		R.slot = _R;
+		R.type = linear;
+		R.speed = 1800;
+		R.range = 675;
+		R.delay = 0;
+		R.radius = 65;
+		R.danger = 4;
+		R.cc = true;
+		R.collision = false;
+		R.windwall = false;
+		R.hitbox = false;
+		R.fow = false;
+		R.exception = false;
+		R.extend = true;
+		Akali.spells.emplace_back(R);
+
+		Spell R2;
+		R2.name = "AkaliRb";
+		R2.icon = "AkaliR2";
+		R2.displayName = "Perfect Execution [Second]";
+		R2.missileName = "";
+		R2.slot = _R;
+		R2.type = linear;
+		R2.speed = 3600;
+		R2.range = 525;
+		R2.delay = 0;
+		R2.radius = 65;
+		R2.angle = 0;
+		R2.danger = 4;
+		R2.cc = false;
+		R2.collision = false;
+		R2.windwall = false;
+		R2.hitbox = false;
+		R2.fow = false;
+		R2.exception = false;
+		R2.extend = true;
+		Akali.spells.emplace_back(R2);
+
+		SpellDB.emplace_back(Akali);
+	}
+
+	{
+		Champ Alistar;
+		Alistar.hero = "Alistar";
+
+		Spell Q;
+		Q.name = "Pulverize";
+		Q.icon = "AlistarQ";
+		Q.displayName = "Pulverize";
+		Q.missileName = "";
+		Q.slot = _Q;
+		Q.type = circular;
+		Q.speed = MathHuge;
+		Q.range = 0;
+		Q.delay = 0.25;
+		Q.radius = 365;
+		Q.angle = 0;
+		Q.danger = 3;
+		Q.cc = true;
+		Q.collision = false;
+		Q.windwall = false;
+		Q.hitbox = false;
+		Q.fow = false;
+		Q.exception = false;
+		Q.extend = false;
+		Alistar.spells.emplace_back(Q);
 	}
 
 	{
@@ -1209,8 +1722,179 @@ void Evade2::InitSpells()
 	}
 
 	{
+		Champ Blitzcrank;
+		Blitzcrank.hero = "Blitzcrank";
+		Spell Q;
+		Q.name = "RocketGrab";
+		Q.icon = "BlitzcrankQ";
+		Q.displayName = "Rocket Grab";
+		Q.missileName = "RocketGrabMissile";
+		Q.slot = _Q;
+		Q.type = linear;
+		Q.speed = 1800;
+		Q.range = 1150;
+		Q.delay = 0.25;
+		Q.radius = 70;
+		Q.angle = 0;
+		Q.danger = 4;
+		Q.cc = false;
+		Q.collision = true;
+		Q.windwall = true;
+		Q.hitbox = true;
+		Q.fow = true;
+		Q.exception = false;
+		Q.extend = true;
+		Blitzcrank.spells.emplace_back(Q);
+
+		Spell R;
+		R.name = "StaticField";
+		R.icon = "BlitzcrankR";
+		R.displayName = "Static Field";
+		R.missileName = "";
+		R.slot = _R;
+		R.type = circular;
+		R.speed = MathHuge;
+		R.range = 0;
+		R.delay = 0.25;
+		R.radius = 600;
+		R.angle = 0;
+		R.danger = 3;
+		R.cc = true;
+		R.collision = false;
+		R.windwall = false;
+		R.hitbox = false;
+		R.fow = false;
+		R.exception = false;
+		R.extend = false;
+		Blitzcrank.spells.emplace_back(R);
+
+		SpellDB.emplace_back(Blitzcrank);
+	}
+
+	{
+		Champ Brand;
+		Brand.hero = "Brand";
+		Spell Q;
+		Q.name = "BrandQ";
+		Q.icon = "BrandQ";
+		Q.displayName = "Sear";
+		Q.missileName = "BrandQMissile";
+		Q.slot = _Q;
+		Q.type = linear;
+		Q.speed = 1600;
+		Q.range = 1050;
+		Q.delay = 0.25;
+		Q.radius = 60;
+		Q.angle = 0;
+		Q.danger = 1;
+		Q.cc = false;
+		Q.collision = true;
+		Q.windwall = true;
+		Q.hitbox = true;
+		Q.fow = true;
+		Q.exception = false;
+		Q.extend = true;
+		Brand.spells.emplace_back(Q);
+
+		Spell W;
+		W.name = "BrandW";
+		W.icon = "BrandW";
+		W.displayName = "Pillar of Flame";
+		W.missileName = "BrandWMissile";
+		W.slot = _W;
+		W.type = circular;
+		W.speed = MathHuge;
+		W.range = 900;
+		W.delay = 0.85;
+		W.radius = 250;
+		W.angle = 0;
+		W.danger = 2;
+		W.cc = false;
+		W.collision = false;
+		W.windwall = false;
+		W.hitbox = false;
+		W.fow = false;
+		W.exception = false;
+		W.extend = false;
+		Brand.spells.emplace_back(W);
+
+		SpellDB.emplace_back(Brand);
+	}
+
+	{
+		Champ Caitlyn;
+		Caitlyn.hero = "Caitlyn";
+		Spell Q;
+		Q.name = "CaitlynPiltoverPeacemaker";
+		Q.icon = "CaitlynQ";
+		Q.displayName = "Piltover Peacemaker";
+		Q.missileName = "CaitlynPiltoverPeacemaker";
+		Q.slot = _Q;
+		Q.type = linear;
+		Q.speed = 2200;
+		Q.range = 1250;
+		Q.delay = 0.625;
+		Q.radius = 90;
+		Q.angle = 0;
+		Q.danger = 1;
+		Q.cc = false;
+		Q.collision = true;
+		Q.windwall = true;
+		Q.hitbox = true;
+		Q.fow = true;
+		Q.exception = false;
+		Q.extend = true;
+		Caitlyn.spells.emplace_back(Q);
+	}
+
+	{
 		Champ Cassiopeia;
 		Cassiopeia.hero = "Cassiopeia";
+
+		Spell Q;
+		Q.name = "CassiopeiaQ";
+		Q.icon = "CassiopeiaQ";
+		Q.displayName = "Noxious Blast";
+		Q.missileName = "";
+		Q.slot = _Q;
+		Q.type = circular;
+		Q.speed = MathHuge;
+		Q.range = 850;
+		Q.delay = 0.75;
+		Q.radius = 150;
+		Q.angle = 0;
+		Q.danger = 2;
+		Q.cc = false;
+		Q.collision = false;
+		Q.windwall = false;
+		Q.hitbox = false;
+		Q.fow = false;
+		Q.exception = false;
+		Q.extend = false;
+		Cassiopeia.spells.emplace_back(Q);
+
+		Spell W;
+		W.name = "CassiopeiaW";
+		W.icon = "CassiopeiaW";
+		W.displayName = "Miasma";
+		W.missileName = "";
+		W.slot = _W;
+		W.type = circular;
+		W.speed = 2500;
+		W.range = 800;
+		W.delay = 0.75;
+		W.radius = 160;
+		W.angle = 0;
+		W.danger = 2;
+		W.cc = true;
+		W.collision = false;
+		W.windwall = true;
+		W.hitbox = false;
+		W.fow = false;
+		W.exception = false;
+		W.extend = false;
+		Cassiopeia.spells.emplace_back(W);
+
 		Spell R;
 		R.name = "CassiopeiaR";
 		R.icon = "CassiopeiaR";
@@ -1262,6 +1946,113 @@ void Evade2::InitSpells()
 		Diana.spells.emplace_back(Q);
 
 		SpellDB.emplace_back(Diana);
+	}
+
+	{
+		Champ Fizz;
+		Fizz.hero = "Fizz";
+		Spell R;
+		R.name = "FizzR";
+		R.icon = "FizzR";
+		R.displayName = "Chum the Waters";
+		R.missileName = "FizzRMissile";
+		R.slot = _R;
+		R.type = linear;
+		R.speed = 1300;
+		R.range = 1300;
+		R.delay = 0.25;
+		R.radius = 150;
+		R.angle = 0;
+		R.danger = 5;
+		R.cc = true;
+		R.collision = false;
+		R.windwall = true;
+		R.hitbox = true;
+		R.fow = true;
+		R.exception = false;
+		R.extend = true;
+		Fizz.spells.emplace_back(R);
+
+		SpellDB.emplace_back(Fizz);
+	}
+
+	{
+		Champ Jhin;
+		Jhin.hero = "Jhin";
+		Spell W;
+		W.name = "JhinW";
+		W.icon = "JhinW";
+		W.displayName = "Deadly Flourish";
+		W.missileName = "JhinAnchorDragMissile";
+		W.slot = _W;
+		W.type = linear;
+		W.speed = 5000;
+		W.range = 2550;
+		W.delay = 0.75;
+		W.radius = 40;
+		W.angle = 0;
+		W.danger = 1;
+		W.cc = true;
+		W.collision = false;
+		W.windwall = true;
+		W.hitbox = false;
+		W.fow = false;
+		W.exception = false;
+		W.extend = true;
+		Jhin.spells.emplace_back(W);
+
+		Spell R;
+		R.name = "JhinRShot";
+		R.icon = "JhinR";
+		R.displayName = "Curtain Call";
+		R.missileName = "JhinRShotMis";
+		R.slot = _R;
+		R.type = linear;
+		R.speed = 5000;
+		R.range = 3500;
+		R.delay = 0.25;
+		R.radius = 80;
+		R.angle = 0;
+		R.danger = 2;
+		R.cc = true;
+		R.collision = false;
+		R.windwall = true;
+		R.hitbox = true;
+		R.fow = true;
+		R.exception = false;
+		R.extend = true;
+		R.useMissile = true;
+		Jhin.spells.emplace_back(R);
+
+		SpellDB.emplace_back(Jhin);
+	}
+
+	{
+		Champ Kaisa;
+		Kaisa.hero = "Kaisa";
+		Spell W;
+		W.name = "KaisaW";
+		W.icon = "KaisaW";
+		W.displayName = "Void Seeker";
+		W.missileName = "KaisaW";
+		W.slot = _W;
+		W.type = linear;
+		W.speed = 1750;
+		W.range = 3000;
+		W.delay = 0.4;
+		W.radius = 100;
+		W.angle = 0;
+		W.danger = 1;
+		W.cc = false;
+		W.collision = true;
+		W.windwall = true;
+		W.hitbox = true;
+		W.fow = true;
+		W.exception = false;
+		W.extend = true;
+		Kaisa.spells.emplace_back(W);
+
+		SpellDB.emplace_back(Kaisa);
 	}
 
 	{
@@ -1416,6 +2207,321 @@ void Evade2::InitSpells()
 	}
 
 	{
+		Champ Nautilus;
+		Nautilus.hero = "Nautilus";
+		Spell Q;
+		Q.name = "NautilusAnchorDragMissile";
+		Q.icon = "NautilusQ";
+		Q.displayName = "Dredge Line";
+		Q.missileName = "NautilusAnchorDragMissile";
+		Q.slot = _Q;
+		Q.type = linear;
+		Q.speed = 2000;
+		Q.range = 925;
+		Q.delay = 0.25;
+		Q.radius = 90;
+		Q.angle = 0;
+		Q.danger = 3;
+		Q.cc = true;
+		Q.collision = true;
+		Q.windwall = true;
+		Q.hitbox = true;
+		Q.fow = true;
+		Q.exception = false;
+		Q.extend = true;
+		Nautilus.spells.emplace_back(Q);
+
+		SpellDB.emplace_back(Nautilus);
+	}
+
+	{
+		Champ Neeko;
+		Neeko.hero = "Neeko";
+
+		Spell Q;
+		Q.name = "NeekoQ";
+		Q.icon = "NeekoQ";
+		Q.displayName = "NeekoQ";
+		Q.missileName = "Blooming Burst";
+		Q.slot = _Q;
+		Q.type = circular;
+		Q.speed = 1500;
+		Q.range = 800;
+		Q.delay = 0.25;
+		Q.radius = 200;
+		Q.angle = 0;
+		Q.danger = 2;
+		Q.cc = true;
+		Q.collision = false;
+		Q.windwall = true;
+		Q.hitbox = false;
+		Q.fow = true;
+		Q.exception = false;
+		Q.extend = false;
+		Neeko.spells.emplace_back(Q);
+
+		Spell E;
+		E.name = "NeekoE";
+		E.icon = "NeekoE";
+		E.displayName = "NeekoE";
+		E.missileName = "Tangle-Barbs";
+		E.slot = _E;
+		E.type = linear;
+		E.speed = 1300;
+		E.range = 1000;
+		E.delay = 0.25;
+		E.radius = 70;
+		E.angle = 0;
+		E.danger = 3;
+		E.cc = true;
+		E.collision = false;
+		E.windwall = true;
+		E.hitbox = true;
+		E.fow = true;
+		E.exception = false;
+		E.extend = true;
+		Neeko.spells.emplace_back(E);
+
+		SpellDB.emplace_back(Neeko);
+
+		SpellDB.emplace_back(Neeko);
+	}
+
+	{
+		Champ Nidalee;
+		Nidalee.hero = "Nidalee";
+		Spell Q;
+		Q.name = "JavelinToss";
+		Q.icon = "NidaleeQ";
+		Q.displayName = "Javelin Toss";
+		Q.missileName = "";
+		Q.slot = _Q;
+		Q.type = linear;
+		Q.speed = 1300;
+		Q.range = 1500;
+		Q.delay = 0.25;
+		Q.radius = 40;
+		Q.angle = 0;
+		Q.danger = 1;
+		Q.cc = false;
+		Q.collision = true;
+		Q.windwall = true;
+		Q.hitbox = true;
+		Q.fow = true;
+		Q.exception = false;
+		Q.extend = true;
+		Nidalee.spells.emplace_back(Q);
+
+		SpellDB.emplace_back(Nidalee);
+	}
+
+	{
+		Champ Ryze;
+		Ryze.hero = "Ryze";
+		Spell Q;
+		Q.name = "RyzeQ";
+		Q.icon = "RyzeQ";
+		Q.displayName = "Overload";
+		Q.missileName = "RocketGrabMissile";
+		Q.slot = _Q;
+		Q.type = linear;
+		Q.speed = 1700;
+		Q.range = 1000;
+		Q.delay = 0.25;
+		Q.radius = 55;
+		Q.angle = 0;
+		Q.danger = 1;
+		Q.cc = false;
+		Q.collision = true;
+		Q.windwall = true;
+		Q.hitbox = true;
+		Q.fow = true;
+		Q.exception = false;
+		Q.extend = true;
+		Ryze.spells.emplace_back(Q);
+
+		SpellDB.emplace_back(Ryze);
+	}
+
+	{
+		Champ Syndra;
+		Syndra.hero = "Syndra";
+		Spell Q;
+		Q.name = "SyndraQSpell";
+		Q.icon = "SyndraQ";
+		Q.displayName = "Dark Sphere";
+		Q.missileName = "SyndraQSpell";
+		Q.slot = _Q;
+		Q.type = circular;
+		Q.speed = MathHuge;
+		Q.range = 800;
+		Q.delay = 0.625;
+		Q.radius = 200;
+		Q.angle = 0;
+		Q.danger = 2;
+		Q.cc = false;
+		Q.collision = false;
+		Q.windwall = false;
+		Q.hitbox = false;
+		Q.fow = false;
+		Q.exception = false;
+		Q.extend = false;
+		Syndra.spells.emplace_back(Q);
+
+		//detect using E but track launched Q
+		Spell E;
+		E.name = "SyndraE";
+		E.icon = "SyndraE";
+		E.displayName = "Scatter the Weak";
+		E.missileName = "SyndraESphereMissile";
+		E.slot = _E;
+		E.type = linear;
+		E.speed = 2000;
+		E.range = 1250;
+		E.delay = 0.25;
+		E.radius = 100;
+		E.angle = 0;
+		E.danger = 3;
+		E.cc = true;
+		E.collision = false;
+		E.windwall = true;
+		E.hitbox = false;
+		E.fow = true;
+		E.exception = true;
+		E.extend = false;
+		E.useMissile = true;
+		Syndra.spells.emplace_back(E);
+
+		SpellDB.emplace_back(Syndra);
+	}
+
+	{
+		Champ TahmKench;
+		TahmKench.hero = "TahmKench";
+
+		Spell Q;
+		Q.name = "TahmKenchQ";
+		Q.icon = "TahmKenchQ";
+		Q.displayName = "Tongue Lash";
+		Q.missileName = "TahmKenchQMissile";
+		Q.slot = _Q;
+		Q.type = linear;
+		Q.speed = 2800;
+		Q.range = 900;
+		Q.delay = 0.25;
+		Q.radius = 70;
+		Q.angle = 0;
+		Q.danger = 2;
+		Q.cc = true;
+		Q.collision = true;
+		Q.windwall = true;
+		Q.hitbox = false;
+		Q.fow = true;
+		Q.exception = false;
+		Q.extend = true;
+		TahmKench.spells.emplace_back(Q);
+		SpellDB.emplace_back(TahmKench);
+	}
+
+	{
+		Champ Taliyah;
+		Taliyah.hero = "Taliyah";
+
+		Spell Q;
+		Q.name = "TaliyahQ";
+		Q.icon = "TaliyahQ";
+		Q.displayName = "Threaded Volley";
+		Q.missileName = "TaliyahQMis";
+		Q.slot = _Q;
+		Q.type = linear;
+		Q.speed = 3600;
+		Q.range = 1000;
+		Q.delay = 0;
+		Q.radius = 100;
+		Q.angle = 0;
+		Q.danger = 2;
+		Q.cc = false;
+		Q.collision = true;
+		Q.windwall = true;
+		Q.hitbox = false;
+		Q.fow = true;
+		Q.exception = true;
+		Q.extend = true;
+		Q.useMissile = true;
+		Taliyah.spells.emplace_back(Q);
+
+		Spell W;
+		W.name = "TaliyahWVC";
+		W.icon = "TaliyahW";
+		W.displayName = "Seismic Shove";
+		W.missileName = "";
+		W.slot = _W;
+		W.type = circular;
+		W.speed = MathHuge;
+		W.range = 900;
+		W.delay = 0.85;
+		W.radius = 150;
+		W.angle = 0;
+		W.danger = 1;
+		W.cc = true;
+		W.collision = false;
+		W.windwall = false;
+		W.hitbox = false;
+		W.fow = false;
+		W.exception = false;
+		W.extend = false;
+		Taliyah.spells.emplace_back(W);
+
+		Spell E;
+		E.name = "TaliyahE";
+		E.icon = "TaliyahE";
+		E.displayName = "Unraveled Earth";
+		E.missileName = "";
+		E.slot = _E;
+		E.type = conic;
+		E.speed = 2000;
+		E.range = 800;
+		E.delay = 0.45;
+		E.radius = 0;
+		E.angle = 80;
+		E.danger = 2;
+		E.cc = true;
+		E.collision = false;
+		E.windwall = false;
+		E.hitbox = false;
+		E.fow = false;
+		E.exception = false;
+		E.extend = true;
+		E.useMissile = false;
+		Taliyah.spells.emplace_back(E);
+
+		Spell R;
+		R.name = "TaliyahR";
+		R.icon = "TaliyahR";
+		R.displayName = "Weaver's Wall";
+		R.missileName = "TaliyahRMis";
+		R.slot = _R;
+		R.type = linear;
+		R.speed = 1700;
+		R.range = 3000;
+		R.delay = 1;
+		R.radius = 120;
+		R.angle = 0;
+		R.danger = 1;
+		R.cc = true;
+		R.collision = false;
+		R.windwall = false;
+		R.hitbox = false;
+		R.fow = true;
+		R.exception = false;
+		R.extend = true;
+		//R.useMissile = false;
+		Taliyah.spells.emplace_back(R);
+
+		SpellDB.emplace_back(Taliyah);
+	}
+
+	{
 		Champ Talon;
 		Talon.hero = "Talon";
 
@@ -1469,7 +2575,87 @@ void Evade2::InitSpells()
 		Q.extend = true;
 		Q.useMissile = true;
 		Thresh.spells.emplace_back(Q);
+
+		Spell E;
+		E.name = "ThreshEFlay";
+		E.icon = "ThreshE";
+		E.displayName = "Flay";
+		E.missileName = "";
+		E.slot = _E;
+		E.type = polygon;
+		E.speed = MathHuge;
+		E.range = 500;
+		E.delay = 0.389;
+		E.radius = 110;
+		E.angle = 0;
+		E.danger = 3;
+		E.cc = true;
+		E.collision = true;
+		E.windwall = false;
+		E.hitbox = false;
+		E.fow = false;
+		E.exception = false;
+		E.extend = true;
+		E.useMissile = false;
+		Thresh.spells.emplace_back(E);
+
 		SpellDB.emplace_back(Thresh);
+	}
+
+	{
+		Champ Tristana;
+		Tristana.hero = "Tristana";
+
+		Spell W;
+		W.name = "TristanaW";
+		W.icon = "TristanaW";
+		W.displayName = "Rocket Jump";
+		W.missileName = "";
+		W.slot = _W;
+		W.type = circular;
+		W.speed = 1100;
+		W.range = 900;
+		W.delay = 0.25;
+		W.radius = 300;
+		W.angle = 0;
+		W.danger = 2;
+		W.cc = true;
+		W.collision = false;
+		W.windwall = false;
+		W.hitbox = false;
+		W.fow = false;
+		W.exception = false;
+		W.extend = false;
+		Tristana.spells.emplace_back(W);
+		SpellDB.emplace_back(Tristana);
+	}
+
+	{
+		Champ Tryndamere;
+		Tryndamere.hero = "Tryndamere";
+
+		Spell E;
+		E.name = "TryndamereE";
+		E.icon = "TryndamereE";
+		E.displayName = "Spinning Slash";
+		E.missileName = "";
+		E.slot = _E;
+		E.type = linear;
+		E.speed = 1300;
+		E.range = 660;
+		E.delay = 0;
+		E.radius = 225;
+		E.angle = 0;
+		E.danger = 2;
+		E.cc = false;
+		E.collision = false;
+		E.windwall = false;
+		E.hitbox = false;
+		E.fow = false;
+		E.exception = false;
+		E.extend = true;
+		Tryndamere.spells.emplace_back(E);
+		SpellDB.emplace_back(Tryndamere);
 	}
 
 	{
@@ -3504,4 +4690,931 @@ void Evade2::InitWorldMap()
 	WorldMapPolygons.emplace_back(BlueTopBig);
 
 	WorldMap = Geometry::Geometry::ToPolygons(Geometry::Geometry::ClipPolygons(WorldMapPolygons));
+}
+
+void Evade2::InitEvadeSpells()
+{
+	{
+		EvadeChamp Ahri;
+		Ahri.hero = "Ahri";
+
+		EvadeSpell R;
+		R.icon = "AhriR";
+		R.type = 1;
+		R.displayName = "Spirit Rush";
+		R.name = "AhriR";
+		R.danger = 4;
+		R.range = 450;
+		R.slot = _R;
+
+		Ahri.spells.emplace_back(R);
+
+		EvadeSpellDB.emplace_back(Ahri);
+	}
+
+	{
+		EvadeChamp Annie;
+		Annie.hero = "Annie";
+
+		EvadeSpell E;
+		E.icon = "AnnieE";
+		E.type = 2;
+		E.displayName = "Molten Shield";
+		E.name = "AnnieE";
+		E.danger = 2;
+		E.range = 0;
+		E.slot = _E;
+
+		Annie.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Annie);
+	}
+
+	{
+		EvadeChamp Ryze;
+		Ryze.hero = "Ryze";
+
+		EvadeSpell W;
+		W.icon = "RyzeW";
+		W.type = 2;
+		W.displayName = "Overdrive";
+		W.name = "RyzeW";
+		W.danger = 3;
+		W.range = 0;
+		W.slot = _W;
+
+		Ryze.spells.emplace_back(W);
+
+		EvadeSpellDB.emplace_back(Ryze);
+	}
+
+	{
+		EvadeChamp Corki;
+		Corki.hero = "Corki";
+
+		EvadeSpell W;
+		W.icon = "CorkiW";
+		W.type = 1;
+		W.displayName = "Valkyrie";
+		W.name = "CorkiW";
+		W.danger = 4;
+		W.range = 600;
+		W.slot = _W;
+
+		Corki.spells.emplace_back(W);
+
+		EvadeSpellDB.emplace_back(Corki);
+	}
+
+	{
+		EvadeChamp Draven;
+		Draven.hero = "Draven";
+
+		EvadeSpell W;
+		W.icon = "DravenW";
+		W.type = 2;
+		W.displayName = "Blood Rush";
+		W.name = "DravenW";
+		W.danger = 3;
+		W.range = 0;
+		W.slot = _W;
+
+		Draven.spells.emplace_back(W);
+
+		EvadeSpellDB.emplace_back(Draven);
+	}
+
+	{
+		EvadeChamp Ekko;
+		Ekko.hero = "Ekko";
+
+		EvadeSpell E;
+		E.icon = "EkkoE";
+		E.type = 1;
+		E.displayName = "Phase Dive";
+		E.name = "EkkoE";
+		E.danger = 2;
+		E.range = 325;
+		E.slot = _E;
+
+		Ekko.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Ekko);
+	}
+
+	{
+		EvadeChamp Ezreal;
+		Ezreal.hero = "Ezreal";
+
+		EvadeSpell E;
+		E.icon = "EzrealE";
+		E.type = 1;
+		E.displayName = "Arcane Shift";
+		E.name = "EzrealE";
+		E.danger = 3;
+		E.range = 475;
+		E.slot = _E;
+
+		Ezreal.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Ezreal);
+	}
+
+	{
+		EvadeChamp Fiora;
+		Fiora.hero = "Fiora";
+
+		EvadeSpell Q;
+		Q.icon = "FioraQ";
+		Q.type = 1;
+		Q.displayName = "Lunge";
+		Q.name = "FioraQ";
+		Q.danger = 1;
+		Q.range = 400;
+		Q.slot = _Q;
+
+		Fiora.spells.emplace_back(Q);
+
+		EvadeSpell W;
+		W.icon = "FioraW";
+		W.type = 7;
+		W.displayName = "Riposte";
+		W.name = "FioraW";
+		W.danger = 2;
+		W.range = 750;
+		W.slot = _W;
+
+		Fiora.spells.emplace_back(W);
+
+		EvadeSpellDB.emplace_back(Fiora);
+	}
+
+	{
+		EvadeChamp Fizz;
+		Fizz.hero = "Fizz";
+
+		EvadeSpell E;
+		E.icon = "FizzE";
+		E.type = 3;
+		E.displayName = "Playful";
+		E.name = "FizzE";
+		E.danger = 3;
+		E.range = 0;
+		E.slot = _E;
+
+		Fizz.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Fizz);
+	}
+
+	{
+		EvadeChamp Garen;
+		Garen.hero = "Garen";
+
+		EvadeSpell Q;
+		Q.icon = "GarenQ";
+		Q.type = 2;
+		Q.displayName = "Decisive Strike";
+		Q.name = "GarenQ";
+		Q.danger = 3;
+		Q.range = 0;
+		Q.slot = _Q;
+
+		Garen.spells.emplace_back(Q);
+
+		EvadeSpellDB.emplace_back(Garen);
+	}
+
+	{
+		EvadeChamp Gnar;
+		Gnar.hero = "Gnar";
+
+		EvadeSpell E;
+		E.icon = "GnarE";
+		E.type = 1;
+		E.displayName = "Hop/Crunch";
+		E.name = "GnarE";
+		E.danger = 3;
+		E.range = 475;
+		E.slot = _E;
+
+		Gnar.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Gnar);
+	}
+
+	{
+		EvadeChamp Gragas;
+		Gragas.hero = "Gragas";
+
+		EvadeSpell E;
+		E.icon = "GragasE";
+		E.type = 1;
+		E.displayName = "Body Slam";
+		E.name = "GragasE";
+		E.danger = 3;
+		E.range = 600;
+		E.slot = _E;
+
+		Gragas.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Gragas);
+	}
+
+	{
+		EvadeChamp Graves;
+		Graves.hero = "Graves";
+
+		EvadeSpell E;
+		E.icon = "GravesE";
+		E.type = 1;
+		E.displayName = "Quickdraw";
+		E.name = "GravesE";
+		E.danger = 1;
+		E.range = 425;
+		E.slot = _E;
+
+		Graves.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Graves);
+	}
+
+	{
+		EvadeChamp Kaisa;
+		Kaisa.hero = "Kaisa";
+
+		EvadeSpell E;
+		E.icon = "KaisaE";
+		E.type = 2;
+		E.displayName = "Supercharge";
+		E.name = "KaisaE";
+		E.danger = 2;
+		E.range = 0;
+		E.slot = _E;
+
+		Kaisa.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Kaisa);
+	}
+
+	{
+		EvadeChamp Karma;
+		Karma.hero = "Karma";
+
+		EvadeSpell E;
+		E.icon = "KarmaE";
+		E.type = 2;
+		E.displayName = "Inspire";
+		E.name = "KarmaE";
+		E.danger = 3;
+		E.range = 0;
+		E.slot = _E;
+
+		Karma.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Karma);
+	}
+
+	{
+		EvadeChamp Kassadin;
+		Kassadin.hero = "Kassadin";
+
+		EvadeSpell R;
+		R.icon = "KassadinR";
+		R.type = 1;
+		R.displayName = "Riftwalk";
+		R.name = "KassadinR";
+		R.danger = 3;
+		R.range = 500;
+		R.slot = _R;
+
+		Kassadin.spells.emplace_back(R);
+
+		EvadeSpellDB.emplace_back(Kassadin);
+	}
+
+	{
+		EvadeChamp Katarina;
+		Katarina.hero = "Katarina";
+
+		EvadeSpell W;
+		W.icon = "KatarinaW";
+		W.type = 2;
+		W.displayName = "Preparation";
+		W.name = "KatarinaW";
+		W.danger = 3;
+		W.range = 0;
+		W.slot = _W;
+
+		Katarina.spells.emplace_back(W);
+
+		EvadeSpellDB.emplace_back(Katarina);
+	}
+
+	{
+		EvadeChamp Kayn;
+		Kayn.hero = "Kayn";
+
+		EvadeSpell Q;
+		Q.icon = "KaynQ";
+		Q.type = 1;
+		Q.displayName = "Reaping Slash";
+		Q.name = "KaynQ";
+		Q.danger = 2;
+		Q.range = 350;
+		Q.slot = _Q;
+
+		Kayn.spells.emplace_back(Q);
+
+		EvadeSpellDB.emplace_back(Kayn);
+	}
+
+	{
+		EvadeChamp Kennen;
+		Kennen.hero = "Kennen";
+
+		EvadeSpell E;
+		E.icon = "KennenE";
+		E.type = 2;
+		E.displayName = "Lightning Rush";
+		E.name = "KennenE";
+		E.danger = 3;
+		E.range = 0;
+		E.slot = _E;
+
+		Kennen.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Kennen);
+	}
+
+	{
+		EvadeChamp Khazix;
+		Khazix.hero = "Khazix";
+
+		EvadeSpell E;
+		E.icon = "KhazixE";
+		E.type = 1;
+		E.displayName = "Leap";
+		E.name = "KhazixE";
+		E.danger = 3;
+		E.range = 700;
+		E.slot = _E;
+
+		Khazix.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Khazix);
+	}
+
+	{
+		EvadeChamp Kindred;
+		Kindred.hero = "Kindred";
+
+		EvadeSpell Q;
+		Q.icon = "KindredQ";
+		Q.type = 1;
+		Q.displayName = "Dance of Arrows";
+		Q.name = "KindredQ";
+		Q.danger = 1;
+		Q.range = 340;
+		Q.slot = _Q;
+
+		Kindred.spells.emplace_back(Q);
+
+		EvadeSpellDB.emplace_back(Kindred);
+	}
+
+	{
+		EvadeChamp Kled;
+		Kled.hero = "Kled";
+
+		EvadeSpell E;
+		E.icon = "KledE";
+		E.type = 1;
+		E.displayName = "Jousting";
+		E.name = "KledE";
+		E.danger = 3;
+		E.range = 550;
+		E.slot = _E;
+
+		Kled.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Kled);
+	}
+
+	{
+		EvadeChamp Leblanc;
+		Leblanc.hero = "Leblanc";
+
+		EvadeSpell W;
+		W.icon = "LeblancW";
+		W.type = 1;
+		W.displayName = "Distortion";
+		W.name = "LeblancW";
+		W.danger = 3;
+		W.range = 600;
+		W.slot = _W;
+
+		Leblanc.spells.emplace_back(W);
+
+		EvadeSpellDB.emplace_back(Leblanc);
+	}
+
+	{
+		EvadeChamp Lucian;
+		Lucian.hero = "Lucian";
+
+		EvadeSpell E;
+		E.icon = "LucianE";
+		E.type = 1;
+		E.displayName = "Relentless Pursuit";
+		E.name = "LucianE";
+		E.danger = 3;
+		E.range = 425;
+		E.slot = _E;
+
+		Lucian.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Lucian);
+	}
+
+	{
+		EvadeChamp MasterYi;
+		MasterYi.hero = "MasterYi";
+
+		EvadeSpell Q;
+		Q.icon = "MasterYiQ";
+		Q.type = 4;
+		Q.displayName = "Alpha Strike";
+		Q.name = "MasterYiQ";
+		Q.danger = 3;
+		Q.range = 600;
+		Q.slot = _Q;
+
+		MasterYi.spells.emplace_back(Q);
+
+		EvadeSpellDB.emplace_back(MasterYi);
+	}
+
+	{
+		EvadeChamp Morgana;
+		Morgana.hero = "Morgana";
+
+		EvadeSpell E;
+		E.icon = "MorganaE";
+		E.type = 5;
+		E.displayName = "Black Shield";
+		E.name = "MorganaE";
+		E.danger = 2;
+		E.range = 0;
+		E.slot = _E;
+
+		Morgana.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Morgana);
+	}
+
+	{
+		EvadeChamp Pyke;
+		Pyke.hero = "Pyke";
+
+		EvadeSpell E;
+		E.icon = "PykeE";
+		E.type = 1;
+		E.displayName = "Phantom Undertow";
+		E.name = "PykeE";
+		E.danger = 3;
+		E.range = 550;
+		E.slot = _E;
+
+		Pyke.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Pyke);
+	}
+
+	//todo E spell type 8 using to allies in range
+	{
+		EvadeChamp Rakan;
+		Rakan.hero = "Rakan";
+
+		EvadeSpell W;
+		W.icon = "RakanW";
+		W.type = 1;
+		W.displayName = "Grand Entrance";
+		W.name = "RakanW";
+		W.danger = 3;
+		W.range = 600;
+		W.slot = _W;
+
+		Rakan.spells.emplace_back(W);
+
+		EvadeSpellDB.emplace_back(Rakan);
+	}
+
+	{
+		EvadeChamp Renekton;
+		Renekton.hero = "Renekton";
+
+		EvadeSpell E;
+		E.icon = "RenektonE";
+		E.type = 1;
+		E.displayName = "Slice and Dice";
+		E.name = "RenektonE";
+		E.danger = 3;
+		E.range = 450;
+		E.slot = _E;
+
+		Renekton.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Renekton);
+	}
+
+	{
+		EvadeChamp Riven;
+		Riven.hero = "Riven";
+
+		EvadeSpell E;
+		E.icon = "RivenE";
+		E.type = 1;
+		E.displayName = "Valor";
+		E.name = "RivenE";
+		E.danger = 2;
+		E.range = 325;
+		E.slot = _E;
+
+		Riven.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Riven);
+	}
+
+	{
+		EvadeChamp Rumble;
+		Rumble.hero = "Rumble";
+
+		EvadeSpell W;
+		W.icon = "RumbleW";
+		W.type = 2;
+		W.displayName = "Scrap Shield";
+		W.name = "RumbleW";
+		W.danger = 2;
+		W.range = 0;
+		W.slot = _W;
+
+		Rumble.spells.emplace_back(W);
+
+		EvadeSpellDB.emplace_back(Rumble);
+	}
+
+	{
+		EvadeChamp Sejuani;
+		Sejuani.hero = "Sejuani";
+
+		EvadeSpell Q;
+		Q.icon = "SejuaniQ";
+		Q.type = 1;
+		Q.displayName = "Arctic Assault";
+		Q.name = "SejuaniQ";
+		Q.danger = 3;
+		Q.range = 650;
+		Q.slot = _Q;
+
+		Sejuani.spells.emplace_back(Q);
+
+		EvadeSpellDB.emplace_back(Sejuani);
+	}
+
+	{
+		EvadeChamp Shaco;
+		Shaco.hero = "Shaco";
+
+		EvadeSpell Q;
+		Q.icon = "ShacoQ";
+		Q.type = 1;
+		Q.displayName = "Deceive";
+		Q.name = "ShacoQ";
+		Q.danger = 3;
+		Q.range = 400;
+		Q.slot = _Q;
+
+		Shaco.spells.emplace_back(Q);
+
+		EvadeSpellDB.emplace_back(Shaco);
+	}
+
+	{
+		EvadeChamp Shen;
+		Shen.hero = "Shen";
+
+		EvadeSpell E;
+		E.icon = "ShenE";
+		E.type = 1;
+		E.displayName = "Shadow Dash";
+		E.name = "ShenE";
+		E.danger = 4;
+		E.range = 600;
+		E.slot = _E;
+
+		Shen.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Shen);
+	}
+
+	{
+		EvadeChamp Shyvana;
+		Shyvana.hero = "Shyvana";
+
+		EvadeSpell W;
+		W.icon = "ShyvanaW";
+		W.type = 2;
+		W.displayName = "Burnout";
+		W.name = "ShyvanaW";
+		W.danger = 3;
+		W.range = 0;
+		W.slot = _W;
+
+		Shyvana.spells.emplace_back(W);
+
+		EvadeSpellDB.emplace_back(Shyvana);
+	}
+
+	{
+		EvadeChamp Sivir;
+		Sivir.hero = "Sivir";
+
+		EvadeSpell E;
+		E.icon = "SivirE";
+		E.type = 5;
+		E.displayName = "Spell Shield";
+		E.name = "SivirE";
+		E.danger = 2;
+		E.range = 0;
+		E.slot = _E;
+
+		Sivir.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Sivir);
+	}
+
+	{
+		EvadeChamp Skarner;
+		Skarner.hero = "Skarner";
+
+		EvadeSpell W;
+		W.icon = "SkarnerW";
+		W.type = 2;
+		W.displayName = "Crystalline Exoskeleton";
+		W.name = "SkarnerW";
+		W.danger = 3;
+		W.range = 0;
+		W.slot = _W;
+
+		Skarner.spells.emplace_back(W);
+
+		EvadeSpellDB.emplace_back(Skarner);
+	}
+
+	{
+		EvadeChamp Sona;
+		Sona.hero = "Sona";
+
+		EvadeSpell E;
+		E.icon = "SonaE";
+		E.type = 2;
+		E.displayName = "Song of Celerity";
+		E.name = "SonaE";
+		E.danger = 3;
+		E.range = 0;
+		E.slot = _E;
+
+		Sona.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Sona);
+	}
+
+	{
+		EvadeChamp Teemo;
+		Teemo.hero = "Teemo";
+
+		EvadeSpell W;
+		W.icon = "TeemoW";
+		W.type = 2;
+		W.displayName = "Move Quick";
+		W.name = "TeemoW";
+		W.danger = 3;
+		W.range = 0;
+		W.slot = _W;
+
+		Teemo.spells.emplace_back(W);
+
+		EvadeSpellDB.emplace_back(Teemo);
+	}
+
+	{
+		EvadeChamp Tryndamere;
+		Tryndamere.hero = "Tryndamere";
+
+		EvadeSpell E;
+		E.icon = "TryndamereE";
+		E.type = 1;
+		E.displayName = "Spinning Slash";
+		E.name = "TryndamereE";
+		E.danger = 3;
+		E.range = 660;
+		E.slot = _E;
+
+		Tryndamere.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Tryndamere);
+	}
+
+	{
+		EvadeChamp Udyr;
+		Udyr.hero = "Udyr";
+
+		EvadeSpell E;
+		E.icon = "UdyrE";
+		E.type = 2;
+		E.displayName = "Bear Stance";
+		E.name = "UdyrE";
+		E.danger = 1;
+		E.range = 0;
+		E.slot = _E;
+
+		Udyr.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Udyr);
+	}
+
+	{
+		EvadeChamp Vayne;
+		Vayne.hero = "Vayne";
+
+		EvadeSpell Q;
+		Q.icon = "VayneQ";
+		Q.type = 1;
+		Q.displayName = "Tumble";
+		Q.name = "VayneQ";
+		Q.danger = 2;
+		Q.range = 300;
+		Q.slot = _Q;
+
+		Vayne.spells.emplace_back(Q);
+
+		EvadeSpellDB.emplace_back(Vayne);
+	}
+
+	{
+		EvadeChamp Vi;
+		Vi.hero = "Vi";
+
+		EvadeSpell Q;
+		Q.icon = "ViQ";
+		Q.type = 1;
+		Q.displayName = "Vault Breaker";
+		Q.name = "ViQ";
+		Q.danger = 3;
+		Q.range = 250;
+		Q.slot = _Q;
+
+		Vi.spells.emplace_back(Q);
+
+		EvadeSpellDB.emplace_back(Vi);
+	}
+
+	{
+		EvadeChamp Vladimir;
+		Vladimir.hero = "Vladimir";
+
+		EvadeSpell W;
+		W.icon = "VladimirW";
+		W.type = 3;
+		W.displayName = "Sanguine Pool";
+		W.name = "VladimirW";
+		W.danger = 3;
+		W.range = 0;
+		W.slot = _W;
+
+		Vladimir.spells.emplace_back(W);
+
+		EvadeSpellDB.emplace_back(Vladimir);
+	}
+
+	{
+		EvadeChamp Volibear;
+		Volibear.hero = "Volibear";
+
+		EvadeSpell Q;
+		Q.icon = "VolibearQ";
+		Q.type = 2;
+		Q.displayName = "Rolling Thunder";
+		Q.name = "VolibearQ";
+		Q.danger = 3;
+		Q.range = 0;
+		Q.slot = _Q;
+
+		Volibear.spells.emplace_back(Q);
+
+		EvadeSpellDB.emplace_back(Volibear);
+	}
+
+	{
+		EvadeChamp Xayah;
+		Xayah.hero = "Xayah";
+
+		EvadeSpell R;
+		R.icon = "XayahR";
+		R.type = 3;
+		R.displayName = "Featherstorm";
+		R.name = "XayahR";
+		R.danger = 5;
+		R.range = 0;
+		R.slot = _R;
+
+		Xayah.spells.emplace_back(R);
+
+		EvadeSpellDB.emplace_back(Xayah);
+	}
+
+	{
+		EvadeChamp Yasuo;
+		Yasuo.hero = "Yasuo";
+
+		EvadeSpell W;
+		W.icon = "YasuoW";
+		W.type = 6;
+		W.displayName = "Wind Wall";
+		W.name = "YasuoW";
+		W.danger = 2;
+		W.range = 0;
+		W.slot = _W;
+
+		Yasuo.spells.emplace_back(W);
+
+		EvadeSpellDB.emplace_back(Yasuo);
+	}
+
+	//maybe add w todo
+	{
+		EvadeChamp Zed;
+		Zed.hero = "Zed";
+
+		EvadeSpell R;
+		R.icon = "ZedR";
+		R.type = 4;
+		R.displayName = "Death Mark";
+		R.name = "ZedR";
+		R.danger = 4;
+		R.range = 625;
+		R.slot = _R;
+
+		Zed.spells.emplace_back(R);
+
+		EvadeSpellDB.emplace_back(Zed);
+	}
+
+	{
+		EvadeChamp Zilean;
+		Zilean.hero = "Zilean";
+
+		EvadeSpell E;
+		E.icon = "ZileanE";
+		E.type = 2;
+		E.displayName = "Time Warp";
+		E.name = "ZileanE";
+		E.danger = 4;
+		E.range = 0;
+		E.slot = _E;
+
+		Zilean.spells.emplace_back(E);
+
+		EvadeSpellDB.emplace_back(Zilean);
+	}
+
+	/*if (utils->ToLower(Local.SummonerSpell1()) == utils->ToLower("SummonerFlash"))
+	{
+		EvadeSpell Flash;
+		Flash.name = "Flash";
+		Flash.icon = "Flash";
+		Flash.displayName = "Summoner Flash";
+		Flash.slot = _D;
+		Flash.range = 400;
+
+		for (auto h : evadespelldb)
+		{
+			h.spells.emplace_back(Flash);
+		}
+	}
+	else if (utils->ToLower(Local.SummonerSpell2()) == utils->ToLower("SummonerFlash"))
+	{
+		EvadeSpell Flash;
+		Flash.name = "Flash";
+		Flash.icon = "Flash";
+		Flash.displayName = "Summoner Flash";
+		Flash.slot = _F;
+		Flash.range = 400;
+
+		for (auto h : evadespelldb)
+		{
+			h.spells.emplace_back(Flash);
+		}
+	}*/
 }

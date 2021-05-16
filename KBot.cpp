@@ -13,13 +13,16 @@
 
 #include "Evade2.h"
 
+#include "Orbwalker.h"
+
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-Direct3D9Render Direct3D9;
 
 HWND hwnd;
 ConsoleLog clog;
 
 Visuals* vis;
+
+Direct3D9Render Direct3D9;
 
 void Direct3D9Render::HeroLoop()
 {
@@ -56,6 +59,11 @@ void Direct3D9Render::HeroLoop()
 
 			if (M.Enemies.MouseClicks)
 			{
+				if (!obj.IsDead() && obj.GetTeam() != Local.GetTeam())
+				{
+					ImVec2 Pos = WorldToMinimap(obj.GetPosition());
+					draw->String(obj.GetChampName().substr(0, 1), Pos.x - 4, Pos.y, RGBA(255, 255, 255));
+				}
 				if (obj.IsVisible() && !obj.IsDead() && obj.CheckState(CanMove) && (obj.GetTeam() != Local.GetTeam()))
 				{
 					Vector3 clickPos = obj.GetAiManager()->GetNavEnd();
@@ -67,15 +75,12 @@ void Direct3D9Render::HeroLoop()
 							if (clickPos.Distance(obj.GetPosition()) > 10.f)
 							{
 								draw->CircleRange(clickPos, 16, 65, RGBA(COLOR_AQUA));
-								draw->String(RealClickPos, obj.GetChampName(), RGBA(COLOR_AQUA));
+								draw->String(obj.GetChampName(), RealClickPos, RGBA(COLOR_AQUA));
 							}
 						}
 					}
 				}
 			}
-
-			if (M.bDebug)
-				draw->String(WorldToMinimap(obj.GetPosition()), obj.GetChampName(), RGBA(255, 255, 255));
 
 			//clog.AddLog("%s %i", obj.GetChampName().c_str(), obj.GetNetworkID());
 
@@ -351,7 +356,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	std::string NowPatch = htmlData.substr(nPos, htmlData.find(XorStr("$Patch$"), nPos) - nPos);
 
-	if (NowVersion != XorStr("1.0.0") || NowPatch != XorStr("11.3"))
+	if (NowVersion != XorStr("1.0.0") || NowPatch != XorStr("11.4"))
 	{
 		MessageBoxA(0, XorStr("Outdated version"), 0, 0);
 		M.bExitBot = true;
@@ -404,45 +409,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	LoLAPI::LoadPlayerListData();
-	//todo turret/inhib size warning based on map
-	/*LoLAPI::GetGameStats();
-	std::vector<API::Event>Events = LoLAPI::GetEvents();*/
-#endif // !NOLEAGUE
-
-	//Initialize Direct3D
-	if (!Direct3D9.DirectXInit(hwnd))
-	{
-		Direct3D9.Shutdown();
-		::UnregisterClassA(wc.lpszClassName, wc.hInstance);
-		return 0;
-	}
-
-	// Show the window
-	::ShowWindow(hwnd, SW_SHOWDEFAULT);
-	::UpdateWindow(hwnd);
-
-	// Load Fonts
-	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-	// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-	// - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-	// - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-	// - Read 'docs/FONTS.md' for more instructions and details.
-	// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-	//io.Fonts->AddFontDefault();
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
-	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-	//IM_ASSERT(font != NULL);
-
-	//Start the thread that opens/closes UI
-	std::thread MenuHandlerThread{ MenuHandler };
-	MenuHandlerThread.detach();
-
-	//Start minion list loop
-	std::thread MinionListThread{ MinionListLoop };
-	MinionListThread.detach();
 
 	//Load default config
 	Config->Setup();
@@ -462,17 +428,46 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	//Load static info from files
-	GameData::Load(sDataPath);
+	if (!GameData::Load(sDataPath))
+	{
+		MessageBoxA(0, XorStr("Failed to load/download files"), 0, 0);
+		M.bExitBot = 1;
+	}
+	//todo turret/inhib size warning based on map
+	/*LoLAPI::GetGameStats();
+	std::vector<API::Event>Events = LoLAPI::GetEvents();*/
+#endif // !NOLEAGUE
+
+	//Initialize Direct3D
+	if (!Direct3D9.DirectXInit(hwnd))
+	{
+		Direct3D9.Shutdown();
+		::UnregisterClassA(wc.lpszClassName, wc.hInstance);
+		return 0;
+	}
+
+	// Show the window
+	::ShowWindow(hwnd, SW_SHOWDEFAULT);
+	::UpdateWindow(hwnd);
+
+	//Start the thread that opens/closes UI
+	std::thread MenuHandlerThread{ MenuHandler };
+	MenuHandlerThread.detach();
+
+	//Start minion list loop
+	std::thread MinionListThread{ MinionListLoop };
+	MinionListThread.detach();
 
 	if (M.bDebug)
 		init->StartupInfo();
 
-	Evade* evade = new Evade();
-	//evade->MakeWorldMap();
-	evade->InitSpells();
-	evade->InitEvadeSpells();
+	//Evade* evade = new Evade();
+	////evade->MakeWorldMap();
+	//evade->InitSpells();
+	//evade->InitEvadeSpells();
 
-	//Evade2 evade2;
+	Evade2 evade2;
+	Orbwalker orb;
 
 	// Main loop
 	MSG msg;
@@ -515,22 +510,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			//Execute champion scripts
 			if (championScript)
-				championScript->OnKeyDown(1);
+				championScript->Tick();
 
-			if (M.Evade.Master)
+			/*if (M.Evade.Master)
 			{
 				evade->Tick();
 				evade->Draw();
 				if (M.bMenuOpen)
 					evade->GUI();
-			}
+			}*/
 			/*	DrawNav(Local);
 				for (auto a : navpath)
 				{
 					draw->CircleRange(a, 16, 16, RGBA(COLOR_CYAN));
 				}*/
 
-				//evade2.Tick();
+			if (M.Orbwalker.Master)
+				orb.Tick();
+
+			evade2.Tick();
+			if (M.bMenuOpen)
+				evade2.GUI();
 		}
 		catch (const std::bad_alloc&) {/*xd*/ }
 		/*	for (int i = 0; i < 100; i++)

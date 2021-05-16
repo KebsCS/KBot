@@ -70,7 +70,7 @@ public:
 			return "HttpOpenRequestA Error";
 		}
 
-		// ignores ssl certificate
+		// ignores ssl certificate error
 		DWORD dwFlags;
 		DWORD dwBuffLen = sizeof(dwFlags);
 		if (InternetQueryOptionA(hRequest, INTERNET_OPTION_SECURITY_FLAGS, &dwFlags, &dwBuffLen))
@@ -108,6 +108,5 @@ public:
 		return ResultData;
 	}
 };
-
 
 #endif //!_HTTP_H_

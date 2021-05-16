@@ -86,6 +86,8 @@ void CConfig::Setup()
 	SetupValue(M.Talon.JumpsKey, VK_LSHIFT, "Talon", "JumpsKey");
 	for (int i = 0; i < 5; i++)
 		SetupValue(M.Talon.JumpsType[i], 1, "Talon", "JumpsType" + std::to_string(i));
+
+	SetupValue(M.Pantheon.DrawExecute, 1, "Pantheon", "DrawExecute");
 }
 
 void CConfig::SetupValue(int& value, int def, std::string category, std::string name)
